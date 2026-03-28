@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
@@ -7,12 +8,31 @@ import TodayTasks from "@/app/components/today-tasks"
 import PomodoroTimer from "@/app/components/timer"
 import SpotifyWidget from "@/app/components/spotify-widget"
 import AISuggestionsPanel from "@/app/components/ai-suggestion-panel"
+import FocusMode from "@/app/components/focus-mode"
+import ShortcutGuide from "@/app/components/shortcut-guide"
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { useTodos } from "@/hooks/useTodos"
 
 export default function HomePage() {
   const { status } = useSession()
   const router = useRouter()
   const { isLoading: todosLoading } = useTodos()
+  const [focusModeOpen, setFocusModeOpen] = useState(false)
+  const [focusTodoId, setFocusTodoId] = useState<string | undefined>()
+  const [shortcutGuideOpen, setShortcutGuideOpen] = useState(false)
+
+  useKeyboardShortcuts({
+    onNewTask: () => {}, // handled by today-tasks
+    onToggleTimer: () => {},
+    onFocusMode: () => setFocusModeOpen(true),
+    onSearch: () => router.push("/tasks"),
+    onShortcutGuide: () => setShortcutGuideOpen(true),
+  })
+
+  const handleOpenFocusMode = (todoId: string) => {
+    setFocusTodoId(todoId)
+    setFocusModeOpen(true)
+  }
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -51,7 +71,7 @@ export default function HomePage() {
 
           {/* Pomodoro Timer */}
           <div className="lg:row-span-1">
-            <PomodoroTimer />
+            <PomodoroTimer onFocusMode={handleOpenFocusMode} />
           </div>
 
           {/* AI Suggestions Panel */}
@@ -71,11 +91,24 @@ export default function HomePage() {
           {/* Productivity Tip */}
           <div className="text-center">
             <p className="text-sm text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)]">
-              💡 <strong>Pro tip:</strong> Use the AI smart plan feature to optimize your daily task order
+              💡 <strong>Pro tip:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--secondarybg)] text-xs font-mono">?</kbd> to see keyboard shortcuts
             </p>
           </div>
         </div>
       </main>
+
+      {/* Focus Mode Overlay */}
+      <FocusMode
+        isOpen={focusModeOpen}
+        onClose={() => setFocusModeOpen(false)}
+        initialTodoId={focusTodoId}
+      />
+
+      {/* Shortcut Guide Modal */}
+      <ShortcutGuide
+        isOpen={shortcutGuideOpen}
+        onClose={() => setShortcutGuideOpen(false)}
+      />
     </div>
   )
 }

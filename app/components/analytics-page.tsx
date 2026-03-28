@@ -9,6 +9,9 @@ import { useAnalytics } from "@/hooks/use-analytics"
 import StatsCards from "@/app/components/analytics/stats-card"
 import ActivityHeatmap from "@/app/components/analytics/heatmap"
 import XPBreakdown from "@/app/components/analytics/xp"
+import PomodoroStats from "@/app/components/analytics/pomodoro-stats"
+import TimeInsights from "@/app/components/analytics/time-insights"
+import WeeklyReviewCard from "@/app/components/analytics/weekly-review"
 
 export default function AnalyticsPage() {
   const { status } = useSession()
@@ -100,6 +103,15 @@ export default function AnalyticsPage() {
 
           {/* XP Breakdown */}
           <XPBreakdown />
+
+          {/* Focus Sessions & Time Insights */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <PomodoroStats />
+            <TimeInsights />
+          </div>
+
+          {/* AI Weekly Review */}
+          <WeeklyReviewCard />
 
           {/* Achievement Preview */}
           <Card className="bg-gradient-to-r from-[var(--accent1bg)]/10 to-purple-500/10 border-[var(--accent1bg)]/20">

@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter, usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
 import {
-  Home, CheckSquare, BarChart3, 
+  Home, CheckSquare, BarChart3, Calendar,
   User, LogOut, Sun, Moon, Menu, X
 } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
@@ -29,6 +29,12 @@ const navigationItems = [
     href: "/tasks",
     icon: CheckSquare,
     description: "Manage all your todos",
+  },
+  {
+    name: "Calendar",
+    href: "/calendar",
+    icon: Calendar,
+    description: "View tasks on a calendar",
   },
   {
     name: "Analytics",

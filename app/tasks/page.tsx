@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   Circle,
   Brain,
+  Download,
+  Tag,
 } from "lucide-react"
 
 import { Button } from "@/app/components/ui/button"
@@ -29,30 +31,24 @@ import { Card, CardContent } from "@/app/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Badge } from "@/app/components/ui/badge"
 import AISuggestionsPanel from "@/app/components/ai-suggestion-panel"
-
-type Todo = {
-  id: string
-  title: string
-  description?: string
-  isCompleted: boolean
-  priority: "LOW" | "MEDIUM" | "HIGH"
-  dueDate?: string
-  estimatedTime?: number
-  createdAt: string
-  completedAt?: string
-}
+import { useTodos, useCreateTodo, useUpdateTodo, useDeleteTodo, useTags, type TodoWithRelations, type TagWithCount } from "@/hooks/useTodos"
+import { todosToCSV, todosToJSON, downloadFile } from "@/lib/export"
 
 type FilterOption = "all" | "pending" | "completed" | "overdue" | "today"
 
 export default function TasksPage() {
   const { status } = useSession()
   const router = useRouter()
+  const { data: todos = [], isLoading: loading } = useTodos()
+  const { data: tags = [] } = useTags()
+  const createTodo = useCreateTodo()
+  const updateTodo = useUpdateTodo()
+  const deleteTodo = useDeleteTodo()
 
   // State
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterBy, setFilterBy] = useState<FilterOption>("all")
+  const [filterTagId, setFilterTagId] = useState<string>("")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showAISuggestions, setShowAISuggestions] = useState(false)
@@ -80,29 +76,9 @@ export default function TasksPage() {
     }
   }, [status, router])
 
-  // Fetch todos
-  useEffect(() => {
-    const fetchTodos = async () => {
-      if (status === "authenticated") {
-        try {
-          const response = await fetch("/api/todos")
-          if (response.ok) {
-            const data = await response.json()
-            setTodos(data)
-          }
-        } catch (error) {
-          console.error("Failed to fetch todos:", error)
-        } finally {
-          setLoading(false)
-        }
-      }
-    }
-    fetchTodos()
-  }, [status])
-
   // Filter todos
   const filteredTodos = useMemo(() => {
-    let filtered = todos
+    let filtered = [...todos]
 
     // Search filter
     if (searchQuery.trim()) {
@@ -111,6 +87,13 @@ export default function TasksPage() {
         (todo) =>
           todo.title.toLowerCase().includes(query) ||
           (todo.description && todo.description.toLowerCase().includes(query)),
+      )
+    }
+
+    // Tag filter
+    if (filterTagId) {
+      filtered = filtered.filter((todo: TodoWithRelations) =>
+        todo.tags?.some((tag) => tag.id === filterTagId)
       )
     }
 
@@ -150,7 +133,7 @@ export default function TasksPage() {
 
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
-  }, [todos, searchQuery, filterBy])
+  }, [todos, searchQuery, filterBy, filterTagId])
 
   // Reset form
   const resetForm = () => {
@@ -170,26 +153,15 @@ export default function TasksPage() {
 
     setActionLoading("create")
     try {
-      const todoData = {
+      await createTodo.mutateAsync({
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         priority: formData.priority,
         dueDate: formData.dueDate || undefined,
         estimatedTime: formData.estimatedTime ? Number.parseInt(formData.estimatedTime) : undefined,
-      }
-
-      const response = await fetch("/api/todos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(todoData),
       })
-
-      if (response.ok) {
-        const newTodo = await response.json()
-        setTodos([newTodo, ...todos])
-        resetForm()
-        setShowAddForm(false)
-      }
+      resetForm()
+      setShowAddForm(false)
     } catch (error) {
       console.error("Failed to create todo:", error)
     } finally {
@@ -198,19 +170,11 @@ export default function TasksPage() {
   }
 
   // Update todo
-  const handleUpdate = async (id: string, updates: Partial<Todo>) => {
+  const handleUpdate = async (id: string, updates: Record<string, unknown>) => {
     setActionLoading(id)
     try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      })
-
-      if (response.ok) {
-        setTodos(todos.map((todo) => (todo.id === id ? { ...todo, ...updates } : todo)))
-        setEditingId(null)
-      }
+      await updateTodo.mutateAsync({ id, data: updates })
+      setEditingId(null)
     } catch (error) {
       console.error("Failed to update todo:", error)
     } finally {
@@ -224,13 +188,7 @@ export default function TasksPage() {
 
     setActionLoading(id)
     try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        setTodos(todos.filter((todo) => todo.id !== id))
-      }
+      await deleteTodo.mutateAsync(id)
     } catch (error) {
       console.error("Failed to delete todo:", error)
     } finally {
@@ -239,15 +197,25 @@ export default function TasksPage() {
   }
 
   // Toggle completion
-  const handleToggleComplete = (todo: Todo) => {
+  const handleToggleComplete = (todo: TodoWithRelations) => {
     handleUpdate(todo.id, {
       isCompleted: !todo.isCompleted,
-      completedAt: !todo.isCompleted ? new Date().toISOString() : undefined,
+      completedAt: !todo.isCompleted ? new Date().toISOString() : null,
     })
   }
 
+  // Export handlers
+  const handleExportCSV = () => {
+    const csv = todosToCSV(todos)
+    downloadFile(csv, "planwise-tasks.csv", "text/csv")
+  }
+  const handleExportJSON = () => {
+    const json = todosToJSON(todos)
+    downloadFile(json, "planwise-tasks.json", "application/json")
+  }
+
   // Start editing
-  const startEdit = (todo: Todo) => {
+  const startEdit = (todo: TodoWithRelations) => {
     setEditingId(todo.id)
     setFormData({
       title: todo.title,
@@ -327,7 +295,7 @@ export default function TasksPage() {
             <p className="text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)] mt-1">Manage your tasks efficiently</p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               onClick={() => setShowAISuggestions(!showAISuggestions)}
               variant="outline"
@@ -336,6 +304,19 @@ export default function TasksPage() {
               <Brain className="w-4 h-4 mr-2" />
               AI Coach
             </Button>
+            <Select value="" onValueChange={(v) => {
+              if (v === "csv") handleExportCSV()
+              if (v === "json") handleExportJSON()
+            }}>
+              <SelectTrigger className="w-32 border-[var(--secondarybg)] bg-[var(--secondarybg)] text-[var(--accent2bg)]">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </SelectTrigger>
+              <SelectContent className="bg-[var(--primarybg)] border-[var(--secondarybg)]">
+                <SelectItem value="csv">Export CSV</SelectItem>
+                <SelectItem value="json">Export JSON</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               onClick={() => {
                 resetForm()
@@ -377,6 +358,29 @@ export default function TasksPage() {
                   <SelectItem value="today">Due Today ({filterCounts.today})</SelectItem>
                 </SelectContent>
               </Select>
+
+              {tags.length > 0 && (
+                <Select value={filterTagId} onValueChange={setFilterTagId}>
+                  <SelectTrigger className="w-full sm:w-40 border-[var(--secondarybg)] bg-[var(--secondarybg)]">
+                    <Tag className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="All Tags" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[var(--primarybg)] border-[var(--secondarybg)]">
+                    <SelectItem value="">All Tags</SelectItem>
+                    {tags.map((tag: TagWithCount) => (
+                      <SelectItem key={tag.id} value={tag.id}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: tag.color || "var(--accent1bg)" }}
+                          />
+                          {tag.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Add Form */}
@@ -642,6 +646,28 @@ export default function TasksPage() {
                               >
                                 {todo.description}
                               </p>
+                            )}
+
+                            {/* Tags */}
+                            {(todo as TodoWithRelations).tags?.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {(todo as TodoWithRelations).tags.map((tag) => (
+                                  <span
+                                    key={tag.id}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                                    style={{
+                                      backgroundColor: `${tag.color || "var(--accent1bg)"}20`,
+                                      color: tag.color || "var(--accent1bg)",
+                                    }}
+                                  >
+                                    <div
+                                      className="w-1.5 h-1.5 rounded-full"
+                                      style={{ backgroundColor: tag.color || "var(--accent1bg)" }}
+                                    />
+                                    {tag.name}
+                                  </span>
+                                ))}
+                              </div>
                             )}
 
                             {/* Metadata */}

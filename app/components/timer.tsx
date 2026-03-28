@@ -1,22 +1,30 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
-import { Play, Pause, RotateCcw } from "lucide-react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import { Play, Pause, RotateCcw, Maximize2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Button } from "@/app/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { useTodos } from "@/hooks/useTodos"
+import { useTodos, useSaveTimerSession } from "@/hooks/useTodos"
+import { notifyTimerComplete } from "@/hooks/use-notifications"
 
 type TimerMode = "work" | "shortBreak" | "longBreak"
 
-export default function PomodoroTimer() {
+interface PomodoroTimerProps {
+  onFocusMode?: (todoId: string) => void
+}
+
+export default function PomodoroTimer({ onFocusMode }: PomodoroTimerProps) {
   const { data: todos = [] } = useTodos()
+  const saveTimerSession = useSaveTimerSession()
+
   const [selectedTodoId, setSelectedTodoId] = useState<string>("")
   const [mode, setMode] = useState<TimerMode>("work")
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isRunning, setIsRunning] = useState(false)
   const [sessions, setSessions] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const sessionStartRef = useRef<Date | null>(null)
 
   // ✅ Memoized durations object
   const durations = useMemo(() => ({
@@ -26,6 +34,24 @@ export default function PomodoroTimer() {
   }), [])
 
   const activeTodos = todos.filter((todo) => !todo.isCompleted)
+
+  const handleSessionComplete = useCallback(async (completedMode: TimerMode) => {
+    notifyTimerComplete(completedMode)
+    if (completedMode === "work" && selectedTodoId && sessionStartRef.current) {
+      const endedAt = new Date()
+      try {
+        await saveTimerSession.mutateAsync({
+          todoId: selectedTodoId,
+          startedAt: sessionStartRef.current.toISOString(),
+          endedAt: endedAt.toISOString(),
+          duration: durations.work,
+        })
+      } catch {
+        // silently fail
+      }
+      sessionStartRef.current = null
+    }
+  }, [selectedTodoId, saveTimerSession, durations.work])
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -41,10 +67,12 @@ export default function PomodoroTimer() {
         setIsRunning(false)
         if (mode === "work") {
           setSessions((prev) => prev + 1)
+          handleSessionComplete("work")
           const nextMode = sessions > 0 && (sessions + 1) % 4 === 0 ? "longBreak" : "shortBreak"
           setMode(nextMode)
           setTimeLeft(durations[nextMode])
         } else {
+          handleSessionComplete(mode)
           setMode("work")
           setTimeLeft(durations.work)
         }
@@ -56,7 +84,7 @@ export default function PomodoroTimer() {
         clearInterval(intervalRef.current)
       }
     }
-  }, [isRunning, timeLeft, mode, sessions, durations])
+  }, [isRunning, timeLeft, mode, sessions, durations, handleSessionComplete])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -64,16 +92,23 @@ export default function PomodoroTimer() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  const handleStart = () => setIsRunning(true)
+  const handleStart = () => {
+    if (!sessionStartRef.current && mode === "work") {
+      sessionStartRef.current = new Date()
+    }
+    setIsRunning(true)
+  }
   const handlePause = () => setIsRunning(false)
   const handleReset = () => {
     setIsRunning(false)
     setTimeLeft(durations[mode])
+    sessionStartRef.current = null
   }
   const handleModeChange = (newMode: TimerMode) => {
     setMode(newMode)
     setTimeLeft(durations[newMode])
     setIsRunning(false)
+    sessionStartRef.current = null
   }
 
   const progress = ((durations[mode] - timeLeft) / durations[mode]) * 100
@@ -168,6 +203,16 @@ export default function PomodoroTimer() {
             >
               <RotateCcw className="w-4 h-4" />
             </Button>
+            {onFocusMode && selectedTodoId && (
+              <Button
+                variant="outline"
+                onClick={() => onFocusMode(selectedTodoId)}
+                className="border-[var(--accent1bg)] text-[var(--accent1bg)] bg-transparent hover:bg-[var(--accent1bg)]/10"
+                title="Enter Focus Mode"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
 
