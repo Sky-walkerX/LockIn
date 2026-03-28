@@ -20,6 +20,13 @@ enum SuggestionType {
   RESCHEDULE
 }
 
+enum Recurrence {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 model User {
   id             String   @id @default(uuid())
   email          String   @unique
@@ -30,6 +37,7 @@ model User {
 
   todos          Todo[]
   suggestions    Suggestion[]
+  tags           Tag[]
   xp             Int      @default(0)
   level          Int      @default(1)
   streak         Int      @default(0)
@@ -51,8 +59,33 @@ model Todo {
   timeSpent     Int?       // Total actual time spent in minutes (updated on timer stop)
   timerSessions TimerSession[] // Log of timer sessions
 
+  sortOrder     Int?       // Manual or AI-generated sort order
+  recurrence    Recurrence @default(NONE)
+  recurrenceEndDate DateTime?
+
+  // Subtask (self-relation)
+  parentId      String?
+  parent        Todo?      @relation("SubTasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subTasks      Todo[]     @relation("SubTasks")
+
+  // Tags (many-to-many)
+  tags          Tag[]
+
   user          User       @relation(fields: [userId], references: [id])
   userId        String
+}
+
+model Tag {
+  id     String @id @default(uuid())
+  name   String
+  color  String @default("#6366f1") // default indigo
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  todos  Todo[]
+
+  @@unique([name, userId])
 }
 
 
@@ -74,6 +107,6 @@ model TimerSession {
   endedAt   DateTime?
   duration  Int?     // in minutes
 
-  todo      Todo     @relation(fields: [todoId], references: [id])
+  todo      Todo     @relation(fields: [todoId], references: [id], onDelete: Cascade)
   todoId    String
 }

@@ -23,9 +23,11 @@ export default withAuth(
 );
 
 export const config = {
-  // Specify which paths the middleware should run on.
-  // This example protects all paths under /dashboard and /profile.
   matcher: [
+    "/",
+    "/tasks/:path*",
+    "/analytics/:path*",
+    "/calendar/:path*",
     "/profile/:path*",
     
     // Add other paths you want to protect here, e.g., "/settings", "/admin/:path*"
