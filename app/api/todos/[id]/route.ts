@@ -2,111 +2,138 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { awardTaskCompletionXP } from "@/lib/gamification";
+import { getNextDueDate, shouldCreateNextOccurrence } from "@/lib/recurrence";
 
 // Define the Zod schema for updating todo input
 const UpdateSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  dueDate: z.string().datetime().optional(),
+  dueDate: z.string().datetime().optional().nullable(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   isCompleted: z.boolean().optional(),
   estimatedTime: z.number().int().positive().optional(),
   timeSpent: z.number().int().nonnegative().optional(),
+  recurrence: z.enum(["NONE", "DAILY", "WEEKLY", "MONTHLY"]).optional(),
+  recurrenceEndDate: z.string().datetime().optional().nullable(),
+  tagIds: z.array(z.string()).optional(),
 });
 
 // PUT /api/todos/:id - Update a specific todo for the authenticated user
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // Log the start of the PUT handler
-  console.log("\n--- [PUT /api/todos/:id] Handler Triggered ---");
-
   try {
-
-    // Get the JWT token from the request, explicitly providing the secret
-    const token = await getToken({
-      req: req,
-      secret: process.env.AUTH_SECRET,
-    });
-
-    console.log("Token object returned by getToken:", token);
-
-    // Check if the token exists and has a 'sub' (subject/user ID)
+    const token = await getToken({ req, secret: process.env.AUTH_SECRET });
     if (!token?.sub) {
-      console.error("Validation failed: Token is null or missing `sub`. Responding with 401.");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log(`Validation successful. User ID from token: ${token.sub}`);
-
-    // Parse the request body using the Zod schema
     const body = await req.json();
-    const resolvedParams = await params; // Resolve the promise to get the actual params
+    const resolvedParams = await params;
     const parsed = UpdateSchema.safeParse(body);
 
     if (!parsed.success) {
-      console.error("Invalid data for todo update:", parsed.error.flatten());
-      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+      return NextResponse.json({ error: "Invalid data", details: parsed.error.flatten() }, { status: 400 });
     }
 
     const todoId = resolvedParams.id;
+    const { tagIds, ...updateData } = parsed.data;
 
-    // Update the todo in the database, ensuring it belongs to the authenticated user
-    const todo = await prisma.todo.updateMany({
-      where: {
-        id: todoId,
-        userId: token.sub, // Ensure the todo belongs to the authenticated user
-      },
-      data: {
-        ...parsed.data,
-        // Set completedAt if isCompleted is true, otherwise null
-        completedAt: parsed.data.isCompleted ? new Date() : null,
-      },
+    // Fetch existing todo to check ownership and get current data
+    const existingTodo = await prisma.todo.findFirst({
+      where: { id: todoId, userId: token.sub },
+      include: { tags: true },
     });
 
-    console.log("Todo update result:", todo);
-    // Return the updated todo (or a success message)
+    if (!existingTodo) {
+      return NextResponse.json({ error: "Todo not found" }, { status: 404 });
+    }
+
+    // Build update payload
+    const data: Record<string, unknown> = { ...updateData };
+
+    // Set completedAt
+    if (parsed.data.isCompleted !== undefined) {
+      data.completedAt = parsed.data.isCompleted ? new Date() : null;
+    }
+
+    // Handle tag updates
+    if (tagIds !== undefined) {
+      data.tags = {
+        set: tagIds.map((id) => ({ id })),
+      };
+    }
+
+    const todo = await prisma.todo.update({
+      where: { id: todoId },
+      data,
+      include: { tags: true, subTasks: true },
+    });
+
+    // Award XP on task completion
+    if (parsed.data.isCompleted === true && !existingTodo.isCompleted) {
+      await awardTaskCompletionXP(
+        token.sub,
+        existingTodo.priority,
+        existingTodo.isAiSuggested,
+        existingTodo.dueDate,
+      );
+
+      // Handle recurrence — create next occurrence
+      if (
+        existingTodo.recurrence !== "NONE" &&
+        existingTodo.dueDate &&
+        shouldCreateNextOccurrence(existingTodo.recurrence, existingTodo.recurrenceEndDate, existingTodo.dueDate)
+      ) {
+        const nextDueDate = getNextDueDate(existingTodo.recurrence, existingTodo.dueDate);
+        if (nextDueDate) {
+          await prisma.todo.create({
+            data: {
+              title: existingTodo.title,
+              description: existingTodo.description,
+              priority: existingTodo.priority,
+              dueDate: nextDueDate,
+              estimatedTime: existingTodo.estimatedTime,
+              recurrence: existingTodo.recurrence,
+              recurrenceEndDate: existingTodo.recurrenceEndDate,
+              userId: token.sub,
+              isAiSuggested: existingTodo.isAiSuggested,
+              tags: existingTodo.tags.length > 0
+                ? { connect: existingTodo.tags.map((t) => ({ id: t.id })) }
+                : undefined,
+            },
+          });
+        }
+      }
+    }
+
     return NextResponse.json(todo);
   } catch (error) {
-    console.error("An unexpected error occurred in PUT /api/todos/:id:", error);
+    console.error("Error in PUT /api/todos/:id:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
 // DELETE /api/todos/:id - Delete a specific todo for the authenticated user
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // Log the start of the DELETE handler
-  console.log("\n--- [DELETE /api/todos/:id] Handler Triggered ---");
-
   try {
-    const resolvedParams = await params; // Resolve the promise to get the actual params
+    const resolvedParams = await params;
+    const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
-    // Get the JWT token from the request, explicitly providing the secret
-    const token = await getToken({
-      req: req,
-      secret: process.env.AUTH_SECRET,
-    });
-
-    console.log("Token object returned by getToken:", token);
-
-    // Check if the token exists and has a 'sub' (subject/user ID)
     if (!token?.sub) {
-      console.error("Validation failed: Token is null or missing `sub`. Responding with 401.");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log(`Validation successful. User ID from token: ${token.sub}`);
-
-    // Extract the todo ID from the URL parameters
     const todoId = resolvedParams.id;
     const deleted = await prisma.todo.deleteMany({
       where: {
         id: todoId,
-        userId: token.sub, // Ensure the todo belongs to the authenticated user
+        userId: token.sub,
       },
     });
 
     return NextResponse.json({ success: true, deleted });
   } catch (error) {
-    console.error("An unexpected error occurred in DELETE /api/todos/:id:", error);
+    console.error("Error in DELETE /api/todos/:id:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
