@@ -44,16 +44,18 @@ export function useSmartPlan() {
 
     setIsLoading(true)
     try {
-      // Here you could implement actual task reordering in the database
-      // For now, we'll just clear the plan to simulate applying it
-      console.log("Applying smart plan:", plan.plan)
-
-      // In a real implementation, you might:
-      // 1. Update task order in database
-      // 2. Refresh the tasks list
-      // 3. Show success message
+      const response = await fetch("/api/todos/reorder", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderedIds: plan.plan }),
+      })
+      if (!response.ok) {
+        throw new Error("Failed to apply smart plan")
+      }
+      setPlan(null)
     } catch (err) {
-      setError("Failed to apply smart plan")
+      setError(err instanceof Error ? err.message : "Failed to apply smart plan")
     } finally {
       setIsLoading(false)
     }

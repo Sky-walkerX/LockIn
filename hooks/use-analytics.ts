@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { useTodos } from "./useTodos"
-import { subDays, format, isToday, startOfWeek, addDays } from "date-fns" // Import startOfWeek and addDays
+import { useTodos, useTimerSessions } from "./useTodos"
+import { subDays, format, isToday, startOfWeek, addDays } from "date-fns"
 
 export interface UserStats {
   totalXP: number
@@ -18,9 +18,10 @@ export interface UserStats {
 
 export function useAnalytics() {
   const { data: todos = [] } = useTodos()
+  const { data: timerSessions = [] } = useTimerSessions()
 
   return useQuery({
-    queryKey: ["analytics", todos],
+    queryKey: ["analytics", todos, timerSessions],
     queryFn: (): UserStats => {
       const completedTodos = todos.filter((todo) => todo.isCompleted && todo.completedAt)
 
@@ -55,8 +56,7 @@ export function useAnalytics() {
         }
       })
 
-      // Mock Pomodoro sessions (you can replace with real data)
-      const pomodoroSessions = Math.floor(completedTodos.length * 0.7) // Assume 70% of tasks had pomodoro
+      const pomodoroSessions = timerSessions.length
       totalXP += pomodoroSessions * 10
 
       // Calculate level
