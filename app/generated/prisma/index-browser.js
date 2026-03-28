@@ -145,6 +145,17 @@ exports.Prisma.TodoScalarFieldEnum = {
   isAiSuggested: 'isAiSuggested',
   estimatedTime: 'estimatedTime',
   timeSpent: 'timeSpent',
+  sortOrder: 'sortOrder',
+  recurrence: 'recurrence',
+  recurrenceEndDate: 'recurrenceEndDate',
+  parentId: 'parentId',
+  userId: 'userId'
+};
+
+exports.Prisma.TagScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  color: 'color',
   userId: 'userId'
 };
 
@@ -186,6 +197,13 @@ exports.Priority = exports.$Enums.Priority = {
   HIGH: 'HIGH'
 };
 
+exports.Recurrence = exports.$Enums.Recurrence = {
+  NONE: 'NONE',
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
 exports.SuggestionType = exports.$Enums.SuggestionType = {
   ADD: 'ADD',
   SKIP: 'SKIP',
@@ -195,6 +213,7 @@ exports.SuggestionType = exports.$Enums.SuggestionType = {
 exports.Prisma.ModelName = {
   User: 'User',
   Todo: 'Todo',
+  Tag: 'Tag',
   Suggestion: 'Suggestion',
   TimerSession: 'TimerSession'
 };

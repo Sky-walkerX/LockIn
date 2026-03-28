@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Todo = $Result.DefaultSelection<Prisma.$TodoPayload>
 /**
+ * Model Tag
+ * 
+ */
+export type Tag = $Result.DefaultSelection<Prisma.$TagPayload>
+/**
  * Model Suggestion
  * 
  */
@@ -55,6 +60,16 @@ export const SuggestionType: {
 
 export type SuggestionType = (typeof SuggestionType)[keyof typeof SuggestionType]
 
+
+export const Recurrence: {
+  NONE: 'NONE',
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
+export type Recurrence = (typeof Recurrence)[keyof typeof Recurrence]
+
 }
 
 export type Priority = $Enums.Priority
@@ -64,6 +79,10 @@ export const Priority: typeof $Enums.Priority
 export type SuggestionType = $Enums.SuggestionType
 
 export const SuggestionType: typeof $Enums.SuggestionType
+
+export type Recurrence = $Enums.Recurrence
+
+export const Recurrence: typeof $Enums.Recurrence
 
 /**
  * ##  Prisma Client ʲˢ
@@ -209,6 +228,16 @@ export class PrismaClient<
     * ```
     */
   get todo(): Prisma.TodoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.tag`: Exposes CRUD operations for the **Tag** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Tags
+    * const tags = await prisma.tag.findMany()
+    * ```
+    */
+  get tag(): Prisma.TagDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.suggestion`: Exposes CRUD operations for the **Suggestion** model.
@@ -671,6 +700,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Todo: 'Todo',
+    Tag: 'Tag',
     Suggestion: 'Suggestion',
     TimerSession: 'TimerSession'
   };
@@ -691,7 +721,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "todo" | "suggestion" | "timerSession"
+      modelProps: "user" | "todo" | "tag" | "suggestion" | "timerSession"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -840,6 +870,80 @@ export namespace Prisma {
           count: {
             args: Prisma.TodoCountArgs<ExtArgs>
             result: $Utils.Optional<TodoCountAggregateOutputType> | number
+          }
+        }
+      }
+      Tag: {
+        payload: Prisma.$TagPayload<ExtArgs>
+        fields: Prisma.TagFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TagFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TagFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>
+          }
+          findFirst: {
+            args: Prisma.TagFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TagFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>
+          }
+          findMany: {
+            args: Prisma.TagFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>[]
+          }
+          create: {
+            args: Prisma.TagCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>
+          }
+          createMany: {
+            args: Prisma.TagCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TagCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>[]
+          }
+          delete: {
+            args: Prisma.TagDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>
+          }
+          update: {
+            args: Prisma.TagUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>
+          }
+          deleteMany: {
+            args: Prisma.TagDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TagUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TagUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>[]
+          }
+          upsert: {
+            args: Prisma.TagUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TagPayload>
+          }
+          aggregate: {
+            args: Prisma.TagAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTag>
+          }
+          groupBy: {
+            args: Prisma.TagGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TagGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TagCountArgs<ExtArgs>
+            result: $Utils.Optional<TagCountAggregateOutputType> | number
           }
         }
       }
@@ -1077,6 +1181,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     user?: UserOmit
     todo?: TodoOmit
+    tag?: TagOmit
     suggestion?: SuggestionOmit
     timerSession?: TimerSessionOmit
   }
@@ -1175,11 +1280,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     todos: number
     suggestions: number
+    tags: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     todos?: boolean | UserCountOutputTypeCountTodosArgs
     suggestions?: boolean | UserCountOutputTypeCountSuggestionsArgs
+    tags?: boolean | UserCountOutputTypeCountTagsArgs
   }
 
   // Custom InputTypes
@@ -1207,6 +1314,13 @@ export namespace Prisma {
     where?: SuggestionWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TagWhereInput
+  }
+
 
   /**
    * Count Type TodoCountOutputType
@@ -1214,10 +1328,14 @@ export namespace Prisma {
 
   export type TodoCountOutputType = {
     timerSessions: number
+    subTasks: number
+    tags: number
   }
 
   export type TodoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     timerSessions?: boolean | TodoCountOutputTypeCountTimerSessionsArgs
+    subTasks?: boolean | TodoCountOutputTypeCountSubTasksArgs
+    tags?: boolean | TodoCountOutputTypeCountTagsArgs
   }
 
   // Custom InputTypes
@@ -1236,6 +1354,51 @@ export namespace Prisma {
    */
   export type TodoCountOutputTypeCountTimerSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TimerSessionWhereInput
+  }
+
+  /**
+   * TodoCountOutputType without action
+   */
+  export type TodoCountOutputTypeCountSubTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TodoWhereInput
+  }
+
+  /**
+   * TodoCountOutputType without action
+   */
+  export type TodoCountOutputTypeCountTagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TagWhereInput
+  }
+
+
+  /**
+   * Count Type TagCountOutputType
+   */
+
+  export type TagCountOutputType = {
+    todos: number
+  }
+
+  export type TagCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    todos?: boolean | TagCountOutputTypeCountTodosArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * TagCountOutputType without action
+   */
+  export type TagCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TagCountOutputType
+     */
+    select?: TagCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TagCountOutputType without action
+   */
+  export type TagCountOutputTypeCountTodosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TodoWhereInput
   }
 
 
@@ -1491,6 +1654,7 @@ export namespace Prisma {
     lastActiveDate?: boolean
     todos?: boolean | User$todosArgs<ExtArgs>
     suggestions?: boolean | User$suggestionsArgs<ExtArgs>
+    tags?: boolean | User$tagsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1537,6 +1701,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     todos?: boolean | User$todosArgs<ExtArgs>
     suggestions?: boolean | User$suggestionsArgs<ExtArgs>
+    tags?: boolean | User$tagsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1547,6 +1712,7 @@ export namespace Prisma {
     objects: {
       todos: Prisma.$TodoPayload<ExtArgs>[]
       suggestions: Prisma.$SuggestionPayload<ExtArgs>[]
+      tags: Prisma.$TagPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1955,6 +2121,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     todos<T extends User$todosArgs<ExtArgs> = {}>(args?: Subset<T, User$todosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     suggestions<T extends User$suggestionsArgs<ExtArgs> = {}>(args?: Subset<T, User$suggestionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tags<T extends User$tagsArgs<ExtArgs> = {}>(args?: Subset<T, User$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2430,6 +2597,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.tags
+   */
+  export type User$tagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    where?: TagWhereInput
+    orderBy?: TagOrderByWithRelationInput | TagOrderByWithRelationInput[]
+    cursor?: TagWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TagScalarFieldEnum | TagScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2463,11 +2654,13 @@ export namespace Prisma {
   export type TodoAvgAggregateOutputType = {
     estimatedTime: number | null
     timeSpent: number | null
+    sortOrder: number | null
   }
 
   export type TodoSumAggregateOutputType = {
     estimatedTime: number | null
     timeSpent: number | null
+    sortOrder: number | null
   }
 
   export type TodoMinAggregateOutputType = {
@@ -2482,6 +2675,10 @@ export namespace Prisma {
     isAiSuggested: boolean | null
     estimatedTime: number | null
     timeSpent: number | null
+    sortOrder: number | null
+    recurrence: $Enums.Recurrence | null
+    recurrenceEndDate: Date | null
+    parentId: string | null
     userId: string | null
   }
 
@@ -2497,6 +2694,10 @@ export namespace Prisma {
     isAiSuggested: boolean | null
     estimatedTime: number | null
     timeSpent: number | null
+    sortOrder: number | null
+    recurrence: $Enums.Recurrence | null
+    recurrenceEndDate: Date | null
+    parentId: string | null
     userId: string | null
   }
 
@@ -2512,6 +2713,10 @@ export namespace Prisma {
     isAiSuggested: number
     estimatedTime: number
     timeSpent: number
+    sortOrder: number
+    recurrence: number
+    recurrenceEndDate: number
+    parentId: number
     userId: number
     _all: number
   }
@@ -2520,11 +2725,13 @@ export namespace Prisma {
   export type TodoAvgAggregateInputType = {
     estimatedTime?: true
     timeSpent?: true
+    sortOrder?: true
   }
 
   export type TodoSumAggregateInputType = {
     estimatedTime?: true
     timeSpent?: true
+    sortOrder?: true
   }
 
   export type TodoMinAggregateInputType = {
@@ -2539,6 +2746,10 @@ export namespace Prisma {
     isAiSuggested?: true
     estimatedTime?: true
     timeSpent?: true
+    sortOrder?: true
+    recurrence?: true
+    recurrenceEndDate?: true
+    parentId?: true
     userId?: true
   }
 
@@ -2554,6 +2765,10 @@ export namespace Prisma {
     isAiSuggested?: true
     estimatedTime?: true
     timeSpent?: true
+    sortOrder?: true
+    recurrence?: true
+    recurrenceEndDate?: true
+    parentId?: true
     userId?: true
   }
 
@@ -2569,6 +2784,10 @@ export namespace Prisma {
     isAiSuggested?: true
     estimatedTime?: true
     timeSpent?: true
+    sortOrder?: true
+    recurrence?: true
+    recurrenceEndDate?: true
+    parentId?: true
     userId?: true
     _all?: true
   }
@@ -2671,6 +2890,10 @@ export namespace Prisma {
     isAiSuggested: boolean
     estimatedTime: number | null
     timeSpent: number | null
+    sortOrder: number | null
+    recurrence: $Enums.Recurrence
+    recurrenceEndDate: Date | null
+    parentId: string | null
     userId: string
     _count: TodoCountAggregateOutputType | null
     _avg: TodoAvgAggregateOutputType | null
@@ -2705,8 +2928,15 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    sortOrder?: boolean
+    recurrence?: boolean
+    recurrenceEndDate?: boolean
+    parentId?: boolean
     userId?: boolean
     timerSessions?: boolean | Todo$timerSessionsArgs<ExtArgs>
+    parent?: boolean | Todo$parentArgs<ExtArgs>
+    subTasks?: boolean | Todo$subTasksArgs<ExtArgs>
+    tags?: boolean | Todo$tagsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | TodoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["todo"]>
@@ -2723,7 +2953,12 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    sortOrder?: boolean
+    recurrence?: boolean
+    recurrenceEndDate?: boolean
+    parentId?: boolean
     userId?: boolean
+    parent?: boolean | Todo$parentArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["todo"]>
 
@@ -2739,7 +2974,12 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    sortOrder?: boolean
+    recurrence?: boolean
+    recurrenceEndDate?: boolean
+    parentId?: boolean
     userId?: boolean
+    parent?: boolean | Todo$parentArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["todo"]>
 
@@ -2755,19 +2995,28 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    sortOrder?: boolean
+    recurrence?: boolean
+    recurrenceEndDate?: boolean
+    parentId?: boolean
     userId?: boolean
   }
 
-  export type TodoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "isCompleted" | "createdAt" | "dueDate" | "completedAt" | "priority" | "isAiSuggested" | "estimatedTime" | "timeSpent" | "userId", ExtArgs["result"]["todo"]>
+  export type TodoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "isCompleted" | "createdAt" | "dueDate" | "completedAt" | "priority" | "isAiSuggested" | "estimatedTime" | "timeSpent" | "sortOrder" | "recurrence" | "recurrenceEndDate" | "parentId" | "userId", ExtArgs["result"]["todo"]>
   export type TodoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     timerSessions?: boolean | Todo$timerSessionsArgs<ExtArgs>
+    parent?: boolean | Todo$parentArgs<ExtArgs>
+    subTasks?: boolean | Todo$subTasksArgs<ExtArgs>
+    tags?: boolean | Todo$tagsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | TodoCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TodoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | Todo$parentArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type TodoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | Todo$parentArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
@@ -2775,6 +3024,9 @@ export namespace Prisma {
     name: "Todo"
     objects: {
       timerSessions: Prisma.$TimerSessionPayload<ExtArgs>[]
+      parent: Prisma.$TodoPayload<ExtArgs> | null
+      subTasks: Prisma.$TodoPayload<ExtArgs>[]
+      tags: Prisma.$TagPayload<ExtArgs>[]
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -2789,6 +3041,10 @@ export namespace Prisma {
       isAiSuggested: boolean
       estimatedTime: number | null
       timeSpent: number | null
+      sortOrder: number | null
+      recurrence: $Enums.Recurrence
+      recurrenceEndDate: Date | null
+      parentId: string | null
       userId: string
     }, ExtArgs["result"]["todo"]>
     composites: {}
@@ -3185,6 +3441,9 @@ export namespace Prisma {
   export interface Prisma__TodoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     timerSessions<T extends Todo$timerSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Todo$timerSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimerSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    parent<T extends Todo$parentArgs<ExtArgs> = {}>(args?: Subset<T, Todo$parentArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    subTasks<T extends Todo$subTasksArgs<ExtArgs> = {}>(args?: Subset<T, Todo$subTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tags<T extends Todo$tagsArgs<ExtArgs> = {}>(args?: Subset<T, Todo$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3226,6 +3485,10 @@ export namespace Prisma {
     readonly isAiSuggested: FieldRef<"Todo", 'Boolean'>
     readonly estimatedTime: FieldRef<"Todo", 'Int'>
     readonly timeSpent: FieldRef<"Todo", 'Int'>
+    readonly sortOrder: FieldRef<"Todo", 'Int'>
+    readonly recurrence: FieldRef<"Todo", 'Recurrence'>
+    readonly recurrenceEndDate: FieldRef<"Todo", 'DateTime'>
+    readonly parentId: FieldRef<"Todo", 'String'>
     readonly userId: FieldRef<"Todo", 'String'>
   }
     
@@ -3647,6 +3910,73 @@ export namespace Prisma {
   }
 
   /**
+   * Todo.parent
+   */
+  export type Todo$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Todo
+     */
+    select?: TodoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Todo
+     */
+    omit?: TodoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TodoInclude<ExtArgs> | null
+    where?: TodoWhereInput
+  }
+
+  /**
+   * Todo.subTasks
+   */
+  export type Todo$subTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Todo
+     */
+    select?: TodoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Todo
+     */
+    omit?: TodoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TodoInclude<ExtArgs> | null
+    where?: TodoWhereInput
+    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    cursor?: TodoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
+  }
+
+  /**
+   * Todo.tags
+   */
+  export type Todo$tagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    where?: TagWhereInput
+    orderBy?: TagOrderByWithRelationInput | TagOrderByWithRelationInput[]
+    cursor?: TagWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TagScalarFieldEnum | TagScalarFieldEnum[]
+  }
+
+  /**
    * Todo without action
    */
   export type TodoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3662,6 +3992,1081 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: TodoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Tag
+   */
+
+  export type AggregateTag = {
+    _count: TagCountAggregateOutputType | null
+    _min: TagMinAggregateOutputType | null
+    _max: TagMaxAggregateOutputType | null
+  }
+
+  export type TagMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    color: string | null
+    userId: string | null
+  }
+
+  export type TagMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    color: string | null
+    userId: string | null
+  }
+
+  export type TagCountAggregateOutputType = {
+    id: number
+    name: number
+    color: number
+    userId: number
+    _all: number
+  }
+
+
+  export type TagMinAggregateInputType = {
+    id?: true
+    name?: true
+    color?: true
+    userId?: true
+  }
+
+  export type TagMaxAggregateInputType = {
+    id?: true
+    name?: true
+    color?: true
+    userId?: true
+  }
+
+  export type TagCountAggregateInputType = {
+    id?: true
+    name?: true
+    color?: true
+    userId?: true
+    _all?: true
+  }
+
+  export type TagAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Tag to aggregate.
+     */
+    where?: TagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tags to fetch.
+     */
+    orderBy?: TagOrderByWithRelationInput | TagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Tags
+    **/
+    _count?: true | TagCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TagMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TagMaxAggregateInputType
+  }
+
+  export type GetTagAggregateType<T extends TagAggregateArgs> = {
+        [P in keyof T & keyof AggregateTag]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTag[P]>
+      : GetScalarType<T[P], AggregateTag[P]>
+  }
+
+
+
+
+  export type TagGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TagWhereInput
+    orderBy?: TagOrderByWithAggregationInput | TagOrderByWithAggregationInput[]
+    by: TagScalarFieldEnum[] | TagScalarFieldEnum
+    having?: TagScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TagCountAggregateInputType | true
+    _min?: TagMinAggregateInputType
+    _max?: TagMaxAggregateInputType
+  }
+
+  export type TagGroupByOutputType = {
+    id: string
+    name: string
+    color: string
+    userId: string
+    _count: TagCountAggregateOutputType | null
+    _min: TagMinAggregateOutputType | null
+    _max: TagMaxAggregateOutputType | null
+  }
+
+  type GetTagGroupByPayload<T extends TagGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TagGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TagGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TagGroupByOutputType[P]>
+            : GetScalarType<T[P], TagGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TagSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    color?: boolean
+    userId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    todos?: boolean | Tag$todosArgs<ExtArgs>
+    _count?: boolean | TagCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tag"]>
+
+  export type TagSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    color?: boolean
+    userId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tag"]>
+
+  export type TagSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    color?: boolean
+    userId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tag"]>
+
+  export type TagSelectScalar = {
+    id?: boolean
+    name?: boolean
+    color?: boolean
+    userId?: boolean
+  }
+
+  export type TagOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "color" | "userId", ExtArgs["result"]["tag"]>
+  export type TagInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    todos?: boolean | Tag$todosArgs<ExtArgs>
+    _count?: boolean | TagCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type TagIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TagIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $TagPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Tag"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      todos: Prisma.$TodoPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      color: string
+      userId: string
+    }, ExtArgs["result"]["tag"]>
+    composites: {}
+  }
+
+  type TagGetPayload<S extends boolean | null | undefined | TagDefaultArgs> = $Result.GetResult<Prisma.$TagPayload, S>
+
+  type TagCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TagFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TagCountAggregateInputType | true
+    }
+
+  export interface TagDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Tag'], meta: { name: 'Tag' } }
+    /**
+     * Find zero or one Tag that matches the filter.
+     * @param {TagFindUniqueArgs} args - Arguments to find a Tag
+     * @example
+     * // Get one Tag
+     * const tag = await prisma.tag.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TagFindUniqueArgs>(args: SelectSubset<T, TagFindUniqueArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Tag that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TagFindUniqueOrThrowArgs} args - Arguments to find a Tag
+     * @example
+     * // Get one Tag
+     * const tag = await prisma.tag.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TagFindUniqueOrThrowArgs>(args: SelectSubset<T, TagFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Tag that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagFindFirstArgs} args - Arguments to find a Tag
+     * @example
+     * // Get one Tag
+     * const tag = await prisma.tag.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TagFindFirstArgs>(args?: SelectSubset<T, TagFindFirstArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Tag that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagFindFirstOrThrowArgs} args - Arguments to find a Tag
+     * @example
+     * // Get one Tag
+     * const tag = await prisma.tag.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TagFindFirstOrThrowArgs>(args?: SelectSubset<T, TagFindFirstOrThrowArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Tags that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Tags
+     * const tags = await prisma.tag.findMany()
+     * 
+     * // Get first 10 Tags
+     * const tags = await prisma.tag.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const tagWithIdOnly = await prisma.tag.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TagFindManyArgs>(args?: SelectSubset<T, TagFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Tag.
+     * @param {TagCreateArgs} args - Arguments to create a Tag.
+     * @example
+     * // Create one Tag
+     * const Tag = await prisma.tag.create({
+     *   data: {
+     *     // ... data to create a Tag
+     *   }
+     * })
+     * 
+     */
+    create<T extends TagCreateArgs>(args: SelectSubset<T, TagCreateArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Tags.
+     * @param {TagCreateManyArgs} args - Arguments to create many Tags.
+     * @example
+     * // Create many Tags
+     * const tag = await prisma.tag.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TagCreateManyArgs>(args?: SelectSubset<T, TagCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Tags and returns the data saved in the database.
+     * @param {TagCreateManyAndReturnArgs} args - Arguments to create many Tags.
+     * @example
+     * // Create many Tags
+     * const tag = await prisma.tag.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Tags and only return the `id`
+     * const tagWithIdOnly = await prisma.tag.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TagCreateManyAndReturnArgs>(args?: SelectSubset<T, TagCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Tag.
+     * @param {TagDeleteArgs} args - Arguments to delete one Tag.
+     * @example
+     * // Delete one Tag
+     * const Tag = await prisma.tag.delete({
+     *   where: {
+     *     // ... filter to delete one Tag
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TagDeleteArgs>(args: SelectSubset<T, TagDeleteArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Tag.
+     * @param {TagUpdateArgs} args - Arguments to update one Tag.
+     * @example
+     * // Update one Tag
+     * const tag = await prisma.tag.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TagUpdateArgs>(args: SelectSubset<T, TagUpdateArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Tags.
+     * @param {TagDeleteManyArgs} args - Arguments to filter Tags to delete.
+     * @example
+     * // Delete a few Tags
+     * const { count } = await prisma.tag.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TagDeleteManyArgs>(args?: SelectSubset<T, TagDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Tags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Tags
+     * const tag = await prisma.tag.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TagUpdateManyArgs>(args: SelectSubset<T, TagUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Tags and returns the data updated in the database.
+     * @param {TagUpdateManyAndReturnArgs} args - Arguments to update many Tags.
+     * @example
+     * // Update many Tags
+     * const tag = await prisma.tag.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Tags and only return the `id`
+     * const tagWithIdOnly = await prisma.tag.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TagUpdateManyAndReturnArgs>(args: SelectSubset<T, TagUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Tag.
+     * @param {TagUpsertArgs} args - Arguments to update or create a Tag.
+     * @example
+     * // Update or create a Tag
+     * const tag = await prisma.tag.upsert({
+     *   create: {
+     *     // ... data to create a Tag
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Tag we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TagUpsertArgs>(args: SelectSubset<T, TagUpsertArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Tags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagCountArgs} args - Arguments to filter Tags to count.
+     * @example
+     * // Count the number of Tags
+     * const count = await prisma.tag.count({
+     *   where: {
+     *     // ... the filter for the Tags we want to count
+     *   }
+     * })
+    **/
+    count<T extends TagCountArgs>(
+      args?: Subset<T, TagCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TagCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Tag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TagAggregateArgs>(args: Subset<T, TagAggregateArgs>): Prisma.PrismaPromise<GetTagAggregateType<T>>
+
+    /**
+     * Group by Tag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TagGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TagGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TagGroupByArgs['orderBy'] }
+        : { orderBy?: TagGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TagGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTagGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Tag model
+   */
+  readonly fields: TagFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Tag.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TagClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    todos<T extends Tag$todosArgs<ExtArgs> = {}>(args?: Subset<T, Tag$todosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Tag model
+   */
+  interface TagFieldRefs {
+    readonly id: FieldRef<"Tag", 'String'>
+    readonly name: FieldRef<"Tag", 'String'>
+    readonly color: FieldRef<"Tag", 'String'>
+    readonly userId: FieldRef<"Tag", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Tag findUnique
+   */
+  export type TagFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * Filter, which Tag to fetch.
+     */
+    where: TagWhereUniqueInput
+  }
+
+  /**
+   * Tag findUniqueOrThrow
+   */
+  export type TagFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * Filter, which Tag to fetch.
+     */
+    where: TagWhereUniqueInput
+  }
+
+  /**
+   * Tag findFirst
+   */
+  export type TagFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * Filter, which Tag to fetch.
+     */
+    where?: TagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tags to fetch.
+     */
+    orderBy?: TagOrderByWithRelationInput | TagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Tags.
+     */
+    cursor?: TagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tags.
+     */
+    distinct?: TagScalarFieldEnum | TagScalarFieldEnum[]
+  }
+
+  /**
+   * Tag findFirstOrThrow
+   */
+  export type TagFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * Filter, which Tag to fetch.
+     */
+    where?: TagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tags to fetch.
+     */
+    orderBy?: TagOrderByWithRelationInput | TagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Tags.
+     */
+    cursor?: TagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tags.
+     */
+    distinct?: TagScalarFieldEnum | TagScalarFieldEnum[]
+  }
+
+  /**
+   * Tag findMany
+   */
+  export type TagFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * Filter, which Tags to fetch.
+     */
+    where?: TagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tags to fetch.
+     */
+    orderBy?: TagOrderByWithRelationInput | TagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Tags.
+     */
+    cursor?: TagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tags.
+     */
+    skip?: number
+    distinct?: TagScalarFieldEnum | TagScalarFieldEnum[]
+  }
+
+  /**
+   * Tag create
+   */
+  export type TagCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Tag.
+     */
+    data: XOR<TagCreateInput, TagUncheckedCreateInput>
+  }
+
+  /**
+   * Tag createMany
+   */
+  export type TagCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Tags.
+     */
+    data: TagCreateManyInput | TagCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Tag createManyAndReturn
+   */
+  export type TagCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * The data used to create many Tags.
+     */
+    data: TagCreateManyInput | TagCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Tag update
+   */
+  export type TagUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Tag.
+     */
+    data: XOR<TagUpdateInput, TagUncheckedUpdateInput>
+    /**
+     * Choose, which Tag to update.
+     */
+    where: TagWhereUniqueInput
+  }
+
+  /**
+   * Tag updateMany
+   */
+  export type TagUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Tags.
+     */
+    data: XOR<TagUpdateManyMutationInput, TagUncheckedUpdateManyInput>
+    /**
+     * Filter which Tags to update
+     */
+    where?: TagWhereInput
+    /**
+     * Limit how many Tags to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Tag updateManyAndReturn
+   */
+  export type TagUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * The data used to update Tags.
+     */
+    data: XOR<TagUpdateManyMutationInput, TagUncheckedUpdateManyInput>
+    /**
+     * Filter which Tags to update
+     */
+    where?: TagWhereInput
+    /**
+     * Limit how many Tags to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Tag upsert
+   */
+  export type TagUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Tag to update in case it exists.
+     */
+    where: TagWhereUniqueInput
+    /**
+     * In case the Tag found by the `where` argument doesn't exist, create a new Tag with this data.
+     */
+    create: XOR<TagCreateInput, TagUncheckedCreateInput>
+    /**
+     * In case the Tag was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TagUpdateInput, TagUncheckedUpdateInput>
+  }
+
+  /**
+   * Tag delete
+   */
+  export type TagDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    /**
+     * Filter which Tag to delete.
+     */
+    where: TagWhereUniqueInput
+  }
+
+  /**
+   * Tag deleteMany
+   */
+  export type TagDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Tags to delete
+     */
+    where?: TagWhereInput
+    /**
+     * Limit how many Tags to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Tag.todos
+   */
+  export type Tag$todosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Todo
+     */
+    select?: TodoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Todo
+     */
+    omit?: TodoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TodoInclude<ExtArgs> | null
+    where?: TodoWhereInput
+    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    cursor?: TodoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
+  }
+
+  /**
+   * Tag without action
+   */
+  export type TagDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
   }
 
 
@@ -5883,10 +7288,24 @@ export namespace Prisma {
     isAiSuggested: 'isAiSuggested',
     estimatedTime: 'estimatedTime',
     timeSpent: 'timeSpent',
+    sortOrder: 'sortOrder',
+    recurrence: 'recurrence',
+    recurrenceEndDate: 'recurrenceEndDate',
+    parentId: 'parentId',
     userId: 'userId'
   };
 
   export type TodoScalarFieldEnum = (typeof TodoScalarFieldEnum)[keyof typeof TodoScalarFieldEnum]
+
+
+  export const TagScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    color: 'color',
+    userId: 'userId'
+  };
+
+  export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
 
 
   export const SuggestionScalarFieldEnum: {
@@ -6006,6 +7425,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Recurrence'
+   */
+  export type EnumRecurrenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Recurrence'>
+    
+
+
+  /**
+   * Reference to a field of type 'Recurrence[]'
+   */
+  export type ListEnumRecurrenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Recurrence[]'>
+    
+
+
+  /**
    * Reference to a field of type 'SuggestionType'
    */
   export type EnumSuggestionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SuggestionType'>
@@ -6052,6 +7485,7 @@ export namespace Prisma {
     lastActiveDate?: DateTimeNullableFilter<"User"> | Date | string | null
     todos?: TodoListRelationFilter
     suggestions?: SuggestionListRelationFilter
+    tags?: TagListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -6067,6 +7501,7 @@ export namespace Prisma {
     lastActiveDate?: SortOrderInput | SortOrder
     todos?: TodoOrderByRelationAggregateInput
     suggestions?: SuggestionOrderByRelationAggregateInput
+    tags?: TagOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -6085,6 +7520,7 @@ export namespace Prisma {
     lastActiveDate?: DateTimeNullableFilter<"User"> | Date | string | null
     todos?: TodoListRelationFilter
     suggestions?: SuggestionListRelationFilter
+    tags?: TagListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -6136,8 +7572,15 @@ export namespace Prisma {
     isAiSuggested?: BoolFilter<"Todo"> | boolean
     estimatedTime?: IntNullableFilter<"Todo"> | number | null
     timeSpent?: IntNullableFilter<"Todo"> | number | null
+    sortOrder?: IntNullableFilter<"Todo"> | number | null
+    recurrence?: EnumRecurrenceFilter<"Todo"> | $Enums.Recurrence
+    recurrenceEndDate?: DateTimeNullableFilter<"Todo"> | Date | string | null
+    parentId?: StringNullableFilter<"Todo"> | string | null
     userId?: StringFilter<"Todo"> | string
     timerSessions?: TimerSessionListRelationFilter
+    parent?: XOR<TodoNullableScalarRelationFilter, TodoWhereInput> | null
+    subTasks?: TodoListRelationFilter
+    tags?: TagListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -6153,8 +7596,15 @@ export namespace Prisma {
     isAiSuggested?: SortOrder
     estimatedTime?: SortOrderInput | SortOrder
     timeSpent?: SortOrderInput | SortOrder
+    sortOrder?: SortOrderInput | SortOrder
+    recurrence?: SortOrder
+    recurrenceEndDate?: SortOrderInput | SortOrder
+    parentId?: SortOrderInput | SortOrder
     userId?: SortOrder
     timerSessions?: TimerSessionOrderByRelationAggregateInput
+    parent?: TodoOrderByWithRelationInput
+    subTasks?: TodoOrderByRelationAggregateInput
+    tags?: TagOrderByRelationAggregateInput
     user?: UserOrderByWithRelationInput
   }
 
@@ -6173,8 +7623,15 @@ export namespace Prisma {
     isAiSuggested?: BoolFilter<"Todo"> | boolean
     estimatedTime?: IntNullableFilter<"Todo"> | number | null
     timeSpent?: IntNullableFilter<"Todo"> | number | null
+    sortOrder?: IntNullableFilter<"Todo"> | number | null
+    recurrence?: EnumRecurrenceFilter<"Todo"> | $Enums.Recurrence
+    recurrenceEndDate?: DateTimeNullableFilter<"Todo"> | Date | string | null
+    parentId?: StringNullableFilter<"Todo"> | string | null
     userId?: StringFilter<"Todo"> | string
     timerSessions?: TimerSessionListRelationFilter
+    parent?: XOR<TodoNullableScalarRelationFilter, TodoWhereInput> | null
+    subTasks?: TodoListRelationFilter
+    tags?: TagListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
@@ -6190,6 +7647,10 @@ export namespace Prisma {
     isAiSuggested?: SortOrder
     estimatedTime?: SortOrderInput | SortOrder
     timeSpent?: SortOrderInput | SortOrder
+    sortOrder?: SortOrderInput | SortOrder
+    recurrence?: SortOrder
+    recurrenceEndDate?: SortOrderInput | SortOrder
+    parentId?: SortOrderInput | SortOrder
     userId?: SortOrder
     _count?: TodoCountOrderByAggregateInput
     _avg?: TodoAvgOrderByAggregateInput
@@ -6213,7 +7674,65 @@ export namespace Prisma {
     isAiSuggested?: BoolWithAggregatesFilter<"Todo"> | boolean
     estimatedTime?: IntNullableWithAggregatesFilter<"Todo"> | number | null
     timeSpent?: IntNullableWithAggregatesFilter<"Todo"> | number | null
+    sortOrder?: IntNullableWithAggregatesFilter<"Todo"> | number | null
+    recurrence?: EnumRecurrenceWithAggregatesFilter<"Todo"> | $Enums.Recurrence
+    recurrenceEndDate?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
+    parentId?: StringNullableWithAggregatesFilter<"Todo"> | string | null
     userId?: StringWithAggregatesFilter<"Todo"> | string
+  }
+
+  export type TagWhereInput = {
+    AND?: TagWhereInput | TagWhereInput[]
+    OR?: TagWhereInput[]
+    NOT?: TagWhereInput | TagWhereInput[]
+    id?: StringFilter<"Tag"> | string
+    name?: StringFilter<"Tag"> | string
+    color?: StringFilter<"Tag"> | string
+    userId?: StringFilter<"Tag"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    todos?: TodoListRelationFilter
+  }
+
+  export type TagOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    userId?: SortOrder
+    user?: UserOrderByWithRelationInput
+    todos?: TodoOrderByRelationAggregateInput
+  }
+
+  export type TagWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name_userId?: TagNameUserIdCompoundUniqueInput
+    AND?: TagWhereInput | TagWhereInput[]
+    OR?: TagWhereInput[]
+    NOT?: TagWhereInput | TagWhereInput[]
+    name?: StringFilter<"Tag"> | string
+    color?: StringFilter<"Tag"> | string
+    userId?: StringFilter<"Tag"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    todos?: TodoListRelationFilter
+  }, "id" | "name_userId">
+
+  export type TagOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    userId?: SortOrder
+    _count?: TagCountOrderByAggregateInput
+    _max?: TagMaxOrderByAggregateInput
+    _min?: TagMinOrderByAggregateInput
+  }
+
+  export type TagScalarWhereWithAggregatesInput = {
+    AND?: TagScalarWhereWithAggregatesInput | TagScalarWhereWithAggregatesInput[]
+    OR?: TagScalarWhereWithAggregatesInput[]
+    NOT?: TagScalarWhereWithAggregatesInput | TagScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Tag"> | string
+    name?: StringWithAggregatesFilter<"Tag"> | string
+    color?: StringWithAggregatesFilter<"Tag"> | string
+    userId?: StringWithAggregatesFilter<"Tag"> | string
   }
 
   export type SuggestionWhereInput = {
@@ -6351,6 +7870,7 @@ export namespace Prisma {
     lastActiveDate?: Date | string | null
     todos?: TodoCreateNestedManyWithoutUserInput
     suggestions?: SuggestionCreateNestedManyWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -6366,6 +7886,7 @@ export namespace Prisma {
     lastActiveDate?: Date | string | null
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     suggestions?: SuggestionUncheckedCreateNestedManyWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -6381,6 +7902,7 @@ export namespace Prisma {
     lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     todos?: TodoUpdateManyWithoutUserNestedInput
     suggestions?: SuggestionUpdateManyWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -6396,6 +7918,7 @@ export namespace Prisma {
     lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     suggestions?: SuggestionUncheckedUpdateManyWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -6449,7 +7972,13 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
     timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
+    parent?: TodoCreateNestedOneWithoutSubTasksInput
+    subTasks?: TodoCreateNestedManyWithoutParentInput
+    tags?: TagCreateNestedManyWithoutTodosInput
     user: UserCreateNestedOneWithoutTodosInput
   }
 
@@ -6465,8 +7994,14 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
     userId: string
     timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
+    subTasks?: TodoUncheckedCreateNestedManyWithoutParentInput
+    tags?: TagUncheckedCreateNestedManyWithoutTodosInput
   }
 
   export type TodoUpdateInput = {
@@ -6481,7 +8016,13 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
+    parent?: TodoUpdateOneWithoutSubTasksNestedInput
+    subTasks?: TodoUpdateManyWithoutParentNestedInput
+    tags?: TagUpdateManyWithoutTodosNestedInput
     user?: UserUpdateOneRequiredWithoutTodosNestedInput
   }
 
@@ -6497,8 +8038,14 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    subTasks?: TodoUncheckedUpdateManyWithoutParentNestedInput
+    tags?: TagUncheckedUpdateManyWithoutTodosNestedInput
   }
 
   export type TodoCreateManyInput = {
@@ -6513,6 +8060,10 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
     userId: string
   }
 
@@ -6528,6 +8079,9 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TodoUncheckedUpdateManyInput = {
@@ -6542,6 +8096,62 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TagCreateInput = {
+    id?: string
+    name: string
+    color?: string
+    user: UserCreateNestedOneWithoutTagsInput
+    todos?: TodoCreateNestedManyWithoutTagsInput
+  }
+
+  export type TagUncheckedCreateInput = {
+    id?: string
+    name: string
+    color?: string
+    userId: string
+    todos?: TodoUncheckedCreateNestedManyWithoutTagsInput
+  }
+
+  export type TagUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneRequiredWithoutTagsNestedInput
+    todos?: TodoUpdateManyWithoutTagsNestedInput
+  }
+
+  export type TagUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    todos?: TodoUncheckedUpdateManyWithoutTagsNestedInput
+  }
+
+  export type TagCreateManyInput = {
+    id?: string
+    name: string
+    color?: string
+    userId: string
+  }
+
+  export type TagUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TagUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -6744,6 +8354,12 @@ export namespace Prisma {
     none?: SuggestionWhereInput
   }
 
+  export type TagListRelationFilter = {
+    every?: TagWhereInput
+    some?: TagWhereInput
+    none?: TagWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -6754,6 +8370,10 @@ export namespace Prisma {
   }
 
   export type SuggestionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TagOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -6911,10 +8531,22 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type EnumRecurrenceFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel>
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurrenceFilter<$PrismaModel> | $Enums.Recurrence
+  }
+
   export type TimerSessionListRelationFilter = {
     every?: TimerSessionWhereInput
     some?: TimerSessionWhereInput
     none?: TimerSessionWhereInput
+  }
+
+  export type TodoNullableScalarRelationFilter = {
+    is?: TodoWhereInput | null
+    isNot?: TodoWhereInput | null
   }
 
   export type UserScalarRelationFilter = {
@@ -6938,12 +8570,17 @@ export namespace Prisma {
     isAiSuggested?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    sortOrder?: SortOrder
+    recurrence?: SortOrder
+    recurrenceEndDate?: SortOrder
+    parentId?: SortOrder
     userId?: SortOrder
   }
 
   export type TodoAvgOrderByAggregateInput = {
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    sortOrder?: SortOrder
   }
 
   export type TodoMaxOrderByAggregateInput = {
@@ -6958,6 +8595,10 @@ export namespace Prisma {
     isAiSuggested?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    sortOrder?: SortOrder
+    recurrence?: SortOrder
+    recurrenceEndDate?: SortOrder
+    parentId?: SortOrder
     userId?: SortOrder
   }
 
@@ -6973,12 +8614,17 @@ export namespace Prisma {
     isAiSuggested?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    sortOrder?: SortOrder
+    recurrence?: SortOrder
+    recurrenceEndDate?: SortOrder
+    parentId?: SortOrder
     userId?: SortOrder
   }
 
   export type TodoSumOrderByAggregateInput = {
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    sortOrder?: SortOrder
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -7013,6 +8659,42 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type EnumRecurrenceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel>
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurrenceWithAggregatesFilter<$PrismaModel> | $Enums.Recurrence
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRecurrenceFilter<$PrismaModel>
+    _max?: NestedEnumRecurrenceFilter<$PrismaModel>
+  }
+
+  export type TagNameUserIdCompoundUniqueInput = {
+    name: string
+    userId: string
+  }
+
+  export type TagCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type TagMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type TagMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    color?: SortOrder
+    userId?: SortOrder
   }
 
   export type EnumSuggestionTypeFilter<$PrismaModel = never> = {
@@ -7113,6 +8795,13 @@ export namespace Prisma {
     connect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
   }
 
+  export type TagCreateNestedManyWithoutUserInput = {
+    create?: XOR<TagCreateWithoutUserInput, TagUncheckedCreateWithoutUserInput> | TagCreateWithoutUserInput[] | TagUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutUserInput | TagCreateOrConnectWithoutUserInput[]
+    createMany?: TagCreateManyUserInputEnvelope
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+  }
+
   export type TodoUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput> | TodoCreateWithoutUserInput[] | TodoUncheckedCreateWithoutUserInput[]
     connectOrCreate?: TodoCreateOrConnectWithoutUserInput | TodoCreateOrConnectWithoutUserInput[]
@@ -7125,6 +8814,13 @@ export namespace Prisma {
     connectOrCreate?: SuggestionCreateOrConnectWithoutUserInput | SuggestionCreateOrConnectWithoutUserInput[]
     createMany?: SuggestionCreateManyUserInputEnvelope
     connect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
+  }
+
+  export type TagUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TagCreateWithoutUserInput, TagUncheckedCreateWithoutUserInput> | TagCreateWithoutUserInput[] | TagUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutUserInput | TagCreateOrConnectWithoutUserInput[]
+    createMany?: TagCreateManyUserInputEnvelope
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -7179,6 +8875,20 @@ export namespace Prisma {
     deleteMany?: SuggestionScalarWhereInput | SuggestionScalarWhereInput[]
   }
 
+  export type TagUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TagCreateWithoutUserInput, TagUncheckedCreateWithoutUserInput> | TagCreateWithoutUserInput[] | TagUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutUserInput | TagCreateOrConnectWithoutUserInput[]
+    upsert?: TagUpsertWithWhereUniqueWithoutUserInput | TagUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TagCreateManyUserInputEnvelope
+    set?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    disconnect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    delete?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    update?: TagUpdateWithWhereUniqueWithoutUserInput | TagUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TagUpdateManyWithWhereWithoutUserInput | TagUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TagScalarWhereInput | TagScalarWhereInput[]
+  }
+
   export type TodoUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput> | TodoCreateWithoutUserInput[] | TodoUncheckedCreateWithoutUserInput[]
     connectOrCreate?: TodoCreateOrConnectWithoutUserInput | TodoCreateOrConnectWithoutUserInput[]
@@ -7207,11 +8917,44 @@ export namespace Prisma {
     deleteMany?: SuggestionScalarWhereInput | SuggestionScalarWhereInput[]
   }
 
+  export type TagUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TagCreateWithoutUserInput, TagUncheckedCreateWithoutUserInput> | TagCreateWithoutUserInput[] | TagUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutUserInput | TagCreateOrConnectWithoutUserInput[]
+    upsert?: TagUpsertWithWhereUniqueWithoutUserInput | TagUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TagCreateManyUserInputEnvelope
+    set?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    disconnect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    delete?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    update?: TagUpdateWithWhereUniqueWithoutUserInput | TagUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TagUpdateManyWithWhereWithoutUserInput | TagUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TagScalarWhereInput | TagScalarWhereInput[]
+  }
+
   export type TimerSessionCreateNestedManyWithoutTodoInput = {
     create?: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput> | TimerSessionCreateWithoutTodoInput[] | TimerSessionUncheckedCreateWithoutTodoInput[]
     connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
     createMany?: TimerSessionCreateManyTodoInputEnvelope
     connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
+  }
+
+  export type TodoCreateNestedOneWithoutSubTasksInput = {
+    create?: XOR<TodoCreateWithoutSubTasksInput, TodoUncheckedCreateWithoutSubTasksInput>
+    connectOrCreate?: TodoCreateOrConnectWithoutSubTasksInput
+    connect?: TodoWhereUniqueInput
+  }
+
+  export type TodoCreateNestedManyWithoutParentInput = {
+    create?: XOR<TodoCreateWithoutParentInput, TodoUncheckedCreateWithoutParentInput> | TodoCreateWithoutParentInput[] | TodoUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutParentInput | TodoCreateOrConnectWithoutParentInput[]
+    createMany?: TodoCreateManyParentInputEnvelope
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  }
+
+  export type TagCreateNestedManyWithoutTodosInput = {
+    create?: XOR<TagCreateWithoutTodosInput, TagUncheckedCreateWithoutTodosInput> | TagCreateWithoutTodosInput[] | TagUncheckedCreateWithoutTodosInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutTodosInput | TagCreateOrConnectWithoutTodosInput[]
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
   }
 
   export type UserCreateNestedOneWithoutTodosInput = {
@@ -7225,6 +8968,19 @@ export namespace Prisma {
     connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
     createMany?: TimerSessionCreateManyTodoInputEnvelope
     connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
+  }
+
+  export type TodoUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<TodoCreateWithoutParentInput, TodoUncheckedCreateWithoutParentInput> | TodoCreateWithoutParentInput[] | TodoUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutParentInput | TodoCreateOrConnectWithoutParentInput[]
+    createMany?: TodoCreateManyParentInputEnvelope
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  }
+
+  export type TagUncheckedCreateNestedManyWithoutTodosInput = {
+    create?: XOR<TagCreateWithoutTodosInput, TagUncheckedCreateWithoutTodosInput> | TagCreateWithoutTodosInput[] | TagUncheckedCreateWithoutTodosInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutTodosInput | TagCreateOrConnectWithoutTodosInput[]
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -7243,6 +8999,10 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type EnumRecurrenceFieldUpdateOperationsInput = {
+    set?: $Enums.Recurrence
+  }
+
   export type TimerSessionUpdateManyWithoutTodoNestedInput = {
     create?: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput> | TimerSessionCreateWithoutTodoInput[] | TimerSessionUncheckedCreateWithoutTodoInput[]
     connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
@@ -7255,6 +9015,43 @@ export namespace Prisma {
     update?: TimerSessionUpdateWithWhereUniqueWithoutTodoInput | TimerSessionUpdateWithWhereUniqueWithoutTodoInput[]
     updateMany?: TimerSessionUpdateManyWithWhereWithoutTodoInput | TimerSessionUpdateManyWithWhereWithoutTodoInput[]
     deleteMany?: TimerSessionScalarWhereInput | TimerSessionScalarWhereInput[]
+  }
+
+  export type TodoUpdateOneWithoutSubTasksNestedInput = {
+    create?: XOR<TodoCreateWithoutSubTasksInput, TodoUncheckedCreateWithoutSubTasksInput>
+    connectOrCreate?: TodoCreateOrConnectWithoutSubTasksInput
+    upsert?: TodoUpsertWithoutSubTasksInput
+    disconnect?: TodoWhereInput | boolean
+    delete?: TodoWhereInput | boolean
+    connect?: TodoWhereUniqueInput
+    update?: XOR<XOR<TodoUpdateToOneWithWhereWithoutSubTasksInput, TodoUpdateWithoutSubTasksInput>, TodoUncheckedUpdateWithoutSubTasksInput>
+  }
+
+  export type TodoUpdateManyWithoutParentNestedInput = {
+    create?: XOR<TodoCreateWithoutParentInput, TodoUncheckedCreateWithoutParentInput> | TodoCreateWithoutParentInput[] | TodoUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutParentInput | TodoCreateOrConnectWithoutParentInput[]
+    upsert?: TodoUpsertWithWhereUniqueWithoutParentInput | TodoUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: TodoCreateManyParentInputEnvelope
+    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    update?: TodoUpdateWithWhereUniqueWithoutParentInput | TodoUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: TodoUpdateManyWithWhereWithoutParentInput | TodoUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
+  }
+
+  export type TagUpdateManyWithoutTodosNestedInput = {
+    create?: XOR<TagCreateWithoutTodosInput, TagUncheckedCreateWithoutTodosInput> | TagCreateWithoutTodosInput[] | TagUncheckedCreateWithoutTodosInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutTodosInput | TagCreateOrConnectWithoutTodosInput[]
+    upsert?: TagUpsertWithWhereUniqueWithoutTodosInput | TagUpsertWithWhereUniqueWithoutTodosInput[]
+    set?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    disconnect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    delete?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    update?: TagUpdateWithWhereUniqueWithoutTodosInput | TagUpdateWithWhereUniqueWithoutTodosInput[]
+    updateMany?: TagUpdateManyWithWhereWithoutTodosInput | TagUpdateManyWithWhereWithoutTodosInput[]
+    deleteMany?: TagScalarWhereInput | TagScalarWhereInput[]
   }
 
   export type UserUpdateOneRequiredWithoutTodosNestedInput = {
@@ -7277,6 +9074,85 @@ export namespace Prisma {
     update?: TimerSessionUpdateWithWhereUniqueWithoutTodoInput | TimerSessionUpdateWithWhereUniqueWithoutTodoInput[]
     updateMany?: TimerSessionUpdateManyWithWhereWithoutTodoInput | TimerSessionUpdateManyWithWhereWithoutTodoInput[]
     deleteMany?: TimerSessionScalarWhereInput | TimerSessionScalarWhereInput[]
+  }
+
+  export type TodoUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<TodoCreateWithoutParentInput, TodoUncheckedCreateWithoutParentInput> | TodoCreateWithoutParentInput[] | TodoUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutParentInput | TodoCreateOrConnectWithoutParentInput[]
+    upsert?: TodoUpsertWithWhereUniqueWithoutParentInput | TodoUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: TodoCreateManyParentInputEnvelope
+    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    update?: TodoUpdateWithWhereUniqueWithoutParentInput | TodoUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: TodoUpdateManyWithWhereWithoutParentInput | TodoUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
+  }
+
+  export type TagUncheckedUpdateManyWithoutTodosNestedInput = {
+    create?: XOR<TagCreateWithoutTodosInput, TagUncheckedCreateWithoutTodosInput> | TagCreateWithoutTodosInput[] | TagUncheckedCreateWithoutTodosInput[]
+    connectOrCreate?: TagCreateOrConnectWithoutTodosInput | TagCreateOrConnectWithoutTodosInput[]
+    upsert?: TagUpsertWithWhereUniqueWithoutTodosInput | TagUpsertWithWhereUniqueWithoutTodosInput[]
+    set?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    disconnect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    delete?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+    update?: TagUpdateWithWhereUniqueWithoutTodosInput | TagUpdateWithWhereUniqueWithoutTodosInput[]
+    updateMany?: TagUpdateManyWithWhereWithoutTodosInput | TagUpdateManyWithWhereWithoutTodosInput[]
+    deleteMany?: TagScalarWhereInput | TagScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutTagsInput = {
+    create?: XOR<UserCreateWithoutTagsInput, UserUncheckedCreateWithoutTagsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTagsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type TodoCreateNestedManyWithoutTagsInput = {
+    create?: XOR<TodoCreateWithoutTagsInput, TodoUncheckedCreateWithoutTagsInput> | TodoCreateWithoutTagsInput[] | TodoUncheckedCreateWithoutTagsInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutTagsInput | TodoCreateOrConnectWithoutTagsInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  }
+
+  export type TodoUncheckedCreateNestedManyWithoutTagsInput = {
+    create?: XOR<TodoCreateWithoutTagsInput, TodoUncheckedCreateWithoutTagsInput> | TodoCreateWithoutTagsInput[] | TodoUncheckedCreateWithoutTagsInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutTagsInput | TodoCreateOrConnectWithoutTagsInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutTagsNestedInput = {
+    create?: XOR<UserCreateWithoutTagsInput, UserUncheckedCreateWithoutTagsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTagsInput
+    upsert?: UserUpsertWithoutTagsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTagsInput, UserUpdateWithoutTagsInput>, UserUncheckedUpdateWithoutTagsInput>
+  }
+
+  export type TodoUpdateManyWithoutTagsNestedInput = {
+    create?: XOR<TodoCreateWithoutTagsInput, TodoUncheckedCreateWithoutTagsInput> | TodoCreateWithoutTagsInput[] | TodoUncheckedCreateWithoutTagsInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutTagsInput | TodoCreateOrConnectWithoutTagsInput[]
+    upsert?: TodoUpsertWithWhereUniqueWithoutTagsInput | TodoUpsertWithWhereUniqueWithoutTagsInput[]
+    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    update?: TodoUpdateWithWhereUniqueWithoutTagsInput | TodoUpdateWithWhereUniqueWithoutTagsInput[]
+    updateMany?: TodoUpdateManyWithWhereWithoutTagsInput | TodoUpdateManyWithWhereWithoutTagsInput[]
+    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
+  }
+
+  export type TodoUncheckedUpdateManyWithoutTagsNestedInput = {
+    create?: XOR<TodoCreateWithoutTagsInput, TodoUncheckedCreateWithoutTagsInput> | TodoCreateWithoutTagsInput[] | TodoUncheckedCreateWithoutTagsInput[]
+    connectOrCreate?: TodoCreateOrConnectWithoutTagsInput | TodoCreateOrConnectWithoutTagsInput[]
+    upsert?: TodoUpsertWithWhereUniqueWithoutTagsInput | TodoUpsertWithWhereUniqueWithoutTagsInput[]
+    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+    update?: TodoUpdateWithWhereUniqueWithoutTagsInput | TodoUpdateWithWhereUniqueWithoutTagsInput[]
+    updateMany?: TodoUpdateManyWithWhereWithoutTagsInput | TodoUpdateManyWithWhereWithoutTagsInput[]
+    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutSuggestionsInput = {
@@ -7484,6 +9360,13 @@ export namespace Prisma {
     not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
   }
 
+  export type NestedEnumRecurrenceFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel>
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurrenceFilter<$PrismaModel> | $Enums.Recurrence
+  }
+
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
@@ -7529,6 +9412,16 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumRecurrenceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel>
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurrenceWithAggregatesFilter<$PrismaModel> | $Enums.Recurrence
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRecurrenceFilter<$PrismaModel>
+    _max?: NestedEnumRecurrenceFilter<$PrismaModel>
+  }
+
   export type NestedEnumSuggestionTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.SuggestionType | EnumSuggestionTypeFieldRefInput<$PrismaModel>
     in?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
@@ -7558,7 +9451,13 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
     timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
+    parent?: TodoCreateNestedOneWithoutSubTasksInput
+    subTasks?: TodoCreateNestedManyWithoutParentInput
+    tags?: TagCreateNestedManyWithoutTodosInput
   }
 
   export type TodoUncheckedCreateWithoutUserInput = {
@@ -7573,7 +9472,13 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
     timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
+    subTasks?: TodoUncheckedCreateNestedManyWithoutParentInput
+    tags?: TagUncheckedCreateNestedManyWithoutTodosInput
   }
 
   export type TodoCreateOrConnectWithoutUserInput = {
@@ -7614,6 +9519,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TagCreateWithoutUserInput = {
+    id?: string
+    name: string
+    color?: string
+    todos?: TodoCreateNestedManyWithoutTagsInput
+  }
+
+  export type TagUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    color?: string
+    todos?: TodoUncheckedCreateNestedManyWithoutTagsInput
+  }
+
+  export type TagCreateOrConnectWithoutUserInput = {
+    where: TagWhereUniqueInput
+    create: XOR<TagCreateWithoutUserInput, TagUncheckedCreateWithoutUserInput>
+  }
+
+  export type TagCreateManyUserInputEnvelope = {
+    data: TagCreateManyUserInput | TagCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TodoUpsertWithWhereUniqueWithoutUserInput = {
     where: TodoWhereUniqueInput
     update: XOR<TodoUpdateWithoutUserInput, TodoUncheckedUpdateWithoutUserInput>
@@ -7645,6 +9574,10 @@ export namespace Prisma {
     isAiSuggested?: BoolFilter<"Todo"> | boolean
     estimatedTime?: IntNullableFilter<"Todo"> | number | null
     timeSpent?: IntNullableFilter<"Todo"> | number | null
+    sortOrder?: IntNullableFilter<"Todo"> | number | null
+    recurrence?: EnumRecurrenceFilter<"Todo"> | $Enums.Recurrence
+    recurrenceEndDate?: DateTimeNullableFilter<"Todo"> | Date | string | null
+    parentId?: StringNullableFilter<"Todo"> | string | null
     userId?: StringFilter<"Todo"> | string
   }
 
@@ -7677,6 +9610,32 @@ export namespace Prisma {
     userId?: StringFilter<"Suggestion"> | string
   }
 
+  export type TagUpsertWithWhereUniqueWithoutUserInput = {
+    where: TagWhereUniqueInput
+    update: XOR<TagUpdateWithoutUserInput, TagUncheckedUpdateWithoutUserInput>
+    create: XOR<TagCreateWithoutUserInput, TagUncheckedCreateWithoutUserInput>
+  }
+
+  export type TagUpdateWithWhereUniqueWithoutUserInput = {
+    where: TagWhereUniqueInput
+    data: XOR<TagUpdateWithoutUserInput, TagUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TagUpdateManyWithWhereWithoutUserInput = {
+    where: TagScalarWhereInput
+    data: XOR<TagUpdateManyMutationInput, TagUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type TagScalarWhereInput = {
+    AND?: TagScalarWhereInput | TagScalarWhereInput[]
+    OR?: TagScalarWhereInput[]
+    NOT?: TagScalarWhereInput | TagScalarWhereInput[]
+    id?: StringFilter<"Tag"> | string
+    name?: StringFilter<"Tag"> | string
+    color?: StringFilter<"Tag"> | string
+    userId?: StringFilter<"Tag"> | string
+  }
+
   export type TimerSessionCreateWithoutTodoInput = {
     id?: string
     startedAt: Date | string
@@ -7701,6 +9660,124 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TodoCreateWithoutSubTasksInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
+    parent?: TodoCreateNestedOneWithoutSubTasksInput
+    tags?: TagCreateNestedManyWithoutTodosInput
+    user: UserCreateNestedOneWithoutTodosInput
+  }
+
+  export type TodoUncheckedCreateWithoutSubTasksInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
+    userId: string
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
+    tags?: TagUncheckedCreateNestedManyWithoutTodosInput
+  }
+
+  export type TodoCreateOrConnectWithoutSubTasksInput = {
+    where: TodoWhereUniqueInput
+    create: XOR<TodoCreateWithoutSubTasksInput, TodoUncheckedCreateWithoutSubTasksInput>
+  }
+
+  export type TodoCreateWithoutParentInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
+    subTasks?: TodoCreateNestedManyWithoutParentInput
+    tags?: TagCreateNestedManyWithoutTodosInput
+    user: UserCreateNestedOneWithoutTodosInput
+  }
+
+  export type TodoUncheckedCreateWithoutParentInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    userId: string
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
+    subTasks?: TodoUncheckedCreateNestedManyWithoutParentInput
+    tags?: TagUncheckedCreateNestedManyWithoutTodosInput
+  }
+
+  export type TodoCreateOrConnectWithoutParentInput = {
+    where: TodoWhereUniqueInput
+    create: XOR<TodoCreateWithoutParentInput, TodoUncheckedCreateWithoutParentInput>
+  }
+
+  export type TodoCreateManyParentInputEnvelope = {
+    data: TodoCreateManyParentInput | TodoCreateManyParentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TagCreateWithoutTodosInput = {
+    id?: string
+    name: string
+    color?: string
+    user: UserCreateNestedOneWithoutTagsInput
+  }
+
+  export type TagUncheckedCreateWithoutTodosInput = {
+    id?: string
+    name: string
+    color?: string
+    userId: string
+  }
+
+  export type TagCreateOrConnectWithoutTodosInput = {
+    where: TagWhereUniqueInput
+    create: XOR<TagCreateWithoutTodosInput, TagUncheckedCreateWithoutTodosInput>
+  }
+
   export type UserCreateWithoutTodosInput = {
     id?: string
     email: string
@@ -7713,6 +9790,7 @@ export namespace Prisma {
     streak?: number
     lastActiveDate?: Date | string | null
     suggestions?: SuggestionCreateNestedManyWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTodosInput = {
@@ -7727,6 +9805,7 @@ export namespace Prisma {
     streak?: number
     lastActiveDate?: Date | string | null
     suggestions?: SuggestionUncheckedCreateNestedManyWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTodosInput = {
@@ -7761,6 +9840,91 @@ export namespace Prisma {
     todoId?: StringFilter<"TimerSession"> | string
   }
 
+  export type TodoUpsertWithoutSubTasksInput = {
+    update: XOR<TodoUpdateWithoutSubTasksInput, TodoUncheckedUpdateWithoutSubTasksInput>
+    create: XOR<TodoCreateWithoutSubTasksInput, TodoUncheckedCreateWithoutSubTasksInput>
+    where?: TodoWhereInput
+  }
+
+  export type TodoUpdateToOneWithWhereWithoutSubTasksInput = {
+    where?: TodoWhereInput
+    data: XOR<TodoUpdateWithoutSubTasksInput, TodoUncheckedUpdateWithoutSubTasksInput>
+  }
+
+  export type TodoUpdateWithoutSubTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
+    parent?: TodoUpdateOneWithoutSubTasksNestedInput
+    tags?: TagUpdateManyWithoutTodosNestedInput
+    user?: UserUpdateOneRequiredWithoutTodosNestedInput
+  }
+
+  export type TodoUncheckedUpdateWithoutSubTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    tags?: TagUncheckedUpdateManyWithoutTodosNestedInput
+  }
+
+  export type TodoUpsertWithWhereUniqueWithoutParentInput = {
+    where: TodoWhereUniqueInput
+    update: XOR<TodoUpdateWithoutParentInput, TodoUncheckedUpdateWithoutParentInput>
+    create: XOR<TodoCreateWithoutParentInput, TodoUncheckedCreateWithoutParentInput>
+  }
+
+  export type TodoUpdateWithWhereUniqueWithoutParentInput = {
+    where: TodoWhereUniqueInput
+    data: XOR<TodoUpdateWithoutParentInput, TodoUncheckedUpdateWithoutParentInput>
+  }
+
+  export type TodoUpdateManyWithWhereWithoutParentInput = {
+    where: TodoScalarWhereInput
+    data: XOR<TodoUpdateManyMutationInput, TodoUncheckedUpdateManyWithoutParentInput>
+  }
+
+  export type TagUpsertWithWhereUniqueWithoutTodosInput = {
+    where: TagWhereUniqueInput
+    update: XOR<TagUpdateWithoutTodosInput, TagUncheckedUpdateWithoutTodosInput>
+    create: XOR<TagCreateWithoutTodosInput, TagUncheckedCreateWithoutTodosInput>
+  }
+
+  export type TagUpdateWithWhereUniqueWithoutTodosInput = {
+    where: TagWhereUniqueInput
+    data: XOR<TagUpdateWithoutTodosInput, TagUncheckedUpdateWithoutTodosInput>
+  }
+
+  export type TagUpdateManyWithWhereWithoutTodosInput = {
+    where: TagScalarWhereInput
+    data: XOR<TagUpdateManyMutationInput, TagUncheckedUpdateManyWithoutTodosInput>
+  }
+
   export type UserUpsertWithoutTodosInput = {
     update: XOR<UserUpdateWithoutTodosInput, UserUncheckedUpdateWithoutTodosInput>
     create: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
@@ -7784,6 +9948,7 @@ export namespace Prisma {
     streak?: IntFieldUpdateOperationsInput | number
     lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     suggestions?: SuggestionUpdateManyWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTodosInput = {
@@ -7798,6 +9963,146 @@ export namespace Prisma {
     streak?: IntFieldUpdateOperationsInput | number
     lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     suggestions?: SuggestionUncheckedUpdateManyWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutTagsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    todos?: TodoCreateNestedManyWithoutUserInput
+    suggestions?: SuggestionCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTagsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    suggestions?: SuggestionUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTagsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTagsInput, UserUncheckedCreateWithoutTagsInput>
+  }
+
+  export type TodoCreateWithoutTagsInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
+    parent?: TodoCreateNestedOneWithoutSubTasksInput
+    subTasks?: TodoCreateNestedManyWithoutParentInput
+    user: UserCreateNestedOneWithoutTodosInput
+  }
+
+  export type TodoUncheckedCreateWithoutTagsInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
+    userId: string
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
+    subTasks?: TodoUncheckedCreateNestedManyWithoutParentInput
+  }
+
+  export type TodoCreateOrConnectWithoutTagsInput = {
+    where: TodoWhereUniqueInput
+    create: XOR<TodoCreateWithoutTagsInput, TodoUncheckedCreateWithoutTagsInput>
+  }
+
+  export type UserUpsertWithoutTagsInput = {
+    update: XOR<UserUpdateWithoutTagsInput, UserUncheckedUpdateWithoutTagsInput>
+    create: XOR<UserCreateWithoutTagsInput, UserUncheckedCreateWithoutTagsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTagsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTagsInput, UserUncheckedUpdateWithoutTagsInput>
+  }
+
+  export type UserUpdateWithoutTagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    suggestions?: SuggestionUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    suggestions?: SuggestionUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type TodoUpsertWithWhereUniqueWithoutTagsInput = {
+    where: TodoWhereUniqueInput
+    update: XOR<TodoUpdateWithoutTagsInput, TodoUncheckedUpdateWithoutTagsInput>
+    create: XOR<TodoCreateWithoutTagsInput, TodoUncheckedCreateWithoutTagsInput>
+  }
+
+  export type TodoUpdateWithWhereUniqueWithoutTagsInput = {
+    where: TodoWhereUniqueInput
+    data: XOR<TodoUpdateWithoutTagsInput, TodoUncheckedUpdateWithoutTagsInput>
+  }
+
+  export type TodoUpdateManyWithWhereWithoutTagsInput = {
+    where: TodoScalarWhereInput
+    data: XOR<TodoUpdateManyMutationInput, TodoUncheckedUpdateManyWithoutTagsInput>
   }
 
   export type UserCreateWithoutSuggestionsInput = {
@@ -7812,6 +10117,7 @@ export namespace Prisma {
     streak?: number
     lastActiveDate?: Date | string | null
     todos?: TodoCreateNestedManyWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSuggestionsInput = {
@@ -7826,6 +10132,7 @@ export namespace Prisma {
     streak?: number
     lastActiveDate?: Date | string | null
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSuggestionsInput = {
@@ -7856,6 +10163,7 @@ export namespace Prisma {
     streak?: IntFieldUpdateOperationsInput | number
     lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     todos?: TodoUpdateManyWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSuggestionsInput = {
@@ -7870,6 +10178,7 @@ export namespace Prisma {
     streak?: IntFieldUpdateOperationsInput | number
     lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TodoCreateWithoutTimerSessionsInput = {
@@ -7884,6 +10193,12 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parent?: TodoCreateNestedOneWithoutSubTasksInput
+    subTasks?: TodoCreateNestedManyWithoutParentInput
+    tags?: TagCreateNestedManyWithoutTodosInput
     user: UserCreateNestedOneWithoutTodosInput
   }
 
@@ -7899,7 +10214,13 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
     userId: string
+    subTasks?: TodoUncheckedCreateNestedManyWithoutParentInput
+    tags?: TagUncheckedCreateNestedManyWithoutTodosInput
   }
 
   export type TodoCreateOrConnectWithoutTimerSessionsInput = {
@@ -7930,6 +10251,12 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parent?: TodoUpdateOneWithoutSubTasksNestedInput
+    subTasks?: TodoUpdateManyWithoutParentNestedInput
+    tags?: TagUpdateManyWithoutTodosNestedInput
     user?: UserUpdateOneRequiredWithoutTodosNestedInput
   }
 
@@ -7945,7 +10272,13 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
+    subTasks?: TodoUncheckedUpdateManyWithoutParentNestedInput
+    tags?: TagUncheckedUpdateManyWithoutTodosNestedInput
   }
 
   export type TodoCreateManyUserInput = {
@@ -7960,6 +10293,10 @@ export namespace Prisma {
     isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    parentId?: string | null
   }
 
   export type SuggestionCreateManyUserInput = {
@@ -7969,6 +10306,12 @@ export namespace Prisma {
     createdAt?: Date | string
     forDate: Date | string
     isAccepted?: boolean
+  }
+
+  export type TagCreateManyUserInput = {
+    id?: string
+    name: string
+    color?: string
   }
 
   export type TodoUpdateWithoutUserInput = {
@@ -7983,7 +10326,13 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
+    parent?: TodoUpdateOneWithoutSubTasksNestedInput
+    subTasks?: TodoUpdateManyWithoutParentNestedInput
+    tags?: TagUpdateManyWithoutTodosNestedInput
   }
 
   export type TodoUncheckedUpdateWithoutUserInput = {
@@ -7998,7 +10347,13 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    subTasks?: TodoUncheckedUpdateManyWithoutParentNestedInput
+    tags?: TagUncheckedUpdateManyWithoutTodosNestedInput
   }
 
   export type TodoUncheckedUpdateManyWithoutUserInput = {
@@ -8013,6 +10368,10 @@ export namespace Prisma {
     isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SuggestionUpdateWithoutUserInput = {
@@ -8042,11 +10401,49 @@ export namespace Prisma {
     isAccepted?: BoolFieldUpdateOperationsInput | boolean
   }
 
+  export type TagUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    todos?: TodoUpdateManyWithoutTagsNestedInput
+  }
+
+  export type TagUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    todos?: TodoUncheckedUpdateManyWithoutTagsNestedInput
+  }
+
+  export type TagUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+  }
+
   export type TimerSessionCreateManyTodoInput = {
     id?: string
     startedAt: Date | string
     endedAt?: Date | string | null
     duration?: number | null
+  }
+
+  export type TodoCreateManyParentInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    createdAt?: Date | string
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    priority?: $Enums.Priority
+    isAiSuggested?: boolean
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    sortOrder?: number | null
+    recurrence?: $Enums.Recurrence
+    recurrenceEndDate?: Date | string | null
+    userId: string
   }
 
   export type TimerSessionUpdateWithoutTodoInput = {
@@ -8068,6 +10465,148 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type TodoUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
+    subTasks?: TodoUpdateManyWithoutParentNestedInput
+    tags?: TagUpdateManyWithoutTodosNestedInput
+    user?: UserUpdateOneRequiredWithoutTodosNestedInput
+  }
+
+  export type TodoUncheckedUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    subTasks?: TodoUncheckedUpdateManyWithoutParentNestedInput
+    tags?: TagUncheckedUpdateManyWithoutTodosNestedInput
+  }
+
+  export type TodoUncheckedUpdateManyWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TagUpdateWithoutTodosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneRequiredWithoutTagsNestedInput
+  }
+
+  export type TagUncheckedUpdateWithoutTodosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TagUncheckedUpdateManyWithoutTodosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TodoUpdateWithoutTagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
+    parent?: TodoUpdateOneWithoutSubTasksNestedInput
+    subTasks?: TodoUpdateManyWithoutParentNestedInput
+    user?: UserUpdateOneRequiredWithoutTodosNestedInput
+  }
+
+  export type TodoUncheckedUpdateWithoutTagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    subTasks?: TodoUncheckedUpdateManyWithoutParentNestedInput
+  }
+
+  export type TodoUncheckedUpdateManyWithoutTagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    sortOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: EnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence
+    recurrenceEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
 
