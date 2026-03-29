@@ -2,7 +2,8 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   Eye,
@@ -21,6 +22,8 @@ import { Checkbox } from "@/app/components/ui/checkbox";
 import Link from "next/link";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const { status } = useSession();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +34,21 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <div className="min-h-screen bg-[var(--primarybg)] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,19 +256,17 @@ export default function SignupPage() {
                     className="text-sm text-[var(--accent2bg)] leading-relaxed"
                   >
                     I agree to the{" "}
-                    <Link
-                      href="/terms"
-                      className="text-[var(--accent1bg)] hover:text-[var(--accent1bg)]/80 font-medium"
+                    <span
+                      className="text-[var(--accent1bg)] hover:text-[var(--accent1bg)]/80 font-medium cursor-pointer"
                     >
                       Terms of Service
-                    </Link>{" "}
+                    </span>{" "}
                     and{" "}
-                    <Link
-                      href="/privacy"
-                      className="text-[var(--accent1bg)] hover:text-[var(--accent1bg)]/80 font-medium"
+                    <span
+                      className="text-[var(--accent1bg)] hover:text-[var(--accent1bg)]/80 font-medium cursor-pointer"
                     >
                       Privacy Policy
-                    </Link>
+                    </span>
                   </label>
                 </div>
 
