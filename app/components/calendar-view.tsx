@@ -63,7 +63,10 @@ export default function CalendarView() {
   if (status === "loading" || isLoading) {
     return (
       <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin" />
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">{status === "loading" ? "Checking session..." : "Loading calendar..."}</p>
+        </div>
       </div>
     )
   }

@@ -11,12 +11,10 @@ import AISuggestionsPanel from "@/app/components/ai-suggestion-panel"
 import FocusMode from "@/app/components/focus-mode"
 import ShortcutGuide from "@/app/components/shortcut-guide"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
-import { useTodos } from "@/hooks/useTodos"
 
 export default function HomePage() {
   const { status } = useSession()
   const router = useRouter()
-  const { isLoading: todosLoading } = useTodos()
   const [focusModeOpen, setFocusModeOpen] = useState(false)
   const [focusTodoId, setFocusTodoId] = useState<string | undefined>()
   const [shortcutGuideOpen, setShortcutGuideOpen] = useState(false)
@@ -40,7 +38,7 @@ export default function HomePage() {
     }
   }, [status, router])
 
-  if (status === "loading" || todosLoading) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
         <div className="text-center space-y-4">

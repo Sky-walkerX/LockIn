@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
     }
   }, [status, router])
 
-  if (status === "loading" || isLoading) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -35,8 +35,16 @@ export default function AnalyticsPage() {
     )
   }
 
-  if (status === "unauthenticated" || !stats) {
+  if (status === "unauthenticated") {
     return null
+  }
+
+  if (isLoading || !stats) {
+    return (
+      <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin mx-auto" />
+      </div>
+    )
   }
 
   return (

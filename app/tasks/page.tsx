@@ -39,7 +39,7 @@ type FilterOption = "all" | "pending" | "completed" | "overdue" | "today"
 export default function TasksPage() {
   const { status } = useSession()
   const router = useRouter()
-  const { data: todos = [], isLoading: loading } = useTodos()
+  const { data: todos = [] } = useTodos()
   const { data: tags = [] } = useTags()
   const createTodo = useCreateTodo()
   const updateTodo = useUpdateTodo()
@@ -272,12 +272,12 @@ export default function TasksPage() {
     }
   }, [todos])
 
-  if (status === "loading" || loading) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">Loading tasks...</p>
+          <p className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">Loading...</p>
         </div>
       </div>
     )
