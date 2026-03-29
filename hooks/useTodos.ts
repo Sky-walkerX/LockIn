@@ -6,7 +6,7 @@ export type TodoWithRelations = Todo & {
   subTasks: (Todo & { tags: Tag[] })[];
 };
 
-export function useTodos() {
+export function useTodos(enabled = true) {
   return useQuery({
     queryKey: ["todos"],
     queryFn: async (): Promise<TodoWithRelations[]> => {
@@ -18,6 +18,7 @@ export function useTodos() {
       }
       return response.json();
     },
+    enabled,
   });
 }
 

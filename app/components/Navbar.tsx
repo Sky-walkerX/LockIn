@@ -49,7 +49,8 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme()
   const router = useRouter()
   const pathname = usePathname()
-  const { data: todos = [] } = useTodos()
+  const isAuthenticated = status === "authenticated"
+  const { data: todos = [] } = useTodos(isAuthenticated)
 
   const [mounted, setMounted] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
