@@ -25,13 +25,13 @@ export default function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: async () => {
       const result = await signIn("credentials", {
-        callbackUrl: "/",
+        redirect: false,
         email,
         password,
       });
 
       if (result?.error) {
-        throw new Error(result.error);
+        throw new Error("Invalid email or password");
       }
       if (!result?.ok) {
         throw new Error("Login failed. Please check your credentials.");
@@ -39,7 +39,6 @@ export default function LoginPage() {
       return result;
     },
     onSuccess: () => {
-      router.refresh();
       router.push("/");
     },
     onError: (err: Error) => {
