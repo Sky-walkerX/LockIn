@@ -1,146 +1,126 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { BarChart3, TrendingUp, Award } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
-import { useAnalytics } from "@/hooks/use-analytics"
-import StatsCards from "@/app/components/analytics/stats-card"
-import ActivityHeatmap from "@/app/components/analytics/heatmap"
-import XPBreakdown from "@/app/components/analytics/xp"
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { CheckCircle2, Flame, Trophy, Clock, ListTodo, CalendarCheck } from "lucide-react";
+import { useAnalytics } from "@/hooks/use-analytics";
+import { useSubjects } from "@/hooks/useSubjects";
+import { StatCard } from "./analytics/stats-card";
+import { ActivityHeatmap } from "./analytics/heatmap";
+
+const FALLBACK = "#8b8f9e";
+const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
+
+function fmtMinutes(min: number) {
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
 
 export default function AnalyticsPage() {
-  const { status } = useSession()
-  const router = useRouter()
-  const { data: stats, isLoading } = useAnalytics()
+  const { status } = useSession({ required: true });
+  const { data: stats, isLoading } = useAnalytics();
+  const { data: subjects = [] } = useSubjects();
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login")
-    }
-  }, [status, router])
-
-  if (status === "loading" || isLoading) {
+  if (status === "loading" || isLoading || !stats) {
     return (
-      <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">Loading analytics...</p>
-        </div>
-      </div>
-    )
+      <main className="mx-auto max-w-5xl px-5 py-10 md:px-8">
+        <p className="lk-mono text-sm text-muted-foreground">loading…</p>
+      </main>
+    );
   }
 
-  if (status === "unauthenticated" || !stats) {
-    return null
-  }
+  const weekMax = Math.max(...stats.weeklyProgress, 1);
+  const weekTotal = stats.weeklyProgress.reduce((a, b) => a + b, 0);
+  const todayIdx = new Date().getDay();
 
   return (
-    <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)]">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-[var(--accent1bg)] flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">
-                Analytics Dashboard
-              </h1>
-              <p className="text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)] text-lg">
-                Track your productivity and level up your game
-              </p>
-            </div>
-          </div>
-        </div>
+    <main className="mx-auto max-w-5xl px-5 py-6 md:px-8">
+      <h1 className="lk-display mb-5 text-2xl font-black tracking-tight">Progress</h1>
 
-        <div className="space-y-8">
-          {/* Stats Cards */}
-          <StatsCards stats={stats} />
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <StatCard icon={CheckCircle2} label="Completed" value={stats.totalCompleted} sub="all time" />
+        <StatCard icon={CalendarCheck} label="Today" value={stats.completedToday} sub="tasks done" />
+        <StatCard icon={Flame} label="Streak" value={`${stats.currentStreak}d`} sub="current run" />
+        <StatCard icon={Trophy} label="Best streak" value={`${stats.longestStreak}d`} sub="last 30 days" />
+        <StatCard icon={Clock} label="Focus time" value={fmtMinutes(stats.totalFocusMinutes)} sub="logged" />
+        <StatCard icon={ListTodo} label="Active" value={stats.activeTasks} sub="open tasks" />
+      </div>
 
-          {/* Activity Heatmap */}
-          <ActivityHeatmap />
-
-          {/* Weekly Progress Chart */}
-          <Card className="bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] border-[var(--secondarybg)]">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)] flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-[var(--accent1bg)]" />
-                Weekly Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-2 h-32">
-                {stats.weeklyProgress.map((count, index) => {
-                  const maxCount = Math.max(...stats.weeklyProgress)
-                  const height = maxCount > 0 ? (count / maxCount) * 100 : 0
-                  const days = ["Sun" , "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full flex items-end justify-center h-24">
-                        <div
-                          className="w-full bg-[var(--accent1bg)] rounded-t-sm transition-all duration-300 hover:opacity-80"
-                          style={{ height: `${height}%`, minHeight: count > 0 ? "8px" : "2px" }}
-                          title={`${days[index]}: ${count} tasks`}
-                        />
-                      </div>
-                      <div className="text-xs text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)]">{days[index]}</div>
-                      <div className="text-sm font-semibold text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">
-                        {count}
-                      </div>
-                    </div>
-                  )
-                })}
+      {/* This week */}
+      <div className="lk-sec mt-7 mb-3">this week · {weekTotal} completed</div>
+      <div className="lk-card p-4">
+        <div className="flex items-end justify-between gap-2" style={{ height: 120 }}>
+          {stats.weeklyProgress.map((count, i) => {
+            const h = Math.round((count / weekMax) * 100);
+            const isToday = i === todayIdx;
+            return (
+              <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1.5" style={{ height: "100%" }}>
+                <span className="lk-mono text-[10px] text-muted-foreground">{count > 0 ? count : ""}</span>
+                <div
+                  className="w-full rounded-[4px]"
+                  style={{
+                    height: `${Math.max(h, count > 0 ? 6 : 2)}%`,
+                    background: count > 0 ? "var(--accent)" : "var(--lk-bar-track)",
+                    minHeight: 3,
+                  }}
+                />
+                <span
+                  className={`lk-mono text-[10px] uppercase ${isToday ? "font-bold text-foreground" : "text-muted-foreground"}`}
+                >
+                  {WEEKDAYS[i]}
+                </span>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* XP Breakdown */}
-          <XPBreakdown />
-
-          {/* Achievement Preview */}
-          <Card className="bg-gradient-to-r from-[var(--accent1bg)]/10 to-purple-500/10 border-[var(--accent1bg)]/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)] flex items-center gap-2">
-                <Award className="w-5 h-5 text-[var(--accent1bg)]" />
-                Coming Soon: Achievements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-[var(--secondarybg)] dark:bg-[var(--secondarybgdark)] opacity-60">
-                  <div className="text-2xl mb-2">🏆</div>
-                  <h4 className="font-semibold text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">
-                    Task Master
-                  </h4>
-                  <p className="text-sm text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)]">Complete 100 tasks</p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-[var(--secondarybg)] dark:bg-[var(--secondarybgdark)] opacity-60">
-                  <div className="text-2xl mb-2">🔥</div>
-                  <h4 className="font-semibold text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">
-                    Streak Legend
-                  </h4>
-                  <p className="text-sm text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)]">30-day streak</p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-[var(--secondarybg)] dark:bg-[var(--secondarybgdark)] opacity-60">
-                  <div className="text-2xl mb-2">⚡</div>
-                  <h4 className="font-semibold text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">
-                    Speed Demon
-                  </h4>
-                  <p className="text-sm text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)]">
-                    Complete 10 tasks early
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            );
+          })}
         </div>
       </div>
-    </div>
-  )
+
+      {/* Heatmap */}
+      <div className="lk-sec mt-7 mb-3">activity</div>
+      <ActivityHeatmap />
+
+      {/* Per-subject progress */}
+      <div className="lk-sec mt-7 mb-3">subjects · {subjects.length}</div>
+      {subjects.length === 0 ? (
+        <div className="lk-card p-5 text-center">
+          <p className="text-sm text-muted-foreground">No subjects yet.</p>
+        </div>
+      ) : (
+        <div className="lk-card flex flex-col gap-3 p-4">
+          {subjects.map((s) => {
+            const pct = s.totalTasks === 0 ? 0 : Math.round((s.completedTasks / s.totalTasks) * 100);
+            return (
+              <Link
+                key={s.id}
+                href={`/subjects/${s.id}`}
+                className="lk-subject group flex items-center gap-3"
+                style={{ "--c": s.color ?? FALLBACK } as React.CSSProperties}
+              >
+                <span className="lk-swatch" />
+                <span className="lk-display w-40 truncate text-sm font-bold group-hover:underline">{s.title}</span>
+                <div className="lk-bar flex-1">
+                  <i style={{ width: `${pct}%` }} />
+                </div>
+                <span className="lk-mono w-24 text-right text-[10px] uppercase tracking-wide text-muted-foreground">
+                  {s.completedTasks}/{s.totalTasks} · {pct}%
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="lk-statusbar mt-10">
+        <span className="seg mode">LOCKIN</span>
+        <span className="seg">{stats.totalCompleted} completed</span>
+        <span className="seg">{stats.currentStreak}d streak</span>
+        <span className="seg">{fmtMinutes(stats.totalFocusMinutes)} focus</span>
+        <span className="seg grow" />
+        <span className="seg">~/lockin/progress</span>
+      </div>
+    </main>
+  );
 }

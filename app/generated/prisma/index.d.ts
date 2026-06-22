@@ -19,15 +19,25 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
- * Model Todo
+ * Model Subject
  * 
  */
-export type Todo = $Result.DefaultSelection<Prisma.$TodoPayload>
+export type Subject = $Result.DefaultSelection<Prisma.$SubjectPayload>
 /**
- * Model Suggestion
+ * Model Milestone
  * 
  */
-export type Suggestion = $Result.DefaultSelection<Prisma.$SuggestionPayload>
+export type Milestone = $Result.DefaultSelection<Prisma.$MilestonePayload>
+/**
+ * Model Task
+ * 
+ */
+export type Task = $Result.DefaultSelection<Prisma.$TaskPayload>
+/**
+ * Model Resource
+ * 
+ */
+export type Resource = $Result.DefaultSelection<Prisma.$ResourcePayload>
 /**
  * Model TimerSession
  * 
@@ -47,13 +57,14 @@ export namespace $Enums {
 export type Priority = (typeof Priority)[keyof typeof Priority]
 
 
-export const SuggestionType: {
-  ADD: 'ADD',
-  SKIP: 'SKIP',
-  RESCHEDULE: 'RESCHEDULE'
+export const ResourceType: {
+  LINK: 'LINK',
+  AI_CHAT: 'AI_CHAT',
+  PDF: 'PDF',
+  BOOK: 'BOOK'
 };
 
-export type SuggestionType = (typeof SuggestionType)[keyof typeof SuggestionType]
+export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType]
 
 }
 
@@ -61,9 +72,9 @@ export type Priority = $Enums.Priority
 
 export const Priority: typeof $Enums.Priority
 
-export type SuggestionType = $Enums.SuggestionType
+export type ResourceType = $Enums.ResourceType
 
-export const SuggestionType: typeof $Enums.SuggestionType
+export const ResourceType: typeof $Enums.ResourceType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -201,24 +212,44 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.todo`: Exposes CRUD operations for the **Todo** model.
+   * `prisma.subject`: Exposes CRUD operations for the **Subject** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Todos
-    * const todos = await prisma.todo.findMany()
+    * // Fetch zero or more Subjects
+    * const subjects = await prisma.subject.findMany()
     * ```
     */
-  get todo(): Prisma.TodoDelegate<ExtArgs, ClientOptions>;
+  get subject(): Prisma.SubjectDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.suggestion`: Exposes CRUD operations for the **Suggestion** model.
+   * `prisma.milestone`: Exposes CRUD operations for the **Milestone** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Suggestions
-    * const suggestions = await prisma.suggestion.findMany()
+    * // Fetch zero or more Milestones
+    * const milestones = await prisma.milestone.findMany()
     * ```
     */
-  get suggestion(): Prisma.SuggestionDelegate<ExtArgs, ClientOptions>;
+  get milestone(): Prisma.MilestoneDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.task`: Exposes CRUD operations for the **Task** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Tasks
+    * const tasks = await prisma.task.findMany()
+    * ```
+    */
+  get task(): Prisma.TaskDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.resource`: Exposes CRUD operations for the **Resource** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Resources
+    * const resources = await prisma.resource.findMany()
+    * ```
+    */
+  get resource(): Prisma.ResourceDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.timerSession`: Exposes CRUD operations for the **TimerSession** model.
@@ -670,8 +701,10 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
-    Todo: 'Todo',
-    Suggestion: 'Suggestion',
+    Subject: 'Subject',
+    Milestone: 'Milestone',
+    Task: 'Task',
+    Resource: 'Resource',
     TimerSession: 'TimerSession'
   };
 
@@ -691,7 +724,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "todo" | "suggestion" | "timerSession"
+      modelProps: "user" | "subject" | "milestone" | "task" | "resource" | "timerSession"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -769,151 +802,299 @@ export namespace Prisma {
           }
         }
       }
-      Todo: {
-        payload: Prisma.$TodoPayload<ExtArgs>
-        fields: Prisma.TodoFieldRefs
+      Subject: {
+        payload: Prisma.$SubjectPayload<ExtArgs>
+        fields: Prisma.SubjectFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.TodoFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload> | null
+            args: Prisma.SubjectFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.TodoFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>
+            args: Prisma.SubjectFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>
           }
           findFirst: {
-            args: Prisma.TodoFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload> | null
+            args: Prisma.SubjectFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.TodoFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>
+            args: Prisma.SubjectFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>
           }
           findMany: {
-            args: Prisma.TodoFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>[]
+            args: Prisma.SubjectFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>[]
           }
           create: {
-            args: Prisma.TodoCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>
+            args: Prisma.SubjectCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>
           }
           createMany: {
-            args: Prisma.TodoCreateManyArgs<ExtArgs>
+            args: Prisma.SubjectCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.TodoCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>[]
+            args: Prisma.SubjectCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>[]
           }
           delete: {
-            args: Prisma.TodoDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>
+            args: Prisma.SubjectDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>
           }
           update: {
-            args: Prisma.TodoUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>
+            args: Prisma.SubjectUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>
           }
           deleteMany: {
-            args: Prisma.TodoDeleteManyArgs<ExtArgs>
+            args: Prisma.SubjectDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.TodoUpdateManyArgs<ExtArgs>
+            args: Prisma.SubjectUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.TodoUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>[]
+            args: Prisma.SubjectUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>[]
           }
           upsert: {
-            args: Prisma.TodoUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TodoPayload>
+            args: Prisma.SubjectUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SubjectPayload>
           }
           aggregate: {
-            args: Prisma.TodoAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateTodo>
+            args: Prisma.SubjectAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSubject>
           }
           groupBy: {
-            args: Prisma.TodoGroupByArgs<ExtArgs>
-            result: $Utils.Optional<TodoGroupByOutputType>[]
+            args: Prisma.SubjectGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SubjectGroupByOutputType>[]
           }
           count: {
-            args: Prisma.TodoCountArgs<ExtArgs>
-            result: $Utils.Optional<TodoCountAggregateOutputType> | number
+            args: Prisma.SubjectCountArgs<ExtArgs>
+            result: $Utils.Optional<SubjectCountAggregateOutputType> | number
           }
         }
       }
-      Suggestion: {
-        payload: Prisma.$SuggestionPayload<ExtArgs>
-        fields: Prisma.SuggestionFieldRefs
+      Milestone: {
+        payload: Prisma.$MilestonePayload<ExtArgs>
+        fields: Prisma.MilestoneFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.SuggestionFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload> | null
+            args: Prisma.MilestoneFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.SuggestionFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>
+            args: Prisma.MilestoneFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>
           }
           findFirst: {
-            args: Prisma.SuggestionFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload> | null
+            args: Prisma.MilestoneFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.SuggestionFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>
+            args: Prisma.MilestoneFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>
           }
           findMany: {
-            args: Prisma.SuggestionFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>[]
+            args: Prisma.MilestoneFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>[]
           }
           create: {
-            args: Prisma.SuggestionCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>
+            args: Prisma.MilestoneCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>
           }
           createMany: {
-            args: Prisma.SuggestionCreateManyArgs<ExtArgs>
+            args: Prisma.MilestoneCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.SuggestionCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>[]
+            args: Prisma.MilestoneCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>[]
           }
           delete: {
-            args: Prisma.SuggestionDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>
+            args: Prisma.MilestoneDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>
           }
           update: {
-            args: Prisma.SuggestionUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>
+            args: Prisma.MilestoneUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>
           }
           deleteMany: {
-            args: Prisma.SuggestionDeleteManyArgs<ExtArgs>
+            args: Prisma.MilestoneDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.SuggestionUpdateManyArgs<ExtArgs>
+            args: Prisma.MilestoneUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.SuggestionUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>[]
+            args: Prisma.MilestoneUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>[]
           }
           upsert: {
-            args: Prisma.SuggestionUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SuggestionPayload>
+            args: Prisma.MilestoneUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MilestonePayload>
           }
           aggregate: {
-            args: Prisma.SuggestionAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSuggestion>
+            args: Prisma.MilestoneAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMilestone>
           }
           groupBy: {
-            args: Prisma.SuggestionGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SuggestionGroupByOutputType>[]
+            args: Prisma.MilestoneGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MilestoneGroupByOutputType>[]
           }
           count: {
-            args: Prisma.SuggestionCountArgs<ExtArgs>
-            result: $Utils.Optional<SuggestionCountAggregateOutputType> | number
+            args: Prisma.MilestoneCountArgs<ExtArgs>
+            result: $Utils.Optional<MilestoneCountAggregateOutputType> | number
+          }
+        }
+      }
+      Task: {
+        payload: Prisma.$TaskPayload<ExtArgs>
+        fields: Prisma.TaskFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TaskFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TaskFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>
+          }
+          findFirst: {
+            args: Prisma.TaskFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TaskFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>
+          }
+          findMany: {
+            args: Prisma.TaskFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>[]
+          }
+          create: {
+            args: Prisma.TaskCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>
+          }
+          createMany: {
+            args: Prisma.TaskCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TaskCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>[]
+          }
+          delete: {
+            args: Prisma.TaskDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>
+          }
+          update: {
+            args: Prisma.TaskUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>
+          }
+          deleteMany: {
+            args: Prisma.TaskDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TaskUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TaskUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>[]
+          }
+          upsert: {
+            args: Prisma.TaskUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskPayload>
+          }
+          aggregate: {
+            args: Prisma.TaskAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTask>
+          }
+          groupBy: {
+            args: Prisma.TaskGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TaskGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TaskCountArgs<ExtArgs>
+            result: $Utils.Optional<TaskCountAggregateOutputType> | number
+          }
+        }
+      }
+      Resource: {
+        payload: Prisma.$ResourcePayload<ExtArgs>
+        fields: Prisma.ResourceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ResourceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ResourceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>
+          }
+          findFirst: {
+            args: Prisma.ResourceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ResourceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>
+          }
+          findMany: {
+            args: Prisma.ResourceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>[]
+          }
+          create: {
+            args: Prisma.ResourceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>
+          }
+          createMany: {
+            args: Prisma.ResourceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ResourceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>[]
+          }
+          delete: {
+            args: Prisma.ResourceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>
+          }
+          update: {
+            args: Prisma.ResourceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>
+          }
+          deleteMany: {
+            args: Prisma.ResourceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ResourceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ResourceUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>[]
+          }
+          upsert: {
+            args: Prisma.ResourceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourcePayload>
+          }
+          aggregate: {
+            args: Prisma.ResourceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateResource>
+          }
+          groupBy: {
+            args: Prisma.ResourceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ResourceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ResourceCountArgs<ExtArgs>
+            result: $Utils.Optional<ResourceCountAggregateOutputType> | number
           }
         }
       }
@@ -1076,8 +1257,10 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit
-    todo?: TodoOmit
-    suggestion?: SuggestionOmit
+    subject?: SubjectOmit
+    milestone?: MilestoneOmit
+    task?: TaskOmit
+    resource?: ResourceOmit
     timerSession?: TimerSessionOmit
   }
 
@@ -1173,13 +1356,15 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
-    todos: number
-    suggestions: number
+    subjects: number
+    tasks: number
+    resources: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    todos?: boolean | UserCountOutputTypeCountTodosArgs
-    suggestions?: boolean | UserCountOutputTypeCountSuggestionsArgs
+    subjects?: boolean | UserCountOutputTypeCountSubjectsArgs
+    tasks?: boolean | UserCountOutputTypeCountTasksArgs
+    resources?: boolean | UserCountOutputTypeCountResourcesArgs
   }
 
   // Custom InputTypes
@@ -1196,45 +1381,132 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountTodosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TodoWhereInput
+  export type UserCountOutputTypeCountSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SubjectWhereInput
   }
 
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountSuggestionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SuggestionWhereInput
+  export type UserCountOutputTypeCountTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountResourcesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceWhereInput
   }
 
 
   /**
-   * Count Type TodoCountOutputType
+   * Count Type SubjectCountOutputType
    */
 
-  export type TodoCountOutputType = {
-    timerSessions: number
+  export type SubjectCountOutputType = {
+    milestones: number
+    resources: number
+    tasks: number
   }
 
-  export type TodoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    timerSessions?: boolean | TodoCountOutputTypeCountTimerSessionsArgs
+  export type SubjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    milestones?: boolean | SubjectCountOutputTypeCountMilestonesArgs
+    resources?: boolean | SubjectCountOutputTypeCountResourcesArgs
+    tasks?: boolean | SubjectCountOutputTypeCountTasksArgs
   }
 
   // Custom InputTypes
   /**
-   * TodoCountOutputType without action
+   * SubjectCountOutputType without action
    */
-  export type TodoCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TodoCountOutputType
+     * Select specific fields to fetch from the SubjectCountOutputType
      */
-    select?: TodoCountOutputTypeSelect<ExtArgs> | null
+    select?: SubjectCountOutputTypeSelect<ExtArgs> | null
   }
 
   /**
-   * TodoCountOutputType without action
+   * SubjectCountOutputType without action
    */
-  export type TodoCountOutputTypeCountTimerSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectCountOutputTypeCountMilestonesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MilestoneWhereInput
+  }
+
+  /**
+   * SubjectCountOutputType without action
+   */
+  export type SubjectCountOutputTypeCountResourcesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceWhereInput
+  }
+
+  /**
+   * SubjectCountOutputType without action
+   */
+  export type SubjectCountOutputTypeCountTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskWhereInput
+  }
+
+
+  /**
+   * Count Type MilestoneCountOutputType
+   */
+
+  export type MilestoneCountOutputType = {
+    tasks: number
+  }
+
+  export type MilestoneCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tasks?: boolean | MilestoneCountOutputTypeCountTasksArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * MilestoneCountOutputType without action
+   */
+  export type MilestoneCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MilestoneCountOutputType
+     */
+    select?: MilestoneCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * MilestoneCountOutputType without action
+   */
+  export type MilestoneCountOutputTypeCountTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskWhereInput
+  }
+
+
+  /**
+   * Count Type TaskCountOutputType
+   */
+
+  export type TaskCountOutputType = {
+    timerSessions: number
+  }
+
+  export type TaskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    timerSessions?: boolean | TaskCountOutputTypeCountTimerSessionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * TaskCountOutputType without action
+   */
+  export type TaskCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskCountOutputType
+     */
+    select?: TaskCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TaskCountOutputType without action
+   */
+  export type TaskCountOutputTypeCountTimerSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TimerSessionWhereInput
   }
 
@@ -1249,22 +1521,8 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
-    _avg: UserAvgAggregateOutputType | null
-    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
-  }
-
-  export type UserAvgAggregateOutputType = {
-    xp: number | null
-    level: number | null
-    streak: number | null
-  }
-
-  export type UserSumAggregateOutputType = {
-    xp: number | null
-    level: number | null
-    streak: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -1274,10 +1532,6 @@ export namespace Prisma {
     password: string | null
     createdAt: Date | null
     updatedAt: Date | null
-    xp: number | null
-    level: number | null
-    streak: number | null
-    lastActiveDate: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1287,10 +1541,6 @@ export namespace Prisma {
     password: string | null
     createdAt: Date | null
     updatedAt: Date | null
-    xp: number | null
-    level: number | null
-    streak: number | null
-    lastActiveDate: Date | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1300,25 +1550,9 @@ export namespace Prisma {
     password: number
     createdAt: number
     updatedAt: number
-    xp: number
-    level: number
-    streak: number
-    lastActiveDate: number
     _all: number
   }
 
-
-  export type UserAvgAggregateInputType = {
-    xp?: true
-    level?: true
-    streak?: true
-  }
-
-  export type UserSumAggregateInputType = {
-    xp?: true
-    level?: true
-    streak?: true
-  }
 
   export type UserMinAggregateInputType = {
     id?: true
@@ -1327,10 +1561,6 @@ export namespace Prisma {
     password?: true
     createdAt?: true
     updatedAt?: true
-    xp?: true
-    level?: true
-    streak?: true
-    lastActiveDate?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1340,10 +1570,6 @@ export namespace Prisma {
     password?: true
     createdAt?: true
     updatedAt?: true
-    xp?: true
-    level?: true
-    streak?: true
-    lastActiveDate?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1353,10 +1579,6 @@ export namespace Prisma {
     password?: true
     createdAt?: true
     updatedAt?: true
-    xp?: true
-    level?: true
-    streak?: true
-    lastActiveDate?: true
     _all?: true
   }
 
@@ -1398,18 +1620,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: UserAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: UserSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -1440,8 +1650,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
-    _avg?: UserAvgAggregateInputType
-    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -1453,13 +1661,7 @@ export namespace Prisma {
     password: string | null
     createdAt: Date
     updatedAt: Date
-    xp: number
-    level: number
-    streak: number
-    lastActiveDate: Date | null
     _count: UserCountAggregateOutputType | null
-    _avg: UserAvgAggregateOutputType | null
-    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -1485,12 +1687,9 @@ export namespace Prisma {
     password?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    xp?: boolean
-    level?: boolean
-    streak?: boolean
-    lastActiveDate?: boolean
-    todos?: boolean | User$todosArgs<ExtArgs>
-    suggestions?: boolean | User$suggestionsArgs<ExtArgs>
+    subjects?: boolean | User$subjectsArgs<ExtArgs>
+    tasks?: boolean | User$tasksArgs<ExtArgs>
+    resources?: boolean | User$resourcesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1501,10 +1700,6 @@ export namespace Prisma {
     password?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    xp?: boolean
-    level?: boolean
-    streak?: boolean
-    lastActiveDate?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1514,10 +1709,6 @@ export namespace Prisma {
     password?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    xp?: boolean
-    level?: boolean
-    streak?: boolean
-    lastActiveDate?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1527,16 +1718,13 @@ export namespace Prisma {
     password?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    xp?: boolean
-    level?: boolean
-    streak?: boolean
-    lastActiveDate?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "createdAt" | "updatedAt" | "xp" | "level" | "streak" | "lastActiveDate", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    todos?: boolean | User$todosArgs<ExtArgs>
-    suggestions?: boolean | User$suggestionsArgs<ExtArgs>
+    subjects?: boolean | User$subjectsArgs<ExtArgs>
+    tasks?: boolean | User$tasksArgs<ExtArgs>
+    resources?: boolean | User$resourcesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1545,8 +1733,9 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      todos: Prisma.$TodoPayload<ExtArgs>[]
-      suggestions: Prisma.$SuggestionPayload<ExtArgs>[]
+      subjects: Prisma.$SubjectPayload<ExtArgs>[]
+      tasks: Prisma.$TaskPayload<ExtArgs>[]
+      resources: Prisma.$ResourcePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1555,10 +1744,6 @@ export namespace Prisma {
       password: string | null
       createdAt: Date
       updatedAt: Date
-      xp: number
-      level: number
-      streak: number
-      lastActiveDate: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1953,8 +2138,9 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    todos<T extends User$todosArgs<ExtArgs> = {}>(args?: Subset<T, User$todosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    suggestions<T extends User$suggestionsArgs<ExtArgs> = {}>(args?: Subset<T, User$suggestionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    subjects<T extends User$subjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$subjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tasks<T extends User$tasksArgs<ExtArgs> = {}>(args?: Subset<T, User$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    resources<T extends User$resourcesArgs<ExtArgs> = {}>(args?: Subset<T, User$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1990,10 +2176,6 @@ export namespace Prisma {
     readonly password: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
-    readonly xp: FieldRef<"User", 'Int'>
-    readonly level: FieldRef<"User", 'Int'>
-    readonly streak: FieldRef<"User", 'Int'>
-    readonly lastActiveDate: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -2382,51 +2564,75 @@ export namespace Prisma {
   }
 
   /**
-   * User.todos
+   * User.subjects
    */
-  export type User$todosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$subjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
-    where?: TodoWhereInput
-    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
-    cursor?: TodoWhereUniqueInput
+    include?: SubjectInclude<ExtArgs> | null
+    where?: SubjectWhereInput
+    orderBy?: SubjectOrderByWithRelationInput | SubjectOrderByWithRelationInput[]
+    cursor?: SubjectWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
+    distinct?: SubjectScalarFieldEnum | SubjectScalarFieldEnum[]
   }
 
   /**
-   * User.suggestions
+   * User.tasks
    */
-  export type User$suggestionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$tasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Task
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: TaskSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Task
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: TaskOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
-    where?: SuggestionWhereInput
-    orderBy?: SuggestionOrderByWithRelationInput | SuggestionOrderByWithRelationInput[]
-    cursor?: SuggestionWhereUniqueInput
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    cursor?: TaskWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: SuggestionScalarFieldEnum | SuggestionScalarFieldEnum[]
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
+  }
+
+  /**
+   * User.resources
+   */
+  export type User$resourcesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Resource
+     */
+    select?: ResourceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Resource
+     */
+    omit?: ResourceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceInclude<ExtArgs> | null
+    where?: ResourceWhereInput
+    orderBy?: ResourceOrderByWithRelationInput | ResourceOrderByWithRelationInput[]
+    cursor?: ResourceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ResourceScalarFieldEnum | ResourceScalarFieldEnum[]
   }
 
   /**
@@ -2449,477 +2655,397 @@ export namespace Prisma {
 
 
   /**
-   * Model Todo
+   * Model Subject
    */
 
-  export type AggregateTodo = {
-    _count: TodoCountAggregateOutputType | null
-    _avg: TodoAvgAggregateOutputType | null
-    _sum: TodoSumAggregateOutputType | null
-    _min: TodoMinAggregateOutputType | null
-    _max: TodoMaxAggregateOutputType | null
+  export type AggregateSubject = {
+    _count: SubjectCountAggregateOutputType | null
+    _min: SubjectMinAggregateOutputType | null
+    _max: SubjectMaxAggregateOutputType | null
   }
 
-  export type TodoAvgAggregateOutputType = {
-    estimatedTime: number | null
-    timeSpent: number | null
-  }
-
-  export type TodoSumAggregateOutputType = {
-    estimatedTime: number | null
-    timeSpent: number | null
-  }
-
-  export type TodoMinAggregateOutputType = {
+  export type SubjectMinAggregateOutputType = {
     id: string | null
     title: string | null
     description: string | null
-    isCompleted: boolean | null
+    color: string | null
+    isArchived: boolean | null
     createdAt: Date | null
-    dueDate: Date | null
-    completedAt: Date | null
-    priority: $Enums.Priority | null
-    isAiSuggested: boolean | null
-    estimatedTime: number | null
-    timeSpent: number | null
+    updatedAt: Date | null
     userId: string | null
   }
 
-  export type TodoMaxAggregateOutputType = {
+  export type SubjectMaxAggregateOutputType = {
     id: string | null
     title: string | null
     description: string | null
-    isCompleted: boolean | null
+    color: string | null
+    isArchived: boolean | null
     createdAt: Date | null
-    dueDate: Date | null
-    completedAt: Date | null
-    priority: $Enums.Priority | null
-    isAiSuggested: boolean | null
-    estimatedTime: number | null
-    timeSpent: number | null
+    updatedAt: Date | null
     userId: string | null
   }
 
-  export type TodoCountAggregateOutputType = {
+  export type SubjectCountAggregateOutputType = {
     id: number
     title: number
     description: number
-    isCompleted: number
+    color: number
+    isArchived: number
     createdAt: number
-    dueDate: number
-    completedAt: number
-    priority: number
-    isAiSuggested: number
-    estimatedTime: number
-    timeSpent: number
+    updatedAt: number
     userId: number
     _all: number
   }
 
 
-  export type TodoAvgAggregateInputType = {
-    estimatedTime?: true
-    timeSpent?: true
-  }
-
-  export type TodoSumAggregateInputType = {
-    estimatedTime?: true
-    timeSpent?: true
-  }
-
-  export type TodoMinAggregateInputType = {
+  export type SubjectMinAggregateInputType = {
     id?: true
     title?: true
     description?: true
-    isCompleted?: true
+    color?: true
+    isArchived?: true
     createdAt?: true
-    dueDate?: true
-    completedAt?: true
-    priority?: true
-    isAiSuggested?: true
-    estimatedTime?: true
-    timeSpent?: true
+    updatedAt?: true
     userId?: true
   }
 
-  export type TodoMaxAggregateInputType = {
+  export type SubjectMaxAggregateInputType = {
     id?: true
     title?: true
     description?: true
-    isCompleted?: true
+    color?: true
+    isArchived?: true
     createdAt?: true
-    dueDate?: true
-    completedAt?: true
-    priority?: true
-    isAiSuggested?: true
-    estimatedTime?: true
-    timeSpent?: true
+    updatedAt?: true
     userId?: true
   }
 
-  export type TodoCountAggregateInputType = {
+  export type SubjectCountAggregateInputType = {
     id?: true
     title?: true
     description?: true
-    isCompleted?: true
+    color?: true
+    isArchived?: true
     createdAt?: true
-    dueDate?: true
-    completedAt?: true
-    priority?: true
-    isAiSuggested?: true
-    estimatedTime?: true
-    timeSpent?: true
+    updatedAt?: true
     userId?: true
     _all?: true
   }
 
-  export type TodoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Todo to aggregate.
+     * Filter which Subject to aggregate.
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Todos to fetch.
+     * Determine the order of Subjects to fetch.
      */
-    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    orderBy?: SubjectOrderByWithRelationInput | SubjectOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: TodoWhereUniqueInput
+    cursor?: SubjectWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Todos from the position of the cursor.
+     * Take `±n` Subjects from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Todos.
+     * Skip the first `n` Subjects.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned Todos
+     * Count returned Subjects
     **/
-    _count?: true | TodoCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: TodoAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: TodoSumAggregateInputType
+    _count?: true | SubjectCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: TodoMinAggregateInputType
+    _min?: SubjectMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: TodoMaxAggregateInputType
+    _max?: SubjectMaxAggregateInputType
   }
 
-  export type GetTodoAggregateType<T extends TodoAggregateArgs> = {
-        [P in keyof T & keyof AggregateTodo]: P extends '_count' | 'count'
+  export type GetSubjectAggregateType<T extends SubjectAggregateArgs> = {
+        [P in keyof T & keyof AggregateSubject]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateTodo[P]>
-      : GetScalarType<T[P], AggregateTodo[P]>
+        : GetScalarType<T[P], AggregateSubject[P]>
+      : GetScalarType<T[P], AggregateSubject[P]>
   }
 
 
 
 
-  export type TodoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TodoWhereInput
-    orderBy?: TodoOrderByWithAggregationInput | TodoOrderByWithAggregationInput[]
-    by: TodoScalarFieldEnum[] | TodoScalarFieldEnum
-    having?: TodoScalarWhereWithAggregatesInput
+  export type SubjectGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SubjectWhereInput
+    orderBy?: SubjectOrderByWithAggregationInput | SubjectOrderByWithAggregationInput[]
+    by: SubjectScalarFieldEnum[] | SubjectScalarFieldEnum
+    having?: SubjectScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: TodoCountAggregateInputType | true
-    _avg?: TodoAvgAggregateInputType
-    _sum?: TodoSumAggregateInputType
-    _min?: TodoMinAggregateInputType
-    _max?: TodoMaxAggregateInputType
+    _count?: SubjectCountAggregateInputType | true
+    _min?: SubjectMinAggregateInputType
+    _max?: SubjectMaxAggregateInputType
   }
 
-  export type TodoGroupByOutputType = {
+  export type SubjectGroupByOutputType = {
     id: string
     title: string
     description: string | null
-    isCompleted: boolean
+    color: string | null
+    isArchived: boolean
     createdAt: Date
-    dueDate: Date | null
-    completedAt: Date | null
-    priority: $Enums.Priority
-    isAiSuggested: boolean
-    estimatedTime: number | null
-    timeSpent: number | null
+    updatedAt: Date
     userId: string
-    _count: TodoCountAggregateOutputType | null
-    _avg: TodoAvgAggregateOutputType | null
-    _sum: TodoSumAggregateOutputType | null
-    _min: TodoMinAggregateOutputType | null
-    _max: TodoMaxAggregateOutputType | null
+    _count: SubjectCountAggregateOutputType | null
+    _min: SubjectMinAggregateOutputType | null
+    _max: SubjectMaxAggregateOutputType | null
   }
 
-  type GetTodoGroupByPayload<T extends TodoGroupByArgs> = Prisma.PrismaPromise<
+  type GetSubjectGroupByPayload<T extends SubjectGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<TodoGroupByOutputType, T['by']> &
+      PickEnumerable<SubjectGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof TodoGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof SubjectGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], TodoGroupByOutputType[P]>
-            : GetScalarType<T[P], TodoGroupByOutputType[P]>
+              : GetScalarType<T[P], SubjectGroupByOutputType[P]>
+            : GetScalarType<T[P], SubjectGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type TodoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type SubjectSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     description?: boolean
-    isCompleted?: boolean
+    color?: boolean
+    isArchived?: boolean
     createdAt?: boolean
-    dueDate?: boolean
-    completedAt?: boolean
-    priority?: boolean
-    isAiSuggested?: boolean
-    estimatedTime?: boolean
-    timeSpent?: boolean
+    updatedAt?: boolean
     userId?: boolean
-    timerSessions?: boolean | Todo$timerSessionsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
-    _count?: boolean | TodoCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["todo"]>
+    milestones?: boolean | Subject$milestonesArgs<ExtArgs>
+    resources?: boolean | Subject$resourcesArgs<ExtArgs>
+    tasks?: boolean | Subject$tasksArgs<ExtArgs>
+    _count?: boolean | SubjectCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["subject"]>
 
-  export type TodoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type SubjectSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     description?: boolean
-    isCompleted?: boolean
+    color?: boolean
+    isArchived?: boolean
     createdAt?: boolean
-    dueDate?: boolean
-    completedAt?: boolean
-    priority?: boolean
-    isAiSuggested?: boolean
-    estimatedTime?: boolean
-    timeSpent?: boolean
+    updatedAt?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["todo"]>
+  }, ExtArgs["result"]["subject"]>
 
-  export type TodoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type SubjectSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     description?: boolean
-    isCompleted?: boolean
+    color?: boolean
+    isArchived?: boolean
     createdAt?: boolean
-    dueDate?: boolean
-    completedAt?: boolean
-    priority?: boolean
-    isAiSuggested?: boolean
-    estimatedTime?: boolean
-    timeSpent?: boolean
+    updatedAt?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["todo"]>
+  }, ExtArgs["result"]["subject"]>
 
-  export type TodoSelectScalar = {
+  export type SubjectSelectScalar = {
     id?: boolean
     title?: boolean
     description?: boolean
-    isCompleted?: boolean
+    color?: boolean
+    isArchived?: boolean
     createdAt?: boolean
-    dueDate?: boolean
-    completedAt?: boolean
-    priority?: boolean
-    isAiSuggested?: boolean
-    estimatedTime?: boolean
-    timeSpent?: boolean
+    updatedAt?: boolean
     userId?: boolean
   }
 
-  export type TodoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "isCompleted" | "createdAt" | "dueDate" | "completedAt" | "priority" | "isAiSuggested" | "estimatedTime" | "timeSpent" | "userId", ExtArgs["result"]["todo"]>
-  export type TodoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    timerSessions?: boolean | Todo$timerSessionsArgs<ExtArgs>
+  export type SubjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "color" | "isArchived" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["subject"]>
+  export type SubjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    _count?: boolean | TodoCountOutputTypeDefaultArgs<ExtArgs>
+    milestones?: boolean | Subject$milestonesArgs<ExtArgs>
+    resources?: boolean | Subject$resourcesArgs<ExtArgs>
+    tasks?: boolean | Subject$tasksArgs<ExtArgs>
+    _count?: boolean | SubjectCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type TodoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
-  export type TodoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
-  export type $TodoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Todo"
+  export type $SubjectPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Subject"
     objects: {
-      timerSessions: Prisma.$TimerSessionPayload<ExtArgs>[]
       user: Prisma.$UserPayload<ExtArgs>
+      milestones: Prisma.$MilestonePayload<ExtArgs>[]
+      resources: Prisma.$ResourcePayload<ExtArgs>[]
+      tasks: Prisma.$TaskPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       title: string
       description: string | null
-      isCompleted: boolean
+      color: string | null
+      isArchived: boolean
       createdAt: Date
-      dueDate: Date | null
-      completedAt: Date | null
-      priority: $Enums.Priority
-      isAiSuggested: boolean
-      estimatedTime: number | null
-      timeSpent: number | null
+      updatedAt: Date
       userId: string
-    }, ExtArgs["result"]["todo"]>
+    }, ExtArgs["result"]["subject"]>
     composites: {}
   }
 
-  type TodoGetPayload<S extends boolean | null | undefined | TodoDefaultArgs> = $Result.GetResult<Prisma.$TodoPayload, S>
+  type SubjectGetPayload<S extends boolean | null | undefined | SubjectDefaultArgs> = $Result.GetResult<Prisma.$SubjectPayload, S>
 
-  type TodoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<TodoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: TodoCountAggregateInputType | true
+  type SubjectCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SubjectFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SubjectCountAggregateInputType | true
     }
 
-  export interface TodoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Todo'], meta: { name: 'Todo' } }
+  export interface SubjectDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Subject'], meta: { name: 'Subject' } }
     /**
-     * Find zero or one Todo that matches the filter.
-     * @param {TodoFindUniqueArgs} args - Arguments to find a Todo
+     * Find zero or one Subject that matches the filter.
+     * @param {SubjectFindUniqueArgs} args - Arguments to find a Subject
      * @example
-     * // Get one Todo
-     * const todo = await prisma.todo.findUnique({
+     * // Get one Subject
+     * const subject = await prisma.subject.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends TodoFindUniqueArgs>(args: SelectSubset<T, TodoFindUniqueArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends SubjectFindUniqueArgs>(args: SelectSubset<T, SubjectFindUniqueArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Todo that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Subject that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {TodoFindUniqueOrThrowArgs} args - Arguments to find a Todo
+     * @param {SubjectFindUniqueOrThrowArgs} args - Arguments to find a Subject
      * @example
-     * // Get one Todo
-     * const todo = await prisma.todo.findUniqueOrThrow({
+     * // Get one Subject
+     * const subject = await prisma.subject.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends TodoFindUniqueOrThrowArgs>(args: SelectSubset<T, TodoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends SubjectFindUniqueOrThrowArgs>(args: SelectSubset<T, SubjectFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Todo that matches the filter.
+     * Find the first Subject that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoFindFirstArgs} args - Arguments to find a Todo
+     * @param {SubjectFindFirstArgs} args - Arguments to find a Subject
      * @example
-     * // Get one Todo
-     * const todo = await prisma.todo.findFirst({
+     * // Get one Subject
+     * const subject = await prisma.subject.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends TodoFindFirstArgs>(args?: SelectSubset<T, TodoFindFirstArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends SubjectFindFirstArgs>(args?: SelectSubset<T, SubjectFindFirstArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Todo that matches the filter or
+     * Find the first Subject that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoFindFirstOrThrowArgs} args - Arguments to find a Todo
+     * @param {SubjectFindFirstOrThrowArgs} args - Arguments to find a Subject
      * @example
-     * // Get one Todo
-     * const todo = await prisma.todo.findFirstOrThrow({
+     * // Get one Subject
+     * const subject = await prisma.subject.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends TodoFindFirstOrThrowArgs>(args?: SelectSubset<T, TodoFindFirstOrThrowArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends SubjectFindFirstOrThrowArgs>(args?: SelectSubset<T, SubjectFindFirstOrThrowArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Todos that matches the filter.
+     * Find zero or more Subjects that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {SubjectFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Todos
-     * const todos = await prisma.todo.findMany()
+     * // Get all Subjects
+     * const subjects = await prisma.subject.findMany()
      * 
-     * // Get first 10 Todos
-     * const todos = await prisma.todo.findMany({ take: 10 })
+     * // Get first 10 Subjects
+     * const subjects = await prisma.subject.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const todoWithIdOnly = await prisma.todo.findMany({ select: { id: true } })
+     * const subjectWithIdOnly = await prisma.subject.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends TodoFindManyArgs>(args?: SelectSubset<T, TodoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends SubjectFindManyArgs>(args?: SelectSubset<T, SubjectFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Todo.
-     * @param {TodoCreateArgs} args - Arguments to create a Todo.
+     * Create a Subject.
+     * @param {SubjectCreateArgs} args - Arguments to create a Subject.
      * @example
-     * // Create one Todo
-     * const Todo = await prisma.todo.create({
+     * // Create one Subject
+     * const Subject = await prisma.subject.create({
      *   data: {
-     *     // ... data to create a Todo
+     *     // ... data to create a Subject
      *   }
      * })
      * 
      */
-    create<T extends TodoCreateArgs>(args: SelectSubset<T, TodoCreateArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends SubjectCreateArgs>(args: SelectSubset<T, SubjectCreateArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Todos.
-     * @param {TodoCreateManyArgs} args - Arguments to create many Todos.
+     * Create many Subjects.
+     * @param {SubjectCreateManyArgs} args - Arguments to create many Subjects.
      * @example
-     * // Create many Todos
-     * const todo = await prisma.todo.createMany({
+     * // Create many Subjects
+     * const subject = await prisma.subject.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends TodoCreateManyArgs>(args?: SelectSubset<T, TodoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends SubjectCreateManyArgs>(args?: SelectSubset<T, SubjectCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Todos and returns the data saved in the database.
-     * @param {TodoCreateManyAndReturnArgs} args - Arguments to create many Todos.
+     * Create many Subjects and returns the data saved in the database.
+     * @param {SubjectCreateManyAndReturnArgs} args - Arguments to create many Subjects.
      * @example
-     * // Create many Todos
-     * const todo = await prisma.todo.createManyAndReturn({
+     * // Create many Subjects
+     * const subject = await prisma.subject.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many Todos and only return the `id`
-     * const todoWithIdOnly = await prisma.todo.createManyAndReturn({
+     * // Create many Subjects and only return the `id`
+     * const subjectWithIdOnly = await prisma.subject.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -2929,28 +3055,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends TodoCreateManyAndReturnArgs>(args?: SelectSubset<T, TodoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends SubjectCreateManyAndReturnArgs>(args?: SelectSubset<T, SubjectCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a Todo.
-     * @param {TodoDeleteArgs} args - Arguments to delete one Todo.
+     * Delete a Subject.
+     * @param {SubjectDeleteArgs} args - Arguments to delete one Subject.
      * @example
-     * // Delete one Todo
-     * const Todo = await prisma.todo.delete({
+     * // Delete one Subject
+     * const Subject = await prisma.subject.delete({
      *   where: {
-     *     // ... filter to delete one Todo
+     *     // ... filter to delete one Subject
      *   }
      * })
      * 
      */
-    delete<T extends TodoDeleteArgs>(args: SelectSubset<T, TodoDeleteArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends SubjectDeleteArgs>(args: SelectSubset<T, SubjectDeleteArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Todo.
-     * @param {TodoUpdateArgs} args - Arguments to update one Todo.
+     * Update one Subject.
+     * @param {SubjectUpdateArgs} args - Arguments to update one Subject.
      * @example
-     * // Update one Todo
-     * const todo = await prisma.todo.update({
+     * // Update one Subject
+     * const subject = await prisma.subject.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -2960,30 +3086,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends TodoUpdateArgs>(args: SelectSubset<T, TodoUpdateArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends SubjectUpdateArgs>(args: SelectSubset<T, SubjectUpdateArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Todos.
-     * @param {TodoDeleteManyArgs} args - Arguments to filter Todos to delete.
+     * Delete zero or more Subjects.
+     * @param {SubjectDeleteManyArgs} args - Arguments to filter Subjects to delete.
      * @example
-     * // Delete a few Todos
-     * const { count } = await prisma.todo.deleteMany({
+     * // Delete a few Subjects
+     * const { count } = await prisma.subject.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends TodoDeleteManyArgs>(args?: SelectSubset<T, TodoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends SubjectDeleteManyArgs>(args?: SelectSubset<T, SubjectDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Todos.
+     * Update zero or more Subjects.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {SubjectUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Todos
-     * const todo = await prisma.todo.updateMany({
+     * // Update many Subjects
+     * const subject = await prisma.subject.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -2993,14 +3119,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends TodoUpdateManyArgs>(args: SelectSubset<T, TodoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends SubjectUpdateManyArgs>(args: SelectSubset<T, SubjectUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Todos and returns the data updated in the database.
-     * @param {TodoUpdateManyAndReturnArgs} args - Arguments to update many Todos.
+     * Update zero or more Subjects and returns the data updated in the database.
+     * @param {SubjectUpdateManyAndReturnArgs} args - Arguments to update many Subjects.
      * @example
-     * // Update many Todos
-     * const todo = await prisma.todo.updateManyAndReturn({
+     * // Update many Subjects
+     * const subject = await prisma.subject.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -3009,8 +3135,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Todos and only return the `id`
-     * const todoWithIdOnly = await prisma.todo.updateManyAndReturn({
+     * // Update zero or more Subjects and only return the `id`
+     * const subjectWithIdOnly = await prisma.subject.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -3023,56 +3149,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends TodoUpdateManyAndReturnArgs>(args: SelectSubset<T, TodoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends SubjectUpdateManyAndReturnArgs>(args: SelectSubset<T, SubjectUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one Todo.
-     * @param {TodoUpsertArgs} args - Arguments to update or create a Todo.
+     * Create or update one Subject.
+     * @param {SubjectUpsertArgs} args - Arguments to update or create a Subject.
      * @example
-     * // Update or create a Todo
-     * const todo = await prisma.todo.upsert({
+     * // Update or create a Subject
+     * const subject = await prisma.subject.upsert({
      *   create: {
-     *     // ... data to create a Todo
+     *     // ... data to create a Subject
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Todo we want to update
+     *     // ... the filter for the Subject we want to update
      *   }
      * })
      */
-    upsert<T extends TodoUpsertArgs>(args: SelectSubset<T, TodoUpsertArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends SubjectUpsertArgs>(args: SelectSubset<T, SubjectUpsertArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Todos.
+     * Count the number of Subjects.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoCountArgs} args - Arguments to filter Todos to count.
+     * @param {SubjectCountArgs} args - Arguments to filter Subjects to count.
      * @example
-     * // Count the number of Todos
-     * const count = await prisma.todo.count({
+     * // Count the number of Subjects
+     * const count = await prisma.subject.count({
      *   where: {
-     *     // ... the filter for the Todos we want to count
+     *     // ... the filter for the Subjects we want to count
      *   }
      * })
     **/
-    count<T extends TodoCountArgs>(
-      args?: Subset<T, TodoCountArgs>,
+    count<T extends SubjectCountArgs>(
+      args?: Subset<T, SubjectCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], TodoCountAggregateOutputType>
+          : GetScalarType<T['select'], SubjectCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Todo.
+     * Allows you to perform aggregations operations on a Subject.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {SubjectAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -3092,13 +3218,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends TodoAggregateArgs>(args: Subset<T, TodoAggregateArgs>): Prisma.PrismaPromise<GetTodoAggregateType<T>>
+    aggregate<T extends SubjectAggregateArgs>(args: Subset<T, SubjectAggregateArgs>): Prisma.PrismaPromise<GetSubjectAggregateType<T>>
 
     /**
-     * Group by Todo.
+     * Group by Subject.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TodoGroupByArgs} args - Group by arguments.
+     * @param {SubjectGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -3113,14 +3239,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends TodoGroupByArgs,
+      T extends SubjectGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: TodoGroupByArgs['orderBy'] }
-        : { orderBy?: TodoGroupByArgs['orderBy'] },
+        ? { orderBy: SubjectGroupByArgs['orderBy'] }
+        : { orderBy?: SubjectGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -3169,23 +3295,25 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, TodoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTodoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, SubjectGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSubjectGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the Todo model
+   * Fields of the Subject model
    */
-  readonly fields: TodoFieldRefs;
+  readonly fields: SubjectFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for Todo.
+   * The delegate class that acts as a "Promise-like" for Subject.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__TodoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__SubjectClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    timerSessions<T extends Todo$timerSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Todo$timerSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimerSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    milestones<T extends Subject$milestonesArgs<ExtArgs> = {}>(args?: Subset<T, Subject$milestonesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    resources<T extends Subject$resourcesArgs<ExtArgs> = {}>(args?: Subset<T, Subject$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tasks<T extends Subject$tasksArgs<ExtArgs> = {}>(args?: Subset<T, Subject$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3212,420 +3340,2890 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the Todo model
+   * Fields of the Subject model
    */
-  interface TodoFieldRefs {
-    readonly id: FieldRef<"Todo", 'String'>
-    readonly title: FieldRef<"Todo", 'String'>
-    readonly description: FieldRef<"Todo", 'String'>
-    readonly isCompleted: FieldRef<"Todo", 'Boolean'>
-    readonly createdAt: FieldRef<"Todo", 'DateTime'>
-    readonly dueDate: FieldRef<"Todo", 'DateTime'>
-    readonly completedAt: FieldRef<"Todo", 'DateTime'>
-    readonly priority: FieldRef<"Todo", 'Priority'>
-    readonly isAiSuggested: FieldRef<"Todo", 'Boolean'>
-    readonly estimatedTime: FieldRef<"Todo", 'Int'>
-    readonly timeSpent: FieldRef<"Todo", 'Int'>
-    readonly userId: FieldRef<"Todo", 'String'>
+  interface SubjectFieldRefs {
+    readonly id: FieldRef<"Subject", 'String'>
+    readonly title: FieldRef<"Subject", 'String'>
+    readonly description: FieldRef<"Subject", 'String'>
+    readonly color: FieldRef<"Subject", 'String'>
+    readonly isArchived: FieldRef<"Subject", 'Boolean'>
+    readonly createdAt: FieldRef<"Subject", 'DateTime'>
+    readonly updatedAt: FieldRef<"Subject", 'DateTime'>
+    readonly userId: FieldRef<"Subject", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * Todo findUnique
+   * Subject findUnique
    */
-  export type TodoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * Filter, which Todo to fetch.
+     * Filter, which Subject to fetch.
      */
-    where: TodoWhereUniqueInput
+    where: SubjectWhereUniqueInput
   }
 
   /**
-   * Todo findUniqueOrThrow
+   * Subject findUniqueOrThrow
    */
-  export type TodoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * Filter, which Todo to fetch.
+     * Filter, which Subject to fetch.
      */
-    where: TodoWhereUniqueInput
+    where: SubjectWhereUniqueInput
   }
 
   /**
-   * Todo findFirst
+   * Subject findFirst
    */
-  export type TodoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * Filter, which Todo to fetch.
+     * Filter, which Subject to fetch.
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Todos to fetch.
+     * Determine the order of Subjects to fetch.
      */
-    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    orderBy?: SubjectOrderByWithRelationInput | SubjectOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Todos.
+     * Sets the position for searching for Subjects.
      */
-    cursor?: TodoWhereUniqueInput
+    cursor?: SubjectWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Todos from the position of the cursor.
+     * Take `±n` Subjects from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Todos.
+     * Skip the first `n` Subjects.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Todos.
+     * Filter by unique combinations of Subjects.
      */
-    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
+    distinct?: SubjectScalarFieldEnum | SubjectScalarFieldEnum[]
   }
 
   /**
-   * Todo findFirstOrThrow
+   * Subject findFirstOrThrow
    */
-  export type TodoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * Filter, which Todo to fetch.
+     * Filter, which Subject to fetch.
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Todos to fetch.
+     * Determine the order of Subjects to fetch.
      */
-    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    orderBy?: SubjectOrderByWithRelationInput | SubjectOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Todos.
+     * Sets the position for searching for Subjects.
      */
-    cursor?: TodoWhereUniqueInput
+    cursor?: SubjectWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Todos from the position of the cursor.
+     * Take `±n` Subjects from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Todos.
+     * Skip the first `n` Subjects.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Todos.
+     * Filter by unique combinations of Subjects.
      */
-    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
+    distinct?: SubjectScalarFieldEnum | SubjectScalarFieldEnum[]
   }
 
   /**
-   * Todo findMany
+   * Subject findMany
    */
-  export type TodoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * Filter, which Todos to fetch.
+     * Filter, which Subjects to fetch.
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Todos to fetch.
+     * Determine the order of Subjects to fetch.
      */
-    orderBy?: TodoOrderByWithRelationInput | TodoOrderByWithRelationInput[]
+    orderBy?: SubjectOrderByWithRelationInput | SubjectOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing Todos.
+     * Sets the position for listing Subjects.
      */
-    cursor?: TodoWhereUniqueInput
+    cursor?: SubjectWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Todos from the position of the cursor.
+     * Take `±n` Subjects from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Todos.
+     * Skip the first `n` Subjects.
      */
     skip?: number
-    distinct?: TodoScalarFieldEnum | TodoScalarFieldEnum[]
+    distinct?: SubjectScalarFieldEnum | SubjectScalarFieldEnum[]
   }
 
   /**
-   * Todo create
+   * Subject create
    */
-  export type TodoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * The data needed to create a Todo.
+     * The data needed to create a Subject.
      */
-    data: XOR<TodoCreateInput, TodoUncheckedCreateInput>
+    data: XOR<SubjectCreateInput, SubjectUncheckedCreateInput>
   }
 
   /**
-   * Todo createMany
+   * Subject createMany
    */
-  export type TodoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many Todos.
+     * The data used to create many Subjects.
      */
-    data: TodoCreateManyInput | TodoCreateManyInput[]
+    data: SubjectCreateManyInput | SubjectCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * Todo createManyAndReturn
+   * Subject createManyAndReturn
    */
-  export type TodoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelectCreateManyAndReturn<ExtArgs> | null
+    select?: SubjectSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
-     * The data used to create many Todos.
+     * The data used to create many Subjects.
      */
-    data: TodoCreateManyInput | TodoCreateManyInput[]
+    data: SubjectCreateManyInput | SubjectCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: SubjectIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * Todo update
+   * Subject update
    */
-  export type TodoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * The data needed to update a Todo.
+     * The data needed to update a Subject.
      */
-    data: XOR<TodoUpdateInput, TodoUncheckedUpdateInput>
+    data: XOR<SubjectUpdateInput, SubjectUncheckedUpdateInput>
     /**
-     * Choose, which Todo to update.
+     * Choose, which Subject to update.
      */
-    where: TodoWhereUniqueInput
+    where: SubjectWhereUniqueInput
   }
 
   /**
-   * Todo updateMany
+   * Subject updateMany
    */
-  export type TodoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update Todos.
+     * The data used to update Subjects.
      */
-    data: XOR<TodoUpdateManyMutationInput, TodoUncheckedUpdateManyInput>
+    data: XOR<SubjectUpdateManyMutationInput, SubjectUncheckedUpdateManyInput>
     /**
-     * Filter which Todos to update
+     * Filter which Subjects to update
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
-     * Limit how many Todos to update.
+     * Limit how many Subjects to update.
      */
     limit?: number
   }
 
   /**
-   * Todo updateManyAndReturn
+   * Subject updateManyAndReturn
    */
-  export type TodoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: SubjectSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
-     * The data used to update Todos.
+     * The data used to update Subjects.
      */
-    data: XOR<TodoUpdateManyMutationInput, TodoUncheckedUpdateManyInput>
+    data: XOR<SubjectUpdateManyMutationInput, SubjectUncheckedUpdateManyInput>
     /**
-     * Filter which Todos to update
+     * Filter which Subjects to update
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
-     * Limit how many Todos to update.
+     * Limit how many Subjects to update.
      */
     limit?: number
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: SubjectIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * Todo upsert
+   * Subject upsert
    */
-  export type TodoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * The filter to search for the Todo to update in case it exists.
+     * The filter to search for the Subject to update in case it exists.
      */
-    where: TodoWhereUniqueInput
+    where: SubjectWhereUniqueInput
     /**
-     * In case the Todo found by the `where` argument doesn't exist, create a new Todo with this data.
+     * In case the Subject found by the `where` argument doesn't exist, create a new Subject with this data.
      */
-    create: XOR<TodoCreateInput, TodoUncheckedCreateInput>
+    create: XOR<SubjectCreateInput, SubjectUncheckedCreateInput>
     /**
-     * In case the Todo was found with the provided `where` argument, update it with this data.
+     * In case the Subject was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<TodoUpdateInput, TodoUncheckedUpdateInput>
+    update: XOR<SubjectUpdateInput, SubjectUncheckedUpdateInput>
   }
 
   /**
-   * Todo delete
+   * Subject delete
    */
-  export type TodoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Subject
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: SubjectSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Subject
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: SubjectOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: SubjectInclude<ExtArgs> | null
     /**
-     * Filter which Todo to delete.
+     * Filter which Subject to delete.
      */
-    where: TodoWhereUniqueInput
+    where: SubjectWhereUniqueInput
   }
 
   /**
-   * Todo deleteMany
+   * Subject deleteMany
    */
-  export type TodoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SubjectDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Todos to delete
+     * Filter which Subjects to delete
      */
-    where?: TodoWhereInput
+    where?: SubjectWhereInput
     /**
-     * Limit how many Todos to delete.
+     * Limit how many Subjects to delete.
      */
     limit?: number
   }
 
   /**
-   * Todo.timerSessions
+   * Subject.milestones
    */
-  export type Todo$timerSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Subject$milestonesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    where?: MilestoneWhereInput
+    orderBy?: MilestoneOrderByWithRelationInput | MilestoneOrderByWithRelationInput[]
+    cursor?: MilestoneWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MilestoneScalarFieldEnum | MilestoneScalarFieldEnum[]
+  }
+
+  /**
+   * Subject.resources
+   */
+  export type Subject$resourcesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Resource
+     */
+    select?: ResourceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Resource
+     */
+    omit?: ResourceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceInclude<ExtArgs> | null
+    where?: ResourceWhereInput
+    orderBy?: ResourceOrderByWithRelationInput | ResourceOrderByWithRelationInput[]
+    cursor?: ResourceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ResourceScalarFieldEnum | ResourceScalarFieldEnum[]
+  }
+
+  /**
+   * Subject.tasks
+   */
+  export type Subject$tasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    cursor?: TaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
+  }
+
+  /**
+   * Subject without action
+   */
+  export type SubjectDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Subject
+     */
+    select?: SubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Subject
+     */
+    omit?: SubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SubjectInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Milestone
+   */
+
+  export type AggregateMilestone = {
+    _count: MilestoneCountAggregateOutputType | null
+    _avg: MilestoneAvgAggregateOutputType | null
+    _sum: MilestoneSumAggregateOutputType | null
+    _min: MilestoneMinAggregateOutputType | null
+    _max: MilestoneMaxAggregateOutputType | null
+  }
+
+  export type MilestoneAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type MilestoneSumAggregateOutputType = {
+    order: number | null
+  }
+
+  export type MilestoneMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    notes: string | null
+    order: number | null
+    isCompleted: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    subjectId: string | null
+  }
+
+  export type MilestoneMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    notes: string | null
+    order: number | null
+    isCompleted: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    subjectId: string | null
+  }
+
+  export type MilestoneCountAggregateOutputType = {
+    id: number
+    title: number
+    notes: number
+    order: number
+    isCompleted: number
+    createdAt: number
+    updatedAt: number
+    subjectId: number
+    _all: number
+  }
+
+
+  export type MilestoneAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type MilestoneSumAggregateInputType = {
+    order?: true
+  }
+
+  export type MilestoneMinAggregateInputType = {
+    id?: true
+    title?: true
+    notes?: true
+    order?: true
+    isCompleted?: true
+    createdAt?: true
+    updatedAt?: true
+    subjectId?: true
+  }
+
+  export type MilestoneMaxAggregateInputType = {
+    id?: true
+    title?: true
+    notes?: true
+    order?: true
+    isCompleted?: true
+    createdAt?: true
+    updatedAt?: true
+    subjectId?: true
+  }
+
+  export type MilestoneCountAggregateInputType = {
+    id?: true
+    title?: true
+    notes?: true
+    order?: true
+    isCompleted?: true
+    createdAt?: true
+    updatedAt?: true
+    subjectId?: true
+    _all?: true
+  }
+
+  export type MilestoneAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Milestone to aggregate.
+     */
+    where?: MilestoneWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Milestones to fetch.
+     */
+    orderBy?: MilestoneOrderByWithRelationInput | MilestoneOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MilestoneWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Milestones from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Milestones.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Milestones
+    **/
+    _count?: true | MilestoneCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MilestoneAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MilestoneSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MilestoneMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MilestoneMaxAggregateInputType
+  }
+
+  export type GetMilestoneAggregateType<T extends MilestoneAggregateArgs> = {
+        [P in keyof T & keyof AggregateMilestone]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMilestone[P]>
+      : GetScalarType<T[P], AggregateMilestone[P]>
+  }
+
+
+
+
+  export type MilestoneGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MilestoneWhereInput
+    orderBy?: MilestoneOrderByWithAggregationInput | MilestoneOrderByWithAggregationInput[]
+    by: MilestoneScalarFieldEnum[] | MilestoneScalarFieldEnum
+    having?: MilestoneScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MilestoneCountAggregateInputType | true
+    _avg?: MilestoneAvgAggregateInputType
+    _sum?: MilestoneSumAggregateInputType
+    _min?: MilestoneMinAggregateInputType
+    _max?: MilestoneMaxAggregateInputType
+  }
+
+  export type MilestoneGroupByOutputType = {
+    id: string
+    title: string
+    notes: string
+    order: number
+    isCompleted: boolean
+    createdAt: Date
+    updatedAt: Date
+    subjectId: string
+    _count: MilestoneCountAggregateOutputType | null
+    _avg: MilestoneAvgAggregateOutputType | null
+    _sum: MilestoneSumAggregateOutputType | null
+    _min: MilestoneMinAggregateOutputType | null
+    _max: MilestoneMaxAggregateOutputType | null
+  }
+
+  type GetMilestoneGroupByPayload<T extends MilestoneGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MilestoneGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MilestoneGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MilestoneGroupByOutputType[P]>
+            : GetScalarType<T[P], MilestoneGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MilestoneSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    notes?: boolean
+    order?: boolean
+    isCompleted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    subjectId?: boolean
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    tasks?: boolean | Milestone$tasksArgs<ExtArgs>
+    _count?: boolean | MilestoneCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["milestone"]>
+
+  export type MilestoneSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    notes?: boolean
+    order?: boolean
+    isCompleted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    subjectId?: boolean
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["milestone"]>
+
+  export type MilestoneSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    notes?: boolean
+    order?: boolean
+    isCompleted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    subjectId?: boolean
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["milestone"]>
+
+  export type MilestoneSelectScalar = {
+    id?: boolean
+    title?: boolean
+    notes?: boolean
+    order?: boolean
+    isCompleted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    subjectId?: boolean
+  }
+
+  export type MilestoneOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "order" | "isCompleted" | "createdAt" | "updatedAt" | "subjectId", ExtArgs["result"]["milestone"]>
+  export type MilestoneInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    tasks?: boolean | Milestone$tasksArgs<ExtArgs>
+    _count?: boolean | MilestoneCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type MilestoneIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }
+  export type MilestoneIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }
+
+  export type $MilestonePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Milestone"
+    objects: {
+      subject: Prisma.$SubjectPayload<ExtArgs>
+      tasks: Prisma.$TaskPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      notes: string
+      order: number
+      isCompleted: boolean
+      createdAt: Date
+      updatedAt: Date
+      subjectId: string
+    }, ExtArgs["result"]["milestone"]>
+    composites: {}
+  }
+
+  type MilestoneGetPayload<S extends boolean | null | undefined | MilestoneDefaultArgs> = $Result.GetResult<Prisma.$MilestonePayload, S>
+
+  type MilestoneCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MilestoneFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MilestoneCountAggregateInputType | true
+    }
+
+  export interface MilestoneDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Milestone'], meta: { name: 'Milestone' } }
+    /**
+     * Find zero or one Milestone that matches the filter.
+     * @param {MilestoneFindUniqueArgs} args - Arguments to find a Milestone
+     * @example
+     * // Get one Milestone
+     * const milestone = await prisma.milestone.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MilestoneFindUniqueArgs>(args: SelectSubset<T, MilestoneFindUniqueArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Milestone that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MilestoneFindUniqueOrThrowArgs} args - Arguments to find a Milestone
+     * @example
+     * // Get one Milestone
+     * const milestone = await prisma.milestone.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MilestoneFindUniqueOrThrowArgs>(args: SelectSubset<T, MilestoneFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Milestone that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneFindFirstArgs} args - Arguments to find a Milestone
+     * @example
+     * // Get one Milestone
+     * const milestone = await prisma.milestone.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MilestoneFindFirstArgs>(args?: SelectSubset<T, MilestoneFindFirstArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Milestone that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneFindFirstOrThrowArgs} args - Arguments to find a Milestone
+     * @example
+     * // Get one Milestone
+     * const milestone = await prisma.milestone.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MilestoneFindFirstOrThrowArgs>(args?: SelectSubset<T, MilestoneFindFirstOrThrowArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Milestones that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Milestones
+     * const milestones = await prisma.milestone.findMany()
+     * 
+     * // Get first 10 Milestones
+     * const milestones = await prisma.milestone.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const milestoneWithIdOnly = await prisma.milestone.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MilestoneFindManyArgs>(args?: SelectSubset<T, MilestoneFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Milestone.
+     * @param {MilestoneCreateArgs} args - Arguments to create a Milestone.
+     * @example
+     * // Create one Milestone
+     * const Milestone = await prisma.milestone.create({
+     *   data: {
+     *     // ... data to create a Milestone
+     *   }
+     * })
+     * 
+     */
+    create<T extends MilestoneCreateArgs>(args: SelectSubset<T, MilestoneCreateArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Milestones.
+     * @param {MilestoneCreateManyArgs} args - Arguments to create many Milestones.
+     * @example
+     * // Create many Milestones
+     * const milestone = await prisma.milestone.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MilestoneCreateManyArgs>(args?: SelectSubset<T, MilestoneCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Milestones and returns the data saved in the database.
+     * @param {MilestoneCreateManyAndReturnArgs} args - Arguments to create many Milestones.
+     * @example
+     * // Create many Milestones
+     * const milestone = await prisma.milestone.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Milestones and only return the `id`
+     * const milestoneWithIdOnly = await prisma.milestone.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MilestoneCreateManyAndReturnArgs>(args?: SelectSubset<T, MilestoneCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Milestone.
+     * @param {MilestoneDeleteArgs} args - Arguments to delete one Milestone.
+     * @example
+     * // Delete one Milestone
+     * const Milestone = await prisma.milestone.delete({
+     *   where: {
+     *     // ... filter to delete one Milestone
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MilestoneDeleteArgs>(args: SelectSubset<T, MilestoneDeleteArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Milestone.
+     * @param {MilestoneUpdateArgs} args - Arguments to update one Milestone.
+     * @example
+     * // Update one Milestone
+     * const milestone = await prisma.milestone.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MilestoneUpdateArgs>(args: SelectSubset<T, MilestoneUpdateArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Milestones.
+     * @param {MilestoneDeleteManyArgs} args - Arguments to filter Milestones to delete.
+     * @example
+     * // Delete a few Milestones
+     * const { count } = await prisma.milestone.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MilestoneDeleteManyArgs>(args?: SelectSubset<T, MilestoneDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Milestones.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Milestones
+     * const milestone = await prisma.milestone.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MilestoneUpdateManyArgs>(args: SelectSubset<T, MilestoneUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Milestones and returns the data updated in the database.
+     * @param {MilestoneUpdateManyAndReturnArgs} args - Arguments to update many Milestones.
+     * @example
+     * // Update many Milestones
+     * const milestone = await prisma.milestone.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Milestones and only return the `id`
+     * const milestoneWithIdOnly = await prisma.milestone.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MilestoneUpdateManyAndReturnArgs>(args: SelectSubset<T, MilestoneUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Milestone.
+     * @param {MilestoneUpsertArgs} args - Arguments to update or create a Milestone.
+     * @example
+     * // Update or create a Milestone
+     * const milestone = await prisma.milestone.upsert({
+     *   create: {
+     *     // ... data to create a Milestone
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Milestone we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MilestoneUpsertArgs>(args: SelectSubset<T, MilestoneUpsertArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Milestones.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneCountArgs} args - Arguments to filter Milestones to count.
+     * @example
+     * // Count the number of Milestones
+     * const count = await prisma.milestone.count({
+     *   where: {
+     *     // ... the filter for the Milestones we want to count
+     *   }
+     * })
+    **/
+    count<T extends MilestoneCountArgs>(
+      args?: Subset<T, MilestoneCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MilestoneCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Milestone.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MilestoneAggregateArgs>(args: Subset<T, MilestoneAggregateArgs>): Prisma.PrismaPromise<GetMilestoneAggregateType<T>>
+
+    /**
+     * Group by Milestone.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MilestoneGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MilestoneGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MilestoneGroupByArgs['orderBy'] }
+        : { orderBy?: MilestoneGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MilestoneGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMilestoneGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Milestone model
+   */
+  readonly fields: MilestoneFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Milestone.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MilestoneClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    subject<T extends SubjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SubjectDefaultArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    tasks<T extends Milestone$tasksArgs<ExtArgs> = {}>(args?: Subset<T, Milestone$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Milestone model
+   */
+  interface MilestoneFieldRefs {
+    readonly id: FieldRef<"Milestone", 'String'>
+    readonly title: FieldRef<"Milestone", 'String'>
+    readonly notes: FieldRef<"Milestone", 'String'>
+    readonly order: FieldRef<"Milestone", 'Int'>
+    readonly isCompleted: FieldRef<"Milestone", 'Boolean'>
+    readonly createdAt: FieldRef<"Milestone", 'DateTime'>
+    readonly updatedAt: FieldRef<"Milestone", 'DateTime'>
+    readonly subjectId: FieldRef<"Milestone", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Milestone findUnique
+   */
+  export type MilestoneFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * Filter, which Milestone to fetch.
+     */
+    where: MilestoneWhereUniqueInput
+  }
+
+  /**
+   * Milestone findUniqueOrThrow
+   */
+  export type MilestoneFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * Filter, which Milestone to fetch.
+     */
+    where: MilestoneWhereUniqueInput
+  }
+
+  /**
+   * Milestone findFirst
+   */
+  export type MilestoneFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * Filter, which Milestone to fetch.
+     */
+    where?: MilestoneWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Milestones to fetch.
+     */
+    orderBy?: MilestoneOrderByWithRelationInput | MilestoneOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Milestones.
+     */
+    cursor?: MilestoneWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Milestones from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Milestones.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Milestones.
+     */
+    distinct?: MilestoneScalarFieldEnum | MilestoneScalarFieldEnum[]
+  }
+
+  /**
+   * Milestone findFirstOrThrow
+   */
+  export type MilestoneFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * Filter, which Milestone to fetch.
+     */
+    where?: MilestoneWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Milestones to fetch.
+     */
+    orderBy?: MilestoneOrderByWithRelationInput | MilestoneOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Milestones.
+     */
+    cursor?: MilestoneWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Milestones from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Milestones.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Milestones.
+     */
+    distinct?: MilestoneScalarFieldEnum | MilestoneScalarFieldEnum[]
+  }
+
+  /**
+   * Milestone findMany
+   */
+  export type MilestoneFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * Filter, which Milestones to fetch.
+     */
+    where?: MilestoneWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Milestones to fetch.
+     */
+    orderBy?: MilestoneOrderByWithRelationInput | MilestoneOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Milestones.
+     */
+    cursor?: MilestoneWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Milestones from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Milestones.
+     */
+    skip?: number
+    distinct?: MilestoneScalarFieldEnum | MilestoneScalarFieldEnum[]
+  }
+
+  /**
+   * Milestone create
+   */
+  export type MilestoneCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Milestone.
+     */
+    data: XOR<MilestoneCreateInput, MilestoneUncheckedCreateInput>
+  }
+
+  /**
+   * Milestone createMany
+   */
+  export type MilestoneCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Milestones.
+     */
+    data: MilestoneCreateManyInput | MilestoneCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Milestone createManyAndReturn
+   */
+  export type MilestoneCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * The data used to create many Milestones.
+     */
+    data: MilestoneCreateManyInput | MilestoneCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Milestone update
+   */
+  export type MilestoneUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Milestone.
+     */
+    data: XOR<MilestoneUpdateInput, MilestoneUncheckedUpdateInput>
+    /**
+     * Choose, which Milestone to update.
+     */
+    where: MilestoneWhereUniqueInput
+  }
+
+  /**
+   * Milestone updateMany
+   */
+  export type MilestoneUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Milestones.
+     */
+    data: XOR<MilestoneUpdateManyMutationInput, MilestoneUncheckedUpdateManyInput>
+    /**
+     * Filter which Milestones to update
+     */
+    where?: MilestoneWhereInput
+    /**
+     * Limit how many Milestones to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Milestone updateManyAndReturn
+   */
+  export type MilestoneUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * The data used to update Milestones.
+     */
+    data: XOR<MilestoneUpdateManyMutationInput, MilestoneUncheckedUpdateManyInput>
+    /**
+     * Filter which Milestones to update
+     */
+    where?: MilestoneWhereInput
+    /**
+     * Limit how many Milestones to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Milestone upsert
+   */
+  export type MilestoneUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Milestone to update in case it exists.
+     */
+    where: MilestoneWhereUniqueInput
+    /**
+     * In case the Milestone found by the `where` argument doesn't exist, create a new Milestone with this data.
+     */
+    create: XOR<MilestoneCreateInput, MilestoneUncheckedCreateInput>
+    /**
+     * In case the Milestone was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MilestoneUpdateInput, MilestoneUncheckedUpdateInput>
+  }
+
+  /**
+   * Milestone delete
+   */
+  export type MilestoneDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    /**
+     * Filter which Milestone to delete.
+     */
+    where: MilestoneWhereUniqueInput
+  }
+
+  /**
+   * Milestone deleteMany
+   */
+  export type MilestoneDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Milestones to delete
+     */
+    where?: MilestoneWhereInput
+    /**
+     * Limit how many Milestones to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Milestone.tasks
+   */
+  export type Milestone$tasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    cursor?: TaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
+  }
+
+  /**
+   * Milestone without action
+   */
+  export type MilestoneDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Task
+   */
+
+  export type AggregateTask = {
+    _count: TaskCountAggregateOutputType | null
+    _avg: TaskAvgAggregateOutputType | null
+    _sum: TaskSumAggregateOutputType | null
+    _min: TaskMinAggregateOutputType | null
+    _max: TaskMaxAggregateOutputType | null
+  }
+
+  export type TaskAvgAggregateOutputType = {
+    estimatedTime: number | null
+    timeSpent: number | null
+  }
+
+  export type TaskSumAggregateOutputType = {
+    estimatedTime: number | null
+    timeSpent: number | null
+  }
+
+  export type TaskMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    description: string | null
+    isCompleted: boolean | null
+    completedAt: Date | null
+    dueDate: Date | null
+    priority: $Enums.Priority | null
+    estimatedTime: number | null
+    timeSpent: number | null
+    createdAt: Date | null
+    userId: string | null
+    subjectId: string | null
+    milestoneId: string | null
+  }
+
+  export type TaskMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    description: string | null
+    isCompleted: boolean | null
+    completedAt: Date | null
+    dueDate: Date | null
+    priority: $Enums.Priority | null
+    estimatedTime: number | null
+    timeSpent: number | null
+    createdAt: Date | null
+    userId: string | null
+    subjectId: string | null
+    milestoneId: string | null
+  }
+
+  export type TaskCountAggregateOutputType = {
+    id: number
+    title: number
+    description: number
+    isCompleted: number
+    completedAt: number
+    dueDate: number
+    priority: number
+    estimatedTime: number
+    timeSpent: number
+    createdAt: number
+    userId: number
+    subjectId: number
+    milestoneId: number
+    _all: number
+  }
+
+
+  export type TaskAvgAggregateInputType = {
+    estimatedTime?: true
+    timeSpent?: true
+  }
+
+  export type TaskSumAggregateInputType = {
+    estimatedTime?: true
+    timeSpent?: true
+  }
+
+  export type TaskMinAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    isCompleted?: true
+    completedAt?: true
+    dueDate?: true
+    priority?: true
+    estimatedTime?: true
+    timeSpent?: true
+    createdAt?: true
+    userId?: true
+    subjectId?: true
+    milestoneId?: true
+  }
+
+  export type TaskMaxAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    isCompleted?: true
+    completedAt?: true
+    dueDate?: true
+    priority?: true
+    estimatedTime?: true
+    timeSpent?: true
+    createdAt?: true
+    userId?: true
+    subjectId?: true
+    milestoneId?: true
+  }
+
+  export type TaskCountAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    isCompleted?: true
+    completedAt?: true
+    dueDate?: true
+    priority?: true
+    estimatedTime?: true
+    timeSpent?: true
+    createdAt?: true
+    userId?: true
+    subjectId?: true
+    milestoneId?: true
+    _all?: true
+  }
+
+  export type TaskAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Task to aggregate.
+     */
+    where?: TaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tasks to fetch.
+     */
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Tasks
+    **/
+    _count?: true | TaskCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TaskAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TaskSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TaskMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TaskMaxAggregateInputType
+  }
+
+  export type GetTaskAggregateType<T extends TaskAggregateArgs> = {
+        [P in keyof T & keyof AggregateTask]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTask[P]>
+      : GetScalarType<T[P], AggregateTask[P]>
+  }
+
+
+
+
+  export type TaskGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskWhereInput
+    orderBy?: TaskOrderByWithAggregationInput | TaskOrderByWithAggregationInput[]
+    by: TaskScalarFieldEnum[] | TaskScalarFieldEnum
+    having?: TaskScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TaskCountAggregateInputType | true
+    _avg?: TaskAvgAggregateInputType
+    _sum?: TaskSumAggregateInputType
+    _min?: TaskMinAggregateInputType
+    _max?: TaskMaxAggregateInputType
+  }
+
+  export type TaskGroupByOutputType = {
+    id: string
+    title: string
+    description: string | null
+    isCompleted: boolean
+    completedAt: Date | null
+    dueDate: Date | null
+    priority: $Enums.Priority
+    estimatedTime: number | null
+    timeSpent: number | null
+    createdAt: Date
+    userId: string
+    subjectId: string
+    milestoneId: string | null
+    _count: TaskCountAggregateOutputType | null
+    _avg: TaskAvgAggregateOutputType | null
+    _sum: TaskSumAggregateOutputType | null
+    _min: TaskMinAggregateOutputType | null
+    _max: TaskMaxAggregateOutputType | null
+  }
+
+  type GetTaskGroupByPayload<T extends TaskGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TaskGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TaskGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TaskGroupByOutputType[P]>
+            : GetScalarType<T[P], TaskGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TaskSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    isCompleted?: boolean
+    completedAt?: boolean
+    dueDate?: boolean
+    priority?: boolean
+    estimatedTime?: boolean
+    timeSpent?: boolean
+    createdAt?: boolean
+    userId?: boolean
+    subjectId?: boolean
+    milestoneId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    milestone?: boolean | Task$milestoneArgs<ExtArgs>
+    timerSessions?: boolean | Task$timerSessionsArgs<ExtArgs>
+    _count?: boolean | TaskCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["task"]>
+
+  export type TaskSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    isCompleted?: boolean
+    completedAt?: boolean
+    dueDate?: boolean
+    priority?: boolean
+    estimatedTime?: boolean
+    timeSpent?: boolean
+    createdAt?: boolean
+    userId?: boolean
+    subjectId?: boolean
+    milestoneId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    milestone?: boolean | Task$milestoneArgs<ExtArgs>
+  }, ExtArgs["result"]["task"]>
+
+  export type TaskSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    isCompleted?: boolean
+    completedAt?: boolean
+    dueDate?: boolean
+    priority?: boolean
+    estimatedTime?: boolean
+    timeSpent?: boolean
+    createdAt?: boolean
+    userId?: boolean
+    subjectId?: boolean
+    milestoneId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    milestone?: boolean | Task$milestoneArgs<ExtArgs>
+  }, ExtArgs["result"]["task"]>
+
+  export type TaskSelectScalar = {
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    isCompleted?: boolean
+    completedAt?: boolean
+    dueDate?: boolean
+    priority?: boolean
+    estimatedTime?: boolean
+    timeSpent?: boolean
+    createdAt?: boolean
+    userId?: boolean
+    subjectId?: boolean
+    milestoneId?: boolean
+  }
+
+  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "isCompleted" | "completedAt" | "dueDate" | "priority" | "estimatedTime" | "timeSpent" | "createdAt" | "userId" | "subjectId" | "milestoneId", ExtArgs["result"]["task"]>
+  export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    milestone?: boolean | Task$milestoneArgs<ExtArgs>
+    timerSessions?: boolean | Task$timerSessionsArgs<ExtArgs>
+    _count?: boolean | TaskCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type TaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    milestone?: boolean | Task$milestoneArgs<ExtArgs>
+  }
+  export type TaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+    milestone?: boolean | Task$milestoneArgs<ExtArgs>
+  }
+
+  export type $TaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Task"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      subject: Prisma.$SubjectPayload<ExtArgs>
+      milestone: Prisma.$MilestonePayload<ExtArgs> | null
+      timerSessions: Prisma.$TimerSessionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      description: string | null
+      isCompleted: boolean
+      completedAt: Date | null
+      dueDate: Date | null
+      priority: $Enums.Priority
+      estimatedTime: number | null
+      timeSpent: number | null
+      createdAt: Date
+      userId: string
+      subjectId: string
+      milestoneId: string | null
+    }, ExtArgs["result"]["task"]>
+    composites: {}
+  }
+
+  type TaskGetPayload<S extends boolean | null | undefined | TaskDefaultArgs> = $Result.GetResult<Prisma.$TaskPayload, S>
+
+  type TaskCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TaskFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TaskCountAggregateInputType | true
+    }
+
+  export interface TaskDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Task'], meta: { name: 'Task' } }
+    /**
+     * Find zero or one Task that matches the filter.
+     * @param {TaskFindUniqueArgs} args - Arguments to find a Task
+     * @example
+     * // Get one Task
+     * const task = await prisma.task.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TaskFindUniqueArgs>(args: SelectSubset<T, TaskFindUniqueArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Task that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TaskFindUniqueOrThrowArgs} args - Arguments to find a Task
+     * @example
+     * // Get one Task
+     * const task = await prisma.task.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TaskFindUniqueOrThrowArgs>(args: SelectSubset<T, TaskFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Task that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskFindFirstArgs} args - Arguments to find a Task
+     * @example
+     * // Get one Task
+     * const task = await prisma.task.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TaskFindFirstArgs>(args?: SelectSubset<T, TaskFindFirstArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Task that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskFindFirstOrThrowArgs} args - Arguments to find a Task
+     * @example
+     * // Get one Task
+     * const task = await prisma.task.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TaskFindFirstOrThrowArgs>(args?: SelectSubset<T, TaskFindFirstOrThrowArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Tasks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Tasks
+     * const tasks = await prisma.task.findMany()
+     * 
+     * // Get first 10 Tasks
+     * const tasks = await prisma.task.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const taskWithIdOnly = await prisma.task.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TaskFindManyArgs>(args?: SelectSubset<T, TaskFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Task.
+     * @param {TaskCreateArgs} args - Arguments to create a Task.
+     * @example
+     * // Create one Task
+     * const Task = await prisma.task.create({
+     *   data: {
+     *     // ... data to create a Task
+     *   }
+     * })
+     * 
+     */
+    create<T extends TaskCreateArgs>(args: SelectSubset<T, TaskCreateArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Tasks.
+     * @param {TaskCreateManyArgs} args - Arguments to create many Tasks.
+     * @example
+     * // Create many Tasks
+     * const task = await prisma.task.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TaskCreateManyArgs>(args?: SelectSubset<T, TaskCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Tasks and returns the data saved in the database.
+     * @param {TaskCreateManyAndReturnArgs} args - Arguments to create many Tasks.
+     * @example
+     * // Create many Tasks
+     * const task = await prisma.task.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Tasks and only return the `id`
+     * const taskWithIdOnly = await prisma.task.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TaskCreateManyAndReturnArgs>(args?: SelectSubset<T, TaskCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Task.
+     * @param {TaskDeleteArgs} args - Arguments to delete one Task.
+     * @example
+     * // Delete one Task
+     * const Task = await prisma.task.delete({
+     *   where: {
+     *     // ... filter to delete one Task
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TaskDeleteArgs>(args: SelectSubset<T, TaskDeleteArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Task.
+     * @param {TaskUpdateArgs} args - Arguments to update one Task.
+     * @example
+     * // Update one Task
+     * const task = await prisma.task.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TaskUpdateArgs>(args: SelectSubset<T, TaskUpdateArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Tasks.
+     * @param {TaskDeleteManyArgs} args - Arguments to filter Tasks to delete.
+     * @example
+     * // Delete a few Tasks
+     * const { count } = await prisma.task.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TaskDeleteManyArgs>(args?: SelectSubset<T, TaskDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Tasks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Tasks
+     * const task = await prisma.task.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TaskUpdateManyArgs>(args: SelectSubset<T, TaskUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Tasks and returns the data updated in the database.
+     * @param {TaskUpdateManyAndReturnArgs} args - Arguments to update many Tasks.
+     * @example
+     * // Update many Tasks
+     * const task = await prisma.task.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Tasks and only return the `id`
+     * const taskWithIdOnly = await prisma.task.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TaskUpdateManyAndReturnArgs>(args: SelectSubset<T, TaskUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Task.
+     * @param {TaskUpsertArgs} args - Arguments to update or create a Task.
+     * @example
+     * // Update or create a Task
+     * const task = await prisma.task.upsert({
+     *   create: {
+     *     // ... data to create a Task
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Task we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TaskUpsertArgs>(args: SelectSubset<T, TaskUpsertArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Tasks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskCountArgs} args - Arguments to filter Tasks to count.
+     * @example
+     * // Count the number of Tasks
+     * const count = await prisma.task.count({
+     *   where: {
+     *     // ... the filter for the Tasks we want to count
+     *   }
+     * })
+    **/
+    count<T extends TaskCountArgs>(
+      args?: Subset<T, TaskCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TaskCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Task.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TaskAggregateArgs>(args: Subset<T, TaskAggregateArgs>): Prisma.PrismaPromise<GetTaskAggregateType<T>>
+
+    /**
+     * Group by Task.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TaskGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TaskGroupByArgs['orderBy'] }
+        : { orderBy?: TaskGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TaskGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTaskGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Task model
+   */
+  readonly fields: TaskFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Task.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TaskClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    subject<T extends SubjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SubjectDefaultArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    milestone<T extends Task$milestoneArgs<ExtArgs> = {}>(args?: Subset<T, Task$milestoneArgs<ExtArgs>>): Prisma__MilestoneClient<$Result.GetResult<Prisma.$MilestonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    timerSessions<T extends Task$timerSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Task$timerSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimerSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Task model
+   */
+  interface TaskFieldRefs {
+    readonly id: FieldRef<"Task", 'String'>
+    readonly title: FieldRef<"Task", 'String'>
+    readonly description: FieldRef<"Task", 'String'>
+    readonly isCompleted: FieldRef<"Task", 'Boolean'>
+    readonly completedAt: FieldRef<"Task", 'DateTime'>
+    readonly dueDate: FieldRef<"Task", 'DateTime'>
+    readonly priority: FieldRef<"Task", 'Priority'>
+    readonly estimatedTime: FieldRef<"Task", 'Int'>
+    readonly timeSpent: FieldRef<"Task", 'Int'>
+    readonly createdAt: FieldRef<"Task", 'DateTime'>
+    readonly userId: FieldRef<"Task", 'String'>
+    readonly subjectId: FieldRef<"Task", 'String'>
+    readonly milestoneId: FieldRef<"Task", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Task findUnique
+   */
+  export type TaskFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * Filter, which Task to fetch.
+     */
+    where: TaskWhereUniqueInput
+  }
+
+  /**
+   * Task findUniqueOrThrow
+   */
+  export type TaskFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * Filter, which Task to fetch.
+     */
+    where: TaskWhereUniqueInput
+  }
+
+  /**
+   * Task findFirst
+   */
+  export type TaskFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * Filter, which Task to fetch.
+     */
+    where?: TaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tasks to fetch.
+     */
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Tasks.
+     */
+    cursor?: TaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tasks.
+     */
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
+  }
+
+  /**
+   * Task findFirstOrThrow
+   */
+  export type TaskFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * Filter, which Task to fetch.
+     */
+    where?: TaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tasks to fetch.
+     */
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Tasks.
+     */
+    cursor?: TaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tasks.
+     */
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
+  }
+
+  /**
+   * Task findMany
+   */
+  export type TaskFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * Filter, which Tasks to fetch.
+     */
+    where?: TaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tasks to fetch.
+     */
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Tasks.
+     */
+    cursor?: TaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tasks.
+     */
+    skip?: number
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
+  }
+
+  /**
+   * Task create
+   */
+  export type TaskCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Task.
+     */
+    data: XOR<TaskCreateInput, TaskUncheckedCreateInput>
+  }
+
+  /**
+   * Task createMany
+   */
+  export type TaskCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Tasks.
+     */
+    data: TaskCreateManyInput | TaskCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Task createManyAndReturn
+   */
+  export type TaskCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * The data used to create many Tasks.
+     */
+    data: TaskCreateManyInput | TaskCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Task update
+   */
+  export type TaskUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Task.
+     */
+    data: XOR<TaskUpdateInput, TaskUncheckedUpdateInput>
+    /**
+     * Choose, which Task to update.
+     */
+    where: TaskWhereUniqueInput
+  }
+
+  /**
+   * Task updateMany
+   */
+  export type TaskUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Tasks.
+     */
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyInput>
+    /**
+     * Filter which Tasks to update
+     */
+    where?: TaskWhereInput
+    /**
+     * Limit how many Tasks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Task updateManyAndReturn
+   */
+  export type TaskUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * The data used to update Tasks.
+     */
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyInput>
+    /**
+     * Filter which Tasks to update
+     */
+    where?: TaskWhereInput
+    /**
+     * Limit how many Tasks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Task upsert
+   */
+  export type TaskUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Task to update in case it exists.
+     */
+    where: TaskWhereUniqueInput
+    /**
+     * In case the Task found by the `where` argument doesn't exist, create a new Task with this data.
+     */
+    create: XOR<TaskCreateInput, TaskUncheckedCreateInput>
+    /**
+     * In case the Task was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TaskUpdateInput, TaskUncheckedUpdateInput>
+  }
+
+  /**
+   * Task delete
+   */
+  export type TaskDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    /**
+     * Filter which Task to delete.
+     */
+    where: TaskWhereUniqueInput
+  }
+
+  /**
+   * Task deleteMany
+   */
+  export type TaskDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Tasks to delete
+     */
+    where?: TaskWhereInput
+    /**
+     * Limit how many Tasks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Task.milestone
+   */
+  export type Task$milestoneArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Milestone
+     */
+    select?: MilestoneSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Milestone
+     */
+    omit?: MilestoneOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MilestoneInclude<ExtArgs> | null
+    where?: MilestoneWhereInput
+  }
+
+  /**
+   * Task.timerSessions
+   */
+  export type Task$timerSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the TimerSession
      */
@@ -3647,393 +6245,424 @@ export namespace Prisma {
   }
 
   /**
-   * Todo without action
+   * Task without action
    */
-  export type TodoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TaskDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Todo
+     * Select specific fields to fetch from the Task
      */
-    select?: TodoSelect<ExtArgs> | null
+    select?: TaskSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Todo
+     * Omit specific fields from the Task
      */
-    omit?: TodoOmit<ExtArgs> | null
+    omit?: TaskOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TodoInclude<ExtArgs> | null
+    include?: TaskInclude<ExtArgs> | null
   }
 
 
   /**
-   * Model Suggestion
+   * Model Resource
    */
 
-  export type AggregateSuggestion = {
-    _count: SuggestionCountAggregateOutputType | null
-    _min: SuggestionMinAggregateOutputType | null
-    _max: SuggestionMaxAggregateOutputType | null
+  export type AggregateResource = {
+    _count: ResourceCountAggregateOutputType | null
+    _min: ResourceMinAggregateOutputType | null
+    _max: ResourceMaxAggregateOutputType | null
   }
 
-  export type SuggestionMinAggregateOutputType = {
+  export type ResourceMinAggregateOutputType = {
     id: string | null
-    suggestionType: $Enums.SuggestionType | null
-    content: string | null
+    type: $Enums.ResourceType | null
+    url: string | null
+    title: string | null
+    note: string | null
     createdAt: Date | null
-    forDate: Date | null
-    isAccepted: boolean | null
+    updatedAt: Date | null
     userId: string | null
+    subjectId: string | null
   }
 
-  export type SuggestionMaxAggregateOutputType = {
+  export type ResourceMaxAggregateOutputType = {
     id: string | null
-    suggestionType: $Enums.SuggestionType | null
-    content: string | null
+    type: $Enums.ResourceType | null
+    url: string | null
+    title: string | null
+    note: string | null
     createdAt: Date | null
-    forDate: Date | null
-    isAccepted: boolean | null
+    updatedAt: Date | null
     userId: string | null
+    subjectId: string | null
   }
 
-  export type SuggestionCountAggregateOutputType = {
+  export type ResourceCountAggregateOutputType = {
     id: number
-    suggestionType: number
-    content: number
+    type: number
+    url: number
+    title: number
+    note: number
     createdAt: number
-    forDate: number
-    isAccepted: number
+    updatedAt: number
     userId: number
+    subjectId: number
     _all: number
   }
 
 
-  export type SuggestionMinAggregateInputType = {
+  export type ResourceMinAggregateInputType = {
     id?: true
-    suggestionType?: true
-    content?: true
+    type?: true
+    url?: true
+    title?: true
+    note?: true
     createdAt?: true
-    forDate?: true
-    isAccepted?: true
+    updatedAt?: true
     userId?: true
+    subjectId?: true
   }
 
-  export type SuggestionMaxAggregateInputType = {
+  export type ResourceMaxAggregateInputType = {
     id?: true
-    suggestionType?: true
-    content?: true
+    type?: true
+    url?: true
+    title?: true
+    note?: true
     createdAt?: true
-    forDate?: true
-    isAccepted?: true
+    updatedAt?: true
     userId?: true
+    subjectId?: true
   }
 
-  export type SuggestionCountAggregateInputType = {
+  export type ResourceCountAggregateInputType = {
     id?: true
-    suggestionType?: true
-    content?: true
+    type?: true
+    url?: true
+    title?: true
+    note?: true
     createdAt?: true
-    forDate?: true
-    isAccepted?: true
+    updatedAt?: true
     userId?: true
+    subjectId?: true
     _all?: true
   }
 
-  export type SuggestionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Suggestion to aggregate.
+     * Filter which Resource to aggregate.
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Suggestions to fetch.
+     * Determine the order of Resources to fetch.
      */
-    orderBy?: SuggestionOrderByWithRelationInput | SuggestionOrderByWithRelationInput[]
+    orderBy?: ResourceOrderByWithRelationInput | ResourceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: SuggestionWhereUniqueInput
+    cursor?: ResourceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Suggestions from the position of the cursor.
+     * Take `±n` Resources from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Suggestions.
+     * Skip the first `n` Resources.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned Suggestions
+     * Count returned Resources
     **/
-    _count?: true | SuggestionCountAggregateInputType
+    _count?: true | ResourceCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: SuggestionMinAggregateInputType
+    _min?: ResourceMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: SuggestionMaxAggregateInputType
+    _max?: ResourceMaxAggregateInputType
   }
 
-  export type GetSuggestionAggregateType<T extends SuggestionAggregateArgs> = {
-        [P in keyof T & keyof AggregateSuggestion]: P extends '_count' | 'count'
+  export type GetResourceAggregateType<T extends ResourceAggregateArgs> = {
+        [P in keyof T & keyof AggregateResource]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateSuggestion[P]>
-      : GetScalarType<T[P], AggregateSuggestion[P]>
+        : GetScalarType<T[P], AggregateResource[P]>
+      : GetScalarType<T[P], AggregateResource[P]>
   }
 
 
 
 
-  export type SuggestionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SuggestionWhereInput
-    orderBy?: SuggestionOrderByWithAggregationInput | SuggestionOrderByWithAggregationInput[]
-    by: SuggestionScalarFieldEnum[] | SuggestionScalarFieldEnum
-    having?: SuggestionScalarWhereWithAggregatesInput
+  export type ResourceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceWhereInput
+    orderBy?: ResourceOrderByWithAggregationInput | ResourceOrderByWithAggregationInput[]
+    by: ResourceScalarFieldEnum[] | ResourceScalarFieldEnum
+    having?: ResourceScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: SuggestionCountAggregateInputType | true
-    _min?: SuggestionMinAggregateInputType
-    _max?: SuggestionMaxAggregateInputType
+    _count?: ResourceCountAggregateInputType | true
+    _min?: ResourceMinAggregateInputType
+    _max?: ResourceMaxAggregateInputType
   }
 
-  export type SuggestionGroupByOutputType = {
+  export type ResourceGroupByOutputType = {
     id: string
-    suggestionType: $Enums.SuggestionType
-    content: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note: string | null
     createdAt: Date
-    forDate: Date
-    isAccepted: boolean
+    updatedAt: Date
     userId: string
-    _count: SuggestionCountAggregateOutputType | null
-    _min: SuggestionMinAggregateOutputType | null
-    _max: SuggestionMaxAggregateOutputType | null
+    subjectId: string
+    _count: ResourceCountAggregateOutputType | null
+    _min: ResourceMinAggregateOutputType | null
+    _max: ResourceMaxAggregateOutputType | null
   }
 
-  type GetSuggestionGroupByPayload<T extends SuggestionGroupByArgs> = Prisma.PrismaPromise<
+  type GetResourceGroupByPayload<T extends ResourceGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<SuggestionGroupByOutputType, T['by']> &
+      PickEnumerable<ResourceGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof SuggestionGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof ResourceGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], SuggestionGroupByOutputType[P]>
-            : GetScalarType<T[P], SuggestionGroupByOutputType[P]>
+              : GetScalarType<T[P], ResourceGroupByOutputType[P]>
+            : GetScalarType<T[P], ResourceGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type SuggestionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ResourceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    suggestionType?: boolean
-    content?: boolean
+    type?: boolean
+    url?: boolean
+    title?: boolean
+    note?: boolean
     createdAt?: boolean
-    forDate?: boolean
-    isAccepted?: boolean
+    updatedAt?: boolean
     userId?: boolean
+    subjectId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["suggestion"]>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["resource"]>
 
-  export type SuggestionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ResourceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    suggestionType?: boolean
-    content?: boolean
+    type?: boolean
+    url?: boolean
+    title?: boolean
+    note?: boolean
     createdAt?: boolean
-    forDate?: boolean
-    isAccepted?: boolean
+    updatedAt?: boolean
     userId?: boolean
+    subjectId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["suggestion"]>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["resource"]>
 
-  export type SuggestionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ResourceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    suggestionType?: boolean
-    content?: boolean
+    type?: boolean
+    url?: boolean
+    title?: boolean
+    note?: boolean
     createdAt?: boolean
-    forDate?: boolean
-    isAccepted?: boolean
+    updatedAt?: boolean
     userId?: boolean
+    subjectId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["suggestion"]>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["resource"]>
 
-  export type SuggestionSelectScalar = {
+  export type ResourceSelectScalar = {
     id?: boolean
-    suggestionType?: boolean
-    content?: boolean
+    type?: boolean
+    url?: boolean
+    title?: boolean
+    note?: boolean
     createdAt?: boolean
-    forDate?: boolean
-    isAccepted?: boolean
+    updatedAt?: boolean
     userId?: boolean
+    subjectId?: boolean
   }
 
-  export type SuggestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "suggestionType" | "content" | "createdAt" | "forDate" | "isAccepted" | "userId", ExtArgs["result"]["suggestion"]>
-  export type SuggestionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "url" | "title" | "note" | "createdAt" | "updatedAt" | "userId" | "subjectId", ExtArgs["result"]["resource"]>
+  export type ResourceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
   }
-  export type SuggestionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
   }
-  export type SuggestionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
   }
 
-  export type $SuggestionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Suggestion"
+  export type $ResourcePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Resource"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      subject: Prisma.$SubjectPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      suggestionType: $Enums.SuggestionType
-      content: string
+      type: $Enums.ResourceType
+      url: string
+      title: string
+      note: string | null
       createdAt: Date
-      forDate: Date
-      isAccepted: boolean
+      updatedAt: Date
       userId: string
-    }, ExtArgs["result"]["suggestion"]>
+      subjectId: string
+    }, ExtArgs["result"]["resource"]>
     composites: {}
   }
 
-  type SuggestionGetPayload<S extends boolean | null | undefined | SuggestionDefaultArgs> = $Result.GetResult<Prisma.$SuggestionPayload, S>
+  type ResourceGetPayload<S extends boolean | null | undefined | ResourceDefaultArgs> = $Result.GetResult<Prisma.$ResourcePayload, S>
 
-  type SuggestionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SuggestionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SuggestionCountAggregateInputType | true
+  type ResourceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ResourceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ResourceCountAggregateInputType | true
     }
 
-  export interface SuggestionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Suggestion'], meta: { name: 'Suggestion' } }
+  export interface ResourceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Resource'], meta: { name: 'Resource' } }
     /**
-     * Find zero or one Suggestion that matches the filter.
-     * @param {SuggestionFindUniqueArgs} args - Arguments to find a Suggestion
+     * Find zero or one Resource that matches the filter.
+     * @param {ResourceFindUniqueArgs} args - Arguments to find a Resource
      * @example
-     * // Get one Suggestion
-     * const suggestion = await prisma.suggestion.findUnique({
+     * // Get one Resource
+     * const resource = await prisma.resource.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends SuggestionFindUniqueArgs>(args: SelectSubset<T, SuggestionFindUniqueArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends ResourceFindUniqueArgs>(args: SelectSubset<T, ResourceFindUniqueArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Suggestion that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Resource that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {SuggestionFindUniqueOrThrowArgs} args - Arguments to find a Suggestion
+     * @param {ResourceFindUniqueOrThrowArgs} args - Arguments to find a Resource
      * @example
-     * // Get one Suggestion
-     * const suggestion = await prisma.suggestion.findUniqueOrThrow({
+     * // Get one Resource
+     * const resource = await prisma.resource.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends SuggestionFindUniqueOrThrowArgs>(args: SelectSubset<T, SuggestionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends ResourceFindUniqueOrThrowArgs>(args: SelectSubset<T, ResourceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Suggestion that matches the filter.
+     * Find the first Resource that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionFindFirstArgs} args - Arguments to find a Suggestion
+     * @param {ResourceFindFirstArgs} args - Arguments to find a Resource
      * @example
-     * // Get one Suggestion
-     * const suggestion = await prisma.suggestion.findFirst({
+     * // Get one Resource
+     * const resource = await prisma.resource.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends SuggestionFindFirstArgs>(args?: SelectSubset<T, SuggestionFindFirstArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends ResourceFindFirstArgs>(args?: SelectSubset<T, ResourceFindFirstArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Suggestion that matches the filter or
+     * Find the first Resource that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionFindFirstOrThrowArgs} args - Arguments to find a Suggestion
+     * @param {ResourceFindFirstOrThrowArgs} args - Arguments to find a Resource
      * @example
-     * // Get one Suggestion
-     * const suggestion = await prisma.suggestion.findFirstOrThrow({
+     * // Get one Resource
+     * const resource = await prisma.resource.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends SuggestionFindFirstOrThrowArgs>(args?: SelectSubset<T, SuggestionFindFirstOrThrowArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends ResourceFindFirstOrThrowArgs>(args?: SelectSubset<T, ResourceFindFirstOrThrowArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Suggestions that matches the filter.
+     * Find zero or more Resources that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {ResourceFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Suggestions
-     * const suggestions = await prisma.suggestion.findMany()
+     * // Get all Resources
+     * const resources = await prisma.resource.findMany()
      * 
-     * // Get first 10 Suggestions
-     * const suggestions = await prisma.suggestion.findMany({ take: 10 })
+     * // Get first 10 Resources
+     * const resources = await prisma.resource.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const suggestionWithIdOnly = await prisma.suggestion.findMany({ select: { id: true } })
+     * const resourceWithIdOnly = await prisma.resource.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends SuggestionFindManyArgs>(args?: SelectSubset<T, SuggestionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends ResourceFindManyArgs>(args?: SelectSubset<T, ResourceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Suggestion.
-     * @param {SuggestionCreateArgs} args - Arguments to create a Suggestion.
+     * Create a Resource.
+     * @param {ResourceCreateArgs} args - Arguments to create a Resource.
      * @example
-     * // Create one Suggestion
-     * const Suggestion = await prisma.suggestion.create({
+     * // Create one Resource
+     * const Resource = await prisma.resource.create({
      *   data: {
-     *     // ... data to create a Suggestion
+     *     // ... data to create a Resource
      *   }
      * })
      * 
      */
-    create<T extends SuggestionCreateArgs>(args: SelectSubset<T, SuggestionCreateArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends ResourceCreateArgs>(args: SelectSubset<T, ResourceCreateArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Suggestions.
-     * @param {SuggestionCreateManyArgs} args - Arguments to create many Suggestions.
+     * Create many Resources.
+     * @param {ResourceCreateManyArgs} args - Arguments to create many Resources.
      * @example
-     * // Create many Suggestions
-     * const suggestion = await prisma.suggestion.createMany({
+     * // Create many Resources
+     * const resource = await prisma.resource.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends SuggestionCreateManyArgs>(args?: SelectSubset<T, SuggestionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends ResourceCreateManyArgs>(args?: SelectSubset<T, ResourceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Suggestions and returns the data saved in the database.
-     * @param {SuggestionCreateManyAndReturnArgs} args - Arguments to create many Suggestions.
+     * Create many Resources and returns the data saved in the database.
+     * @param {ResourceCreateManyAndReturnArgs} args - Arguments to create many Resources.
      * @example
-     * // Create many Suggestions
-     * const suggestion = await prisma.suggestion.createManyAndReturn({
+     * // Create many Resources
+     * const resource = await prisma.resource.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many Suggestions and only return the `id`
-     * const suggestionWithIdOnly = await prisma.suggestion.createManyAndReturn({
+     * // Create many Resources and only return the `id`
+     * const resourceWithIdOnly = await prisma.resource.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -4043,28 +6672,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends SuggestionCreateManyAndReturnArgs>(args?: SelectSubset<T, SuggestionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends ResourceCreateManyAndReturnArgs>(args?: SelectSubset<T, ResourceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a Suggestion.
-     * @param {SuggestionDeleteArgs} args - Arguments to delete one Suggestion.
+     * Delete a Resource.
+     * @param {ResourceDeleteArgs} args - Arguments to delete one Resource.
      * @example
-     * // Delete one Suggestion
-     * const Suggestion = await prisma.suggestion.delete({
+     * // Delete one Resource
+     * const Resource = await prisma.resource.delete({
      *   where: {
-     *     // ... filter to delete one Suggestion
+     *     // ... filter to delete one Resource
      *   }
      * })
      * 
      */
-    delete<T extends SuggestionDeleteArgs>(args: SelectSubset<T, SuggestionDeleteArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends ResourceDeleteArgs>(args: SelectSubset<T, ResourceDeleteArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Suggestion.
-     * @param {SuggestionUpdateArgs} args - Arguments to update one Suggestion.
+     * Update one Resource.
+     * @param {ResourceUpdateArgs} args - Arguments to update one Resource.
      * @example
-     * // Update one Suggestion
-     * const suggestion = await prisma.suggestion.update({
+     * // Update one Resource
+     * const resource = await prisma.resource.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -4074,30 +6703,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends SuggestionUpdateArgs>(args: SelectSubset<T, SuggestionUpdateArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends ResourceUpdateArgs>(args: SelectSubset<T, ResourceUpdateArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Suggestions.
-     * @param {SuggestionDeleteManyArgs} args - Arguments to filter Suggestions to delete.
+     * Delete zero or more Resources.
+     * @param {ResourceDeleteManyArgs} args - Arguments to filter Resources to delete.
      * @example
-     * // Delete a few Suggestions
-     * const { count } = await prisma.suggestion.deleteMany({
+     * // Delete a few Resources
+     * const { count } = await prisma.resource.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends SuggestionDeleteManyArgs>(args?: SelectSubset<T, SuggestionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends ResourceDeleteManyArgs>(args?: SelectSubset<T, ResourceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Suggestions.
+     * Update zero or more Resources.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {ResourceUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Suggestions
-     * const suggestion = await prisma.suggestion.updateMany({
+     * // Update many Resources
+     * const resource = await prisma.resource.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -4107,14 +6736,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends SuggestionUpdateManyArgs>(args: SelectSubset<T, SuggestionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends ResourceUpdateManyArgs>(args: SelectSubset<T, ResourceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Suggestions and returns the data updated in the database.
-     * @param {SuggestionUpdateManyAndReturnArgs} args - Arguments to update many Suggestions.
+     * Update zero or more Resources and returns the data updated in the database.
+     * @param {ResourceUpdateManyAndReturnArgs} args - Arguments to update many Resources.
      * @example
-     * // Update many Suggestions
-     * const suggestion = await prisma.suggestion.updateManyAndReturn({
+     * // Update many Resources
+     * const resource = await prisma.resource.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -4123,8 +6752,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Suggestions and only return the `id`
-     * const suggestionWithIdOnly = await prisma.suggestion.updateManyAndReturn({
+     * // Update zero or more Resources and only return the `id`
+     * const resourceWithIdOnly = await prisma.resource.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -4137,56 +6766,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends SuggestionUpdateManyAndReturnArgs>(args: SelectSubset<T, SuggestionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends ResourceUpdateManyAndReturnArgs>(args: SelectSubset<T, ResourceUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one Suggestion.
-     * @param {SuggestionUpsertArgs} args - Arguments to update or create a Suggestion.
+     * Create or update one Resource.
+     * @param {ResourceUpsertArgs} args - Arguments to update or create a Resource.
      * @example
-     * // Update or create a Suggestion
-     * const suggestion = await prisma.suggestion.upsert({
+     * // Update or create a Resource
+     * const resource = await prisma.resource.upsert({
      *   create: {
-     *     // ... data to create a Suggestion
+     *     // ... data to create a Resource
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Suggestion we want to update
+     *     // ... the filter for the Resource we want to update
      *   }
      * })
      */
-    upsert<T extends SuggestionUpsertArgs>(args: SelectSubset<T, SuggestionUpsertArgs<ExtArgs>>): Prisma__SuggestionClient<$Result.GetResult<Prisma.$SuggestionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends ResourceUpsertArgs>(args: SelectSubset<T, ResourceUpsertArgs<ExtArgs>>): Prisma__ResourceClient<$Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Suggestions.
+     * Count the number of Resources.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionCountArgs} args - Arguments to filter Suggestions to count.
+     * @param {ResourceCountArgs} args - Arguments to filter Resources to count.
      * @example
-     * // Count the number of Suggestions
-     * const count = await prisma.suggestion.count({
+     * // Count the number of Resources
+     * const count = await prisma.resource.count({
      *   where: {
-     *     // ... the filter for the Suggestions we want to count
+     *     // ... the filter for the Resources we want to count
      *   }
      * })
     **/
-    count<T extends SuggestionCountArgs>(
-      args?: Subset<T, SuggestionCountArgs>,
+    count<T extends ResourceCountArgs>(
+      args?: Subset<T, ResourceCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], SuggestionCountAggregateOutputType>
+          : GetScalarType<T['select'], ResourceCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Suggestion.
+     * Allows you to perform aggregations operations on a Resource.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {ResourceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -4206,13 +6835,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends SuggestionAggregateArgs>(args: Subset<T, SuggestionAggregateArgs>): Prisma.PrismaPromise<GetSuggestionAggregateType<T>>
+    aggregate<T extends ResourceAggregateArgs>(args: Subset<T, ResourceAggregateArgs>): Prisma.PrismaPromise<GetResourceAggregateType<T>>
 
     /**
-     * Group by Suggestion.
+     * Group by Resource.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {SuggestionGroupByArgs} args - Group by arguments.
+     * @param {ResourceGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -4227,14 +6856,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends SuggestionGroupByArgs,
+      T extends ResourceGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SuggestionGroupByArgs['orderBy'] }
-        : { orderBy?: SuggestionGroupByArgs['orderBy'] },
+        ? { orderBy: ResourceGroupByArgs['orderBy'] }
+        : { orderBy?: ResourceGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -4283,22 +6912,23 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, SuggestionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSuggestionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, ResourceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetResourceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the Suggestion model
+   * Fields of the Resource model
    */
-  readonly fields: SuggestionFieldRefs;
+  readonly fields: ResourceFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for Suggestion.
+   * The delegate class that acts as a "Promise-like" for Resource.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__SuggestionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__ResourceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    subject<T extends SubjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SubjectDefaultArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4325,427 +6955,429 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the Suggestion model
+   * Fields of the Resource model
    */
-  interface SuggestionFieldRefs {
-    readonly id: FieldRef<"Suggestion", 'String'>
-    readonly suggestionType: FieldRef<"Suggestion", 'SuggestionType'>
-    readonly content: FieldRef<"Suggestion", 'String'>
-    readonly createdAt: FieldRef<"Suggestion", 'DateTime'>
-    readonly forDate: FieldRef<"Suggestion", 'DateTime'>
-    readonly isAccepted: FieldRef<"Suggestion", 'Boolean'>
-    readonly userId: FieldRef<"Suggestion", 'String'>
+  interface ResourceFieldRefs {
+    readonly id: FieldRef<"Resource", 'String'>
+    readonly type: FieldRef<"Resource", 'ResourceType'>
+    readonly url: FieldRef<"Resource", 'String'>
+    readonly title: FieldRef<"Resource", 'String'>
+    readonly note: FieldRef<"Resource", 'String'>
+    readonly createdAt: FieldRef<"Resource", 'DateTime'>
+    readonly updatedAt: FieldRef<"Resource", 'DateTime'>
+    readonly userId: FieldRef<"Resource", 'String'>
+    readonly subjectId: FieldRef<"Resource", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * Suggestion findUnique
+   * Resource findUnique
    */
-  export type SuggestionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * Filter, which Suggestion to fetch.
+     * Filter, which Resource to fetch.
      */
-    where: SuggestionWhereUniqueInput
+    where: ResourceWhereUniqueInput
   }
 
   /**
-   * Suggestion findUniqueOrThrow
+   * Resource findUniqueOrThrow
    */
-  export type SuggestionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * Filter, which Suggestion to fetch.
+     * Filter, which Resource to fetch.
      */
-    where: SuggestionWhereUniqueInput
+    where: ResourceWhereUniqueInput
   }
 
   /**
-   * Suggestion findFirst
+   * Resource findFirst
    */
-  export type SuggestionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * Filter, which Suggestion to fetch.
+     * Filter, which Resource to fetch.
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Suggestions to fetch.
+     * Determine the order of Resources to fetch.
      */
-    orderBy?: SuggestionOrderByWithRelationInput | SuggestionOrderByWithRelationInput[]
+    orderBy?: ResourceOrderByWithRelationInput | ResourceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Suggestions.
+     * Sets the position for searching for Resources.
      */
-    cursor?: SuggestionWhereUniqueInput
+    cursor?: ResourceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Suggestions from the position of the cursor.
+     * Take `±n` Resources from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Suggestions.
+     * Skip the first `n` Resources.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Suggestions.
+     * Filter by unique combinations of Resources.
      */
-    distinct?: SuggestionScalarFieldEnum | SuggestionScalarFieldEnum[]
+    distinct?: ResourceScalarFieldEnum | ResourceScalarFieldEnum[]
   }
 
   /**
-   * Suggestion findFirstOrThrow
+   * Resource findFirstOrThrow
    */
-  export type SuggestionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * Filter, which Suggestion to fetch.
+     * Filter, which Resource to fetch.
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Suggestions to fetch.
+     * Determine the order of Resources to fetch.
      */
-    orderBy?: SuggestionOrderByWithRelationInput | SuggestionOrderByWithRelationInput[]
+    orderBy?: ResourceOrderByWithRelationInput | ResourceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Suggestions.
+     * Sets the position for searching for Resources.
      */
-    cursor?: SuggestionWhereUniqueInput
+    cursor?: ResourceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Suggestions from the position of the cursor.
+     * Take `±n` Resources from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Suggestions.
+     * Skip the first `n` Resources.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Suggestions.
+     * Filter by unique combinations of Resources.
      */
-    distinct?: SuggestionScalarFieldEnum | SuggestionScalarFieldEnum[]
+    distinct?: ResourceScalarFieldEnum | ResourceScalarFieldEnum[]
   }
 
   /**
-   * Suggestion findMany
+   * Resource findMany
    */
-  export type SuggestionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * Filter, which Suggestions to fetch.
+     * Filter, which Resources to fetch.
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Suggestions to fetch.
+     * Determine the order of Resources to fetch.
      */
-    orderBy?: SuggestionOrderByWithRelationInput | SuggestionOrderByWithRelationInput[]
+    orderBy?: ResourceOrderByWithRelationInput | ResourceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing Suggestions.
+     * Sets the position for listing Resources.
      */
-    cursor?: SuggestionWhereUniqueInput
+    cursor?: ResourceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Suggestions from the position of the cursor.
+     * Take `±n` Resources from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Suggestions.
+     * Skip the first `n` Resources.
      */
     skip?: number
-    distinct?: SuggestionScalarFieldEnum | SuggestionScalarFieldEnum[]
+    distinct?: ResourceScalarFieldEnum | ResourceScalarFieldEnum[]
   }
 
   /**
-   * Suggestion create
+   * Resource create
    */
-  export type SuggestionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * The data needed to create a Suggestion.
+     * The data needed to create a Resource.
      */
-    data: XOR<SuggestionCreateInput, SuggestionUncheckedCreateInput>
+    data: XOR<ResourceCreateInput, ResourceUncheckedCreateInput>
   }
 
   /**
-   * Suggestion createMany
+   * Resource createMany
    */
-  export type SuggestionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many Suggestions.
+     * The data used to create many Resources.
      */
-    data: SuggestionCreateManyInput | SuggestionCreateManyInput[]
+    data: ResourceCreateManyInput | ResourceCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * Suggestion createManyAndReturn
+   * Resource createManyAndReturn
    */
-  export type SuggestionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelectCreateManyAndReturn<ExtArgs> | null
+    select?: ResourceSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
-     * The data used to create many Suggestions.
+     * The data used to create many Resources.
      */
-    data: SuggestionCreateManyInput | SuggestionCreateManyInput[]
+    data: ResourceCreateManyInput | ResourceCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: ResourceIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * Suggestion update
+   * Resource update
    */
-  export type SuggestionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * The data needed to update a Suggestion.
+     * The data needed to update a Resource.
      */
-    data: XOR<SuggestionUpdateInput, SuggestionUncheckedUpdateInput>
+    data: XOR<ResourceUpdateInput, ResourceUncheckedUpdateInput>
     /**
-     * Choose, which Suggestion to update.
+     * Choose, which Resource to update.
      */
-    where: SuggestionWhereUniqueInput
+    where: ResourceWhereUniqueInput
   }
 
   /**
-   * Suggestion updateMany
+   * Resource updateMany
    */
-  export type SuggestionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update Suggestions.
+     * The data used to update Resources.
      */
-    data: XOR<SuggestionUpdateManyMutationInput, SuggestionUncheckedUpdateManyInput>
+    data: XOR<ResourceUpdateManyMutationInput, ResourceUncheckedUpdateManyInput>
     /**
-     * Filter which Suggestions to update
+     * Filter which Resources to update
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
-     * Limit how many Suggestions to update.
+     * Limit how many Resources to update.
      */
     limit?: number
   }
 
   /**
-   * Suggestion updateManyAndReturn
+   * Resource updateManyAndReturn
    */
-  export type SuggestionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: ResourceSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
-     * The data used to update Suggestions.
+     * The data used to update Resources.
      */
-    data: XOR<SuggestionUpdateManyMutationInput, SuggestionUncheckedUpdateManyInput>
+    data: XOR<ResourceUpdateManyMutationInput, ResourceUncheckedUpdateManyInput>
     /**
-     * Filter which Suggestions to update
+     * Filter which Resources to update
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
-     * Limit how many Suggestions to update.
+     * Limit how many Resources to update.
      */
     limit?: number
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: ResourceIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * Suggestion upsert
+   * Resource upsert
    */
-  export type SuggestionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * The filter to search for the Suggestion to update in case it exists.
+     * The filter to search for the Resource to update in case it exists.
      */
-    where: SuggestionWhereUniqueInput
+    where: ResourceWhereUniqueInput
     /**
-     * In case the Suggestion found by the `where` argument doesn't exist, create a new Suggestion with this data.
+     * In case the Resource found by the `where` argument doesn't exist, create a new Resource with this data.
      */
-    create: XOR<SuggestionCreateInput, SuggestionUncheckedCreateInput>
+    create: XOR<ResourceCreateInput, ResourceUncheckedCreateInput>
     /**
-     * In case the Suggestion was found with the provided `where` argument, update it with this data.
+     * In case the Resource was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<SuggestionUpdateInput, SuggestionUncheckedUpdateInput>
+    update: XOR<ResourceUpdateInput, ResourceUncheckedUpdateInput>
   }
 
   /**
-   * Suggestion delete
+   * Resource delete
    */
-  export type SuggestionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
     /**
-     * Filter which Suggestion to delete.
+     * Filter which Resource to delete.
      */
-    where: SuggestionWhereUniqueInput
+    where: ResourceWhereUniqueInput
   }
 
   /**
-   * Suggestion deleteMany
+   * Resource deleteMany
    */
-  export type SuggestionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Suggestions to delete
+     * Filter which Resources to delete
      */
-    where?: SuggestionWhereInput
+    where?: ResourceWhereInput
     /**
-     * Limit how many Suggestions to delete.
+     * Limit how many Resources to delete.
      */
     limit?: number
   }
 
   /**
-   * Suggestion without action
+   * Resource without action
    */
-  export type SuggestionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ResourceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Suggestion
+     * Select specific fields to fetch from the Resource
      */
-    select?: SuggestionSelect<ExtArgs> | null
+    select?: ResourceSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Suggestion
+     * Omit specific fields from the Resource
      */
-    omit?: SuggestionOmit<ExtArgs> | null
+    omit?: ResourceOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: SuggestionInclude<ExtArgs> | null
+    include?: ResourceInclude<ExtArgs> | null
   }
 
 
@@ -4774,7 +7406,7 @@ export namespace Prisma {
     startedAt: Date | null
     endedAt: Date | null
     duration: number | null
-    todoId: string | null
+    taskId: string | null
   }
 
   export type TimerSessionMaxAggregateOutputType = {
@@ -4782,7 +7414,7 @@ export namespace Prisma {
     startedAt: Date | null
     endedAt: Date | null
     duration: number | null
-    todoId: string | null
+    taskId: string | null
   }
 
   export type TimerSessionCountAggregateOutputType = {
@@ -4790,7 +7422,7 @@ export namespace Prisma {
     startedAt: number
     endedAt: number
     duration: number
-    todoId: number
+    taskId: number
     _all: number
   }
 
@@ -4808,7 +7440,7 @@ export namespace Prisma {
     startedAt?: true
     endedAt?: true
     duration?: true
-    todoId?: true
+    taskId?: true
   }
 
   export type TimerSessionMaxAggregateInputType = {
@@ -4816,7 +7448,7 @@ export namespace Prisma {
     startedAt?: true
     endedAt?: true
     duration?: true
-    todoId?: true
+    taskId?: true
   }
 
   export type TimerSessionCountAggregateInputType = {
@@ -4824,7 +7456,7 @@ export namespace Prisma {
     startedAt?: true
     endedAt?: true
     duration?: true
-    todoId?: true
+    taskId?: true
     _all?: true
   }
 
@@ -4919,7 +7551,7 @@ export namespace Prisma {
     startedAt: Date
     endedAt: Date | null
     duration: number | null
-    todoId: string
+    taskId: string
     _count: TimerSessionCountAggregateOutputType | null
     _avg: TimerSessionAvgAggregateOutputType | null
     _sum: TimerSessionSumAggregateOutputType | null
@@ -4946,8 +7578,8 @@ export namespace Prisma {
     startedAt?: boolean
     endedAt?: boolean
     duration?: boolean
-    todoId?: boolean
-    todo?: boolean | TodoDefaultArgs<ExtArgs>
+    taskId?: boolean
+    task?: boolean | TaskDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["timerSession"]>
 
   export type TimerSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -4955,8 +7587,8 @@ export namespace Prisma {
     startedAt?: boolean
     endedAt?: boolean
     duration?: boolean
-    todoId?: boolean
-    todo?: boolean | TodoDefaultArgs<ExtArgs>
+    taskId?: boolean
+    task?: boolean | TaskDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["timerSession"]>
 
   export type TimerSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -4964,8 +7596,8 @@ export namespace Prisma {
     startedAt?: boolean
     endedAt?: boolean
     duration?: boolean
-    todoId?: boolean
-    todo?: boolean | TodoDefaultArgs<ExtArgs>
+    taskId?: boolean
+    task?: boolean | TaskDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["timerSession"]>
 
   export type TimerSessionSelectScalar = {
@@ -4973,31 +7605,31 @@ export namespace Prisma {
     startedAt?: boolean
     endedAt?: boolean
     duration?: boolean
-    todoId?: boolean
+    taskId?: boolean
   }
 
-  export type TimerSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "startedAt" | "endedAt" | "duration" | "todoId", ExtArgs["result"]["timerSession"]>
+  export type TimerSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "startedAt" | "endedAt" | "duration" | "taskId", ExtArgs["result"]["timerSession"]>
   export type TimerSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    todo?: boolean | TodoDefaultArgs<ExtArgs>
+    task?: boolean | TaskDefaultArgs<ExtArgs>
   }
   export type TimerSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    todo?: boolean | TodoDefaultArgs<ExtArgs>
+    task?: boolean | TaskDefaultArgs<ExtArgs>
   }
   export type TimerSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    todo?: boolean | TodoDefaultArgs<ExtArgs>
+    task?: boolean | TaskDefaultArgs<ExtArgs>
   }
 
   export type $TimerSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TimerSession"
     objects: {
-      todo: Prisma.$TodoPayload<ExtArgs>
+      task: Prisma.$TaskPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       startedAt: Date
       endedAt: Date | null
       duration: number | null
-      todoId: string
+      taskId: string
     }, ExtArgs["result"]["timerSession"]>
     composites: {}
   }
@@ -5392,7 +8024,7 @@ export namespace Prisma {
    */
   export interface Prisma__TimerSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    todo<T extends TodoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TodoDefaultArgs<ExtArgs>>): Prisma__TodoClient<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    task<T extends TaskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TaskDefaultArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5426,7 +8058,7 @@ export namespace Prisma {
     readonly startedAt: FieldRef<"TimerSession", 'DateTime'>
     readonly endedAt: FieldRef<"TimerSession", 'DateTime'>
     readonly duration: FieldRef<"TimerSession", 'Int'>
-    readonly todoId: FieldRef<"TimerSession", 'String'>
+    readonly taskId: FieldRef<"TimerSession", 'String'>
   }
     
 
@@ -5861,45 +8493,72 @@ export namespace Prisma {
     name: 'name',
     password: 'password',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    xp: 'xp',
-    level: 'level',
-    streak: 'streak',
-    lastActiveDate: 'lastActiveDate'
+    updatedAt: 'updatedAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
-  export const TodoScalarFieldEnum: {
+  export const SubjectScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    color: 'color',
+    isArchived: 'isArchived',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId'
+  };
+
+  export type SubjectScalarFieldEnum = (typeof SubjectScalarFieldEnum)[keyof typeof SubjectScalarFieldEnum]
+
+
+  export const MilestoneScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    notes: 'notes',
+    order: 'order',
+    isCompleted: 'isCompleted',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    subjectId: 'subjectId'
+  };
+
+  export type MilestoneScalarFieldEnum = (typeof MilestoneScalarFieldEnum)[keyof typeof MilestoneScalarFieldEnum]
+
+
+  export const TaskScalarFieldEnum: {
     id: 'id',
     title: 'title',
     description: 'description',
     isCompleted: 'isCompleted',
-    createdAt: 'createdAt',
-    dueDate: 'dueDate',
     completedAt: 'completedAt',
+    dueDate: 'dueDate',
     priority: 'priority',
-    isAiSuggested: 'isAiSuggested',
     estimatedTime: 'estimatedTime',
     timeSpent: 'timeSpent',
-    userId: 'userId'
-  };
-
-  export type TodoScalarFieldEnum = (typeof TodoScalarFieldEnum)[keyof typeof TodoScalarFieldEnum]
-
-
-  export const SuggestionScalarFieldEnum: {
-    id: 'id',
-    suggestionType: 'suggestionType',
-    content: 'content',
     createdAt: 'createdAt',
-    forDate: 'forDate',
-    isAccepted: 'isAccepted',
-    userId: 'userId'
+    userId: 'userId',
+    subjectId: 'subjectId',
+    milestoneId: 'milestoneId'
   };
 
-  export type SuggestionScalarFieldEnum = (typeof SuggestionScalarFieldEnum)[keyof typeof SuggestionScalarFieldEnum]
+  export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
+
+
+  export const ResourceScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    url: 'url',
+    title: 'title',
+    note: 'note',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId',
+    subjectId: 'subjectId'
+  };
+
+  export type ResourceScalarFieldEnum = (typeof ResourceScalarFieldEnum)[keyof typeof ResourceScalarFieldEnum]
 
 
   export const TimerSessionScalarFieldEnum: {
@@ -5907,7 +8566,7 @@ export namespace Prisma {
     startedAt: 'startedAt',
     endedAt: 'endedAt',
     duration: 'duration',
-    todoId: 'todoId'
+    taskId: 'taskId'
   };
 
   export type TimerSessionScalarFieldEnum = (typeof TimerSessionScalarFieldEnum)[keyof typeof TimerSessionScalarFieldEnum]
@@ -5971,6 +8630,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -5981,13 +8647,6 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -6006,16 +8665,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'SuggestionType'
+   * Reference to a field of type 'ResourceType'
    */
-  export type EnumSuggestionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SuggestionType'>
+  export type EnumResourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResourceType'>
     
 
 
   /**
-   * Reference to a field of type 'SuggestionType[]'
+   * Reference to a field of type 'ResourceType[]'
    */
-  export type ListEnumSuggestionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SuggestionType[]'>
+  export type ListEnumResourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResourceType[]'>
     
 
 
@@ -6046,12 +8705,9 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    xp?: IntFilter<"User"> | number
-    level?: IntFilter<"User"> | number
-    streak?: IntFilter<"User"> | number
-    lastActiveDate?: DateTimeNullableFilter<"User"> | Date | string | null
-    todos?: TodoListRelationFilter
-    suggestions?: SuggestionListRelationFilter
+    subjects?: SubjectListRelationFilter
+    tasks?: TaskListRelationFilter
+    resources?: ResourceListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -6061,12 +8717,9 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
-    lastActiveDate?: SortOrderInput | SortOrder
-    todos?: TodoOrderByRelationAggregateInput
-    suggestions?: SuggestionOrderByRelationAggregateInput
+    subjects?: SubjectOrderByRelationAggregateInput
+    tasks?: TaskOrderByRelationAggregateInput
+    resources?: ResourceOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -6079,12 +8732,9 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    xp?: IntFilter<"User"> | number
-    level?: IntFilter<"User"> | number
-    streak?: IntFilter<"User"> | number
-    lastActiveDate?: DateTimeNullableFilter<"User"> | Date | string | null
-    todos?: TodoListRelationFilter
-    suggestions?: SuggestionListRelationFilter
+    subjects?: SubjectListRelationFilter
+    tasks?: TaskListRelationFilter
+    resources?: ResourceListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -6094,15 +8744,9 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
-    lastActiveDate?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
-    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
-    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -6115,170 +8759,344 @@ export namespace Prisma {
     password?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
-    xp?: IntWithAggregatesFilter<"User"> | number
-    level?: IntWithAggregatesFilter<"User"> | number
-    streak?: IntWithAggregatesFilter<"User"> | number
-    lastActiveDate?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
-  export type TodoWhereInput = {
-    AND?: TodoWhereInput | TodoWhereInput[]
-    OR?: TodoWhereInput[]
-    NOT?: TodoWhereInput | TodoWhereInput[]
-    id?: StringFilter<"Todo"> | string
-    title?: StringFilter<"Todo"> | string
-    description?: StringNullableFilter<"Todo"> | string | null
-    isCompleted?: BoolFilter<"Todo"> | boolean
-    createdAt?: DateTimeFilter<"Todo"> | Date | string
-    dueDate?: DateTimeNullableFilter<"Todo"> | Date | string | null
-    completedAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
-    priority?: EnumPriorityFilter<"Todo"> | $Enums.Priority
-    isAiSuggested?: BoolFilter<"Todo"> | boolean
-    estimatedTime?: IntNullableFilter<"Todo"> | number | null
-    timeSpent?: IntNullableFilter<"Todo"> | number | null
-    userId?: StringFilter<"Todo"> | string
-    timerSessions?: TimerSessionListRelationFilter
+  export type SubjectWhereInput = {
+    AND?: SubjectWhereInput | SubjectWhereInput[]
+    OR?: SubjectWhereInput[]
+    NOT?: SubjectWhereInput | SubjectWhereInput[]
+    id?: StringFilter<"Subject"> | string
+    title?: StringFilter<"Subject"> | string
+    description?: StringNullableFilter<"Subject"> | string | null
+    color?: StringNullableFilter<"Subject"> | string | null
+    isArchived?: BoolFilter<"Subject"> | boolean
+    createdAt?: DateTimeFilter<"Subject"> | Date | string
+    updatedAt?: DateTimeFilter<"Subject"> | Date | string
+    userId?: StringFilter<"Subject"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    milestones?: MilestoneListRelationFilter
+    resources?: ResourceListRelationFilter
+    tasks?: TaskListRelationFilter
   }
 
-  export type TodoOrderByWithRelationInput = {
+  export type SubjectOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrderInput | SortOrder
+    color?: SortOrderInput | SortOrder
+    isArchived?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    user?: UserOrderByWithRelationInput
+    milestones?: MilestoneOrderByRelationAggregateInput
+    resources?: ResourceOrderByRelationAggregateInput
+    tasks?: TaskOrderByRelationAggregateInput
+  }
+
+  export type SubjectWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SubjectWhereInput | SubjectWhereInput[]
+    OR?: SubjectWhereInput[]
+    NOT?: SubjectWhereInput | SubjectWhereInput[]
+    title?: StringFilter<"Subject"> | string
+    description?: StringNullableFilter<"Subject"> | string | null
+    color?: StringNullableFilter<"Subject"> | string | null
+    isArchived?: BoolFilter<"Subject"> | boolean
+    createdAt?: DateTimeFilter<"Subject"> | Date | string
+    updatedAt?: DateTimeFilter<"Subject"> | Date | string
+    userId?: StringFilter<"Subject"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    milestones?: MilestoneListRelationFilter
+    resources?: ResourceListRelationFilter
+    tasks?: TaskListRelationFilter
+  }, "id">
+
+  export type SubjectOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrderInput | SortOrder
+    color?: SortOrderInput | SortOrder
+    isArchived?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    _count?: SubjectCountOrderByAggregateInput
+    _max?: SubjectMaxOrderByAggregateInput
+    _min?: SubjectMinOrderByAggregateInput
+  }
+
+  export type SubjectScalarWhereWithAggregatesInput = {
+    AND?: SubjectScalarWhereWithAggregatesInput | SubjectScalarWhereWithAggregatesInput[]
+    OR?: SubjectScalarWhereWithAggregatesInput[]
+    NOT?: SubjectScalarWhereWithAggregatesInput | SubjectScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Subject"> | string
+    title?: StringWithAggregatesFilter<"Subject"> | string
+    description?: StringNullableWithAggregatesFilter<"Subject"> | string | null
+    color?: StringNullableWithAggregatesFilter<"Subject"> | string | null
+    isArchived?: BoolWithAggregatesFilter<"Subject"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"Subject"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Subject"> | Date | string
+    userId?: StringWithAggregatesFilter<"Subject"> | string
+  }
+
+  export type MilestoneWhereInput = {
+    AND?: MilestoneWhereInput | MilestoneWhereInput[]
+    OR?: MilestoneWhereInput[]
+    NOT?: MilestoneWhereInput | MilestoneWhereInput[]
+    id?: StringFilter<"Milestone"> | string
+    title?: StringFilter<"Milestone"> | string
+    notes?: StringFilter<"Milestone"> | string
+    order?: IntFilter<"Milestone"> | number
+    isCompleted?: BoolFilter<"Milestone"> | boolean
+    createdAt?: DateTimeFilter<"Milestone"> | Date | string
+    updatedAt?: DateTimeFilter<"Milestone"> | Date | string
+    subjectId?: StringFilter<"Milestone"> | string
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+    tasks?: TaskListRelationFilter
+  }
+
+  export type MilestoneOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    notes?: SortOrder
+    order?: SortOrder
+    isCompleted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    subjectId?: SortOrder
+    subject?: SubjectOrderByWithRelationInput
+    tasks?: TaskOrderByRelationAggregateInput
+  }
+
+  export type MilestoneWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MilestoneWhereInput | MilestoneWhereInput[]
+    OR?: MilestoneWhereInput[]
+    NOT?: MilestoneWhereInput | MilestoneWhereInput[]
+    title?: StringFilter<"Milestone"> | string
+    notes?: StringFilter<"Milestone"> | string
+    order?: IntFilter<"Milestone"> | number
+    isCompleted?: BoolFilter<"Milestone"> | boolean
+    createdAt?: DateTimeFilter<"Milestone"> | Date | string
+    updatedAt?: DateTimeFilter<"Milestone"> | Date | string
+    subjectId?: StringFilter<"Milestone"> | string
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+    tasks?: TaskListRelationFilter
+  }, "id">
+
+  export type MilestoneOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    notes?: SortOrder
+    order?: SortOrder
+    isCompleted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    subjectId?: SortOrder
+    _count?: MilestoneCountOrderByAggregateInput
+    _avg?: MilestoneAvgOrderByAggregateInput
+    _max?: MilestoneMaxOrderByAggregateInput
+    _min?: MilestoneMinOrderByAggregateInput
+    _sum?: MilestoneSumOrderByAggregateInput
+  }
+
+  export type MilestoneScalarWhereWithAggregatesInput = {
+    AND?: MilestoneScalarWhereWithAggregatesInput | MilestoneScalarWhereWithAggregatesInput[]
+    OR?: MilestoneScalarWhereWithAggregatesInput[]
+    NOT?: MilestoneScalarWhereWithAggregatesInput | MilestoneScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Milestone"> | string
+    title?: StringWithAggregatesFilter<"Milestone"> | string
+    notes?: StringWithAggregatesFilter<"Milestone"> | string
+    order?: IntWithAggregatesFilter<"Milestone"> | number
+    isCompleted?: BoolWithAggregatesFilter<"Milestone"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"Milestone"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Milestone"> | Date | string
+    subjectId?: StringWithAggregatesFilter<"Milestone"> | string
+  }
+
+  export type TaskWhereInput = {
+    AND?: TaskWhereInput | TaskWhereInput[]
+    OR?: TaskWhereInput[]
+    NOT?: TaskWhereInput | TaskWhereInput[]
+    id?: StringFilter<"Task"> | string
+    title?: StringFilter<"Task"> | string
+    description?: StringNullableFilter<"Task"> | string | null
+    isCompleted?: BoolFilter<"Task"> | boolean
+    completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
+    dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
+    priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
+    estimatedTime?: IntNullableFilter<"Task"> | number | null
+    timeSpent?: IntNullableFilter<"Task"> | number | null
+    createdAt?: DateTimeFilter<"Task"> | Date | string
+    userId?: StringFilter<"Task"> | string
+    subjectId?: StringFilter<"Task"> | string
+    milestoneId?: StringNullableFilter<"Task"> | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+    milestone?: XOR<MilestoneNullableScalarRelationFilter, MilestoneWhereInput> | null
+    timerSessions?: TimerSessionListRelationFilter
+  }
+
+  export type TaskOrderByWithRelationInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     isCompleted?: SortOrder
-    createdAt?: SortOrder
-    dueDate?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
+    dueDate?: SortOrderInput | SortOrder
     priority?: SortOrder
-    isAiSuggested?: SortOrder
     estimatedTime?: SortOrderInput | SortOrder
     timeSpent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
+    milestoneId?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+    subject?: SubjectOrderByWithRelationInput
+    milestone?: MilestoneOrderByWithRelationInput
     timerSessions?: TimerSessionOrderByRelationAggregateInput
-    user?: UserOrderByWithRelationInput
   }
 
-  export type TodoWhereUniqueInput = Prisma.AtLeast<{
+  export type TaskWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: TodoWhereInput | TodoWhereInput[]
-    OR?: TodoWhereInput[]
-    NOT?: TodoWhereInput | TodoWhereInput[]
-    title?: StringFilter<"Todo"> | string
-    description?: StringNullableFilter<"Todo"> | string | null
-    isCompleted?: BoolFilter<"Todo"> | boolean
-    createdAt?: DateTimeFilter<"Todo"> | Date | string
-    dueDate?: DateTimeNullableFilter<"Todo"> | Date | string | null
-    completedAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
-    priority?: EnumPriorityFilter<"Todo"> | $Enums.Priority
-    isAiSuggested?: BoolFilter<"Todo"> | boolean
-    estimatedTime?: IntNullableFilter<"Todo"> | number | null
-    timeSpent?: IntNullableFilter<"Todo"> | number | null
-    userId?: StringFilter<"Todo"> | string
-    timerSessions?: TimerSessionListRelationFilter
+    AND?: TaskWhereInput | TaskWhereInput[]
+    OR?: TaskWhereInput[]
+    NOT?: TaskWhereInput | TaskWhereInput[]
+    title?: StringFilter<"Task"> | string
+    description?: StringNullableFilter<"Task"> | string | null
+    isCompleted?: BoolFilter<"Task"> | boolean
+    completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
+    dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
+    priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
+    estimatedTime?: IntNullableFilter<"Task"> | number | null
+    timeSpent?: IntNullableFilter<"Task"> | number | null
+    createdAt?: DateTimeFilter<"Task"> | Date | string
+    userId?: StringFilter<"Task"> | string
+    subjectId?: StringFilter<"Task"> | string
+    milestoneId?: StringNullableFilter<"Task"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+    milestone?: XOR<MilestoneNullableScalarRelationFilter, MilestoneWhereInput> | null
+    timerSessions?: TimerSessionListRelationFilter
   }, "id">
 
-  export type TodoOrderByWithAggregationInput = {
+  export type TaskOrderByWithAggregationInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     isCompleted?: SortOrder
-    createdAt?: SortOrder
-    dueDate?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
+    dueDate?: SortOrderInput | SortOrder
     priority?: SortOrder
-    isAiSuggested?: SortOrder
     estimatedTime?: SortOrderInput | SortOrder
     timeSpent?: SortOrderInput | SortOrder
-    userId?: SortOrder
-    _count?: TodoCountOrderByAggregateInput
-    _avg?: TodoAvgOrderByAggregateInput
-    _max?: TodoMaxOrderByAggregateInput
-    _min?: TodoMinOrderByAggregateInput
-    _sum?: TodoSumOrderByAggregateInput
-  }
-
-  export type TodoScalarWhereWithAggregatesInput = {
-    AND?: TodoScalarWhereWithAggregatesInput | TodoScalarWhereWithAggregatesInput[]
-    OR?: TodoScalarWhereWithAggregatesInput[]
-    NOT?: TodoScalarWhereWithAggregatesInput | TodoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Todo"> | string
-    title?: StringWithAggregatesFilter<"Todo"> | string
-    description?: StringNullableWithAggregatesFilter<"Todo"> | string | null
-    isCompleted?: BoolWithAggregatesFilter<"Todo"> | boolean
-    createdAt?: DateTimeWithAggregatesFilter<"Todo"> | Date | string
-    dueDate?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
-    completedAt?: DateTimeNullableWithAggregatesFilter<"Todo"> | Date | string | null
-    priority?: EnumPriorityWithAggregatesFilter<"Todo"> | $Enums.Priority
-    isAiSuggested?: BoolWithAggregatesFilter<"Todo"> | boolean
-    estimatedTime?: IntNullableWithAggregatesFilter<"Todo"> | number | null
-    timeSpent?: IntNullableWithAggregatesFilter<"Todo"> | number | null
-    userId?: StringWithAggregatesFilter<"Todo"> | string
-  }
-
-  export type SuggestionWhereInput = {
-    AND?: SuggestionWhereInput | SuggestionWhereInput[]
-    OR?: SuggestionWhereInput[]
-    NOT?: SuggestionWhereInput | SuggestionWhereInput[]
-    id?: StringFilter<"Suggestion"> | string
-    suggestionType?: EnumSuggestionTypeFilter<"Suggestion"> | $Enums.SuggestionType
-    content?: StringFilter<"Suggestion"> | string
-    createdAt?: DateTimeFilter<"Suggestion"> | Date | string
-    forDate?: DateTimeFilter<"Suggestion"> | Date | string
-    isAccepted?: BoolFilter<"Suggestion"> | boolean
-    userId?: StringFilter<"Suggestion"> | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }
-
-  export type SuggestionOrderByWithRelationInput = {
-    id?: SortOrder
-    suggestionType?: SortOrder
-    content?: SortOrder
     createdAt?: SortOrder
-    forDate?: SortOrder
-    isAccepted?: SortOrder
     userId?: SortOrder
-    user?: UserOrderByWithRelationInput
+    subjectId?: SortOrder
+    milestoneId?: SortOrderInput | SortOrder
+    _count?: TaskCountOrderByAggregateInput
+    _avg?: TaskAvgOrderByAggregateInput
+    _max?: TaskMaxOrderByAggregateInput
+    _min?: TaskMinOrderByAggregateInput
+    _sum?: TaskSumOrderByAggregateInput
   }
 
-  export type SuggestionWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: SuggestionWhereInput | SuggestionWhereInput[]
-    OR?: SuggestionWhereInput[]
-    NOT?: SuggestionWhereInput | SuggestionWhereInput[]
-    suggestionType?: EnumSuggestionTypeFilter<"Suggestion"> | $Enums.SuggestionType
-    content?: StringFilter<"Suggestion"> | string
-    createdAt?: DateTimeFilter<"Suggestion"> | Date | string
-    forDate?: DateTimeFilter<"Suggestion"> | Date | string
-    isAccepted?: BoolFilter<"Suggestion"> | boolean
-    userId?: StringFilter<"Suggestion"> | string
+  export type TaskScalarWhereWithAggregatesInput = {
+    AND?: TaskScalarWhereWithAggregatesInput | TaskScalarWhereWithAggregatesInput[]
+    OR?: TaskScalarWhereWithAggregatesInput[]
+    NOT?: TaskScalarWhereWithAggregatesInput | TaskScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Task"> | string
+    title?: StringWithAggregatesFilter<"Task"> | string
+    description?: StringNullableWithAggregatesFilter<"Task"> | string | null
+    isCompleted?: BoolWithAggregatesFilter<"Task"> | boolean
+    completedAt?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+    dueDate?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+    priority?: EnumPriorityWithAggregatesFilter<"Task"> | $Enums.Priority
+    estimatedTime?: IntNullableWithAggregatesFilter<"Task"> | number | null
+    timeSpent?: IntNullableWithAggregatesFilter<"Task"> | number | null
+    createdAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
+    userId?: StringWithAggregatesFilter<"Task"> | string
+    subjectId?: StringWithAggregatesFilter<"Task"> | string
+    milestoneId?: StringNullableWithAggregatesFilter<"Task"> | string | null
+  }
+
+  export type ResourceWhereInput = {
+    AND?: ResourceWhereInput | ResourceWhereInput[]
+    OR?: ResourceWhereInput[]
+    NOT?: ResourceWhereInput | ResourceWhereInput[]
+    id?: StringFilter<"Resource"> | string
+    type?: EnumResourceTypeFilter<"Resource"> | $Enums.ResourceType
+    url?: StringFilter<"Resource"> | string
+    title?: StringFilter<"Resource"> | string
+    note?: StringNullableFilter<"Resource"> | string | null
+    createdAt?: DateTimeFilter<"Resource"> | Date | string
+    updatedAt?: DateTimeFilter<"Resource"> | Date | string
+    userId?: StringFilter<"Resource"> | string
+    subjectId?: StringFilter<"Resource"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+  }
+
+  export type ResourceOrderByWithRelationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    url?: SortOrder
+    title?: SortOrder
+    note?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    subjectId?: SortOrder
+    user?: UserOrderByWithRelationInput
+    subject?: SubjectOrderByWithRelationInput
+  }
+
+  export type ResourceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ResourceWhereInput | ResourceWhereInput[]
+    OR?: ResourceWhereInput[]
+    NOT?: ResourceWhereInput | ResourceWhereInput[]
+    type?: EnumResourceTypeFilter<"Resource"> | $Enums.ResourceType
+    url?: StringFilter<"Resource"> | string
+    title?: StringFilter<"Resource"> | string
+    note?: StringNullableFilter<"Resource"> | string | null
+    createdAt?: DateTimeFilter<"Resource"> | Date | string
+    updatedAt?: DateTimeFilter<"Resource"> | Date | string
+    userId?: StringFilter<"Resource"> | string
+    subjectId?: StringFilter<"Resource"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
   }, "id">
 
-  export type SuggestionOrderByWithAggregationInput = {
+  export type ResourceOrderByWithAggregationInput = {
     id?: SortOrder
-    suggestionType?: SortOrder
-    content?: SortOrder
+    type?: SortOrder
+    url?: SortOrder
+    title?: SortOrder
+    note?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    forDate?: SortOrder
-    isAccepted?: SortOrder
+    updatedAt?: SortOrder
     userId?: SortOrder
-    _count?: SuggestionCountOrderByAggregateInput
-    _max?: SuggestionMaxOrderByAggregateInput
-    _min?: SuggestionMinOrderByAggregateInput
+    subjectId?: SortOrder
+    _count?: ResourceCountOrderByAggregateInput
+    _max?: ResourceMaxOrderByAggregateInput
+    _min?: ResourceMinOrderByAggregateInput
   }
 
-  export type SuggestionScalarWhereWithAggregatesInput = {
-    AND?: SuggestionScalarWhereWithAggregatesInput | SuggestionScalarWhereWithAggregatesInput[]
-    OR?: SuggestionScalarWhereWithAggregatesInput[]
-    NOT?: SuggestionScalarWhereWithAggregatesInput | SuggestionScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Suggestion"> | string
-    suggestionType?: EnumSuggestionTypeWithAggregatesFilter<"Suggestion"> | $Enums.SuggestionType
-    content?: StringWithAggregatesFilter<"Suggestion"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Suggestion"> | Date | string
-    forDate?: DateTimeWithAggregatesFilter<"Suggestion"> | Date | string
-    isAccepted?: BoolWithAggregatesFilter<"Suggestion"> | boolean
-    userId?: StringWithAggregatesFilter<"Suggestion"> | string
+  export type ResourceScalarWhereWithAggregatesInput = {
+    AND?: ResourceScalarWhereWithAggregatesInput | ResourceScalarWhereWithAggregatesInput[]
+    OR?: ResourceScalarWhereWithAggregatesInput[]
+    NOT?: ResourceScalarWhereWithAggregatesInput | ResourceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Resource"> | string
+    type?: EnumResourceTypeWithAggregatesFilter<"Resource"> | $Enums.ResourceType
+    url?: StringWithAggregatesFilter<"Resource"> | string
+    title?: StringWithAggregatesFilter<"Resource"> | string
+    note?: StringNullableWithAggregatesFilter<"Resource"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Resource"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Resource"> | Date | string
+    userId?: StringWithAggregatesFilter<"Resource"> | string
+    subjectId?: StringWithAggregatesFilter<"Resource"> | string
   }
 
   export type TimerSessionWhereInput = {
@@ -6289,8 +9107,8 @@ export namespace Prisma {
     startedAt?: DateTimeFilter<"TimerSession"> | Date | string
     endedAt?: DateTimeNullableFilter<"TimerSession"> | Date | string | null
     duration?: IntNullableFilter<"TimerSession"> | number | null
-    todoId?: StringFilter<"TimerSession"> | string
-    todo?: XOR<TodoScalarRelationFilter, TodoWhereInput>
+    taskId?: StringFilter<"TimerSession"> | string
+    task?: XOR<TaskScalarRelationFilter, TaskWhereInput>
   }
 
   export type TimerSessionOrderByWithRelationInput = {
@@ -6298,8 +9116,8 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrderInput | SortOrder
     duration?: SortOrderInput | SortOrder
-    todoId?: SortOrder
-    todo?: TodoOrderByWithRelationInput
+    taskId?: SortOrder
+    task?: TaskOrderByWithRelationInput
   }
 
   export type TimerSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -6310,8 +9128,8 @@ export namespace Prisma {
     startedAt?: DateTimeFilter<"TimerSession"> | Date | string
     endedAt?: DateTimeNullableFilter<"TimerSession"> | Date | string | null
     duration?: IntNullableFilter<"TimerSession"> | number | null
-    todoId?: StringFilter<"TimerSession"> | string
-    todo?: XOR<TodoScalarRelationFilter, TodoWhereInput>
+    taskId?: StringFilter<"TimerSession"> | string
+    task?: XOR<TaskScalarRelationFilter, TaskWhereInput>
   }, "id">
 
   export type TimerSessionOrderByWithAggregationInput = {
@@ -6319,7 +9137,7 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrderInput | SortOrder
     duration?: SortOrderInput | SortOrder
-    todoId?: SortOrder
+    taskId?: SortOrder
     _count?: TimerSessionCountOrderByAggregateInput
     _avg?: TimerSessionAvgOrderByAggregateInput
     _max?: TimerSessionMaxOrderByAggregateInput
@@ -6335,7 +9153,7 @@ export namespace Prisma {
     startedAt?: DateTimeWithAggregatesFilter<"TimerSession"> | Date | string
     endedAt?: DateTimeNullableWithAggregatesFilter<"TimerSession"> | Date | string | null
     duration?: IntNullableWithAggregatesFilter<"TimerSession"> | number | null
-    todoId?: StringWithAggregatesFilter<"TimerSession"> | string
+    taskId?: StringWithAggregatesFilter<"TimerSession"> | string
   }
 
   export type UserCreateInput = {
@@ -6345,12 +9163,9 @@ export namespace Prisma {
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
-    todos?: TodoCreateNestedManyWithoutUserInput
-    suggestions?: SuggestionCreateNestedManyWithoutUserInput
+    subjects?: SubjectCreateNestedManyWithoutUserInput
+    tasks?: TaskCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -6360,12 +9175,9 @@ export namespace Prisma {
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
-    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
-    suggestions?: SuggestionUncheckedCreateNestedManyWithoutUserInput
+    subjects?: SubjectUncheckedCreateNestedManyWithoutUserInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -6375,12 +9187,9 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    todos?: TodoUpdateManyWithoutUserNestedInput
-    suggestions?: SuggestionUpdateManyWithoutUserNestedInput
+    subjects?: SubjectUpdateManyWithoutUserNestedInput
+    tasks?: TaskUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -6390,12 +9199,9 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
-    suggestions?: SuggestionUncheckedUpdateManyWithoutUserNestedInput
+    subjects?: SubjectUncheckedUpdateManyWithoutUserNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -6405,10 +9211,6 @@ export namespace Prisma {
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -6418,10 +9220,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -6431,187 +9229,369 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type TodoCreateInput = {
+  export type SubjectCreateInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutSubjectsInput
+    milestones?: MilestoneCreateNestedManyWithoutSubjectInput
+    resources?: ResourceCreateNestedManyWithoutSubjectInput
+    tasks?: TaskCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUncheckedCreateInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    milestones?: MilestoneUncheckedCreateNestedManyWithoutSubjectInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSubjectInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
+    milestones?: MilestoneUpdateManyWithoutSubjectNestedInput
+    resources?: ResourceUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    milestones?: MilestoneUncheckedUpdateManyWithoutSubjectNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectCreateManyInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+  }
+
+  export type SubjectUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SubjectUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type MilestoneCreateInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subject: SubjectCreateNestedOneWithoutMilestonesInput
+    tasks?: TaskCreateNestedManyWithoutMilestoneInput
+  }
+
+  export type MilestoneUncheckedCreateInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjectId: string
+    tasks?: TaskUncheckedCreateNestedManyWithoutMilestoneInput
+  }
+
+  export type MilestoneUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subject?: SubjectUpdateOneRequiredWithoutMilestonesNestedInput
+    tasks?: TaskUpdateManyWithoutMilestoneNestedInput
+  }
+
+  export type MilestoneUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+    tasks?: TaskUncheckedUpdateManyWithoutMilestoneNestedInput
+  }
+
+  export type MilestoneCreateManyInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjectId: string
+  }
+
+  export type MilestoneUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MilestoneUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskCreateInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
-    timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
-    user: UserCreateNestedOneWithoutTodosInput
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutTasksInput
+    subject: SubjectCreateNestedOneWithoutTasksInput
+    milestone?: MilestoneCreateNestedOneWithoutTasksInput
+    timerSessions?: TimerSessionCreateNestedManyWithoutTaskInput
   }
 
-  export type TodoUncheckedCreateInput = {
+  export type TaskUncheckedCreateInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    createdAt?: Date | string
     userId: string
-    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
+    subjectId: string
+    milestoneId?: string | null
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTaskInput
   }
 
-  export type TodoUpdateInput = {
+  export type TaskUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
-    timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
-    user?: UserUpdateOneRequiredWithoutTodosNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTasksNestedInput
+    subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
+    milestone?: MilestoneUpdateOneWithoutTasksNestedInput
+    timerSessions?: TimerSessionUpdateManyWithoutTaskNestedInput
   }
 
-  export type TodoUncheckedUpdateInput = {
+  export type TaskUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
-    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    subjectId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTaskNestedInput
   }
 
-  export type TodoCreateManyInput = {
+  export type TaskCreateManyInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    createdAt?: Date | string
     userId: string
+    subjectId: string
+    milestoneId?: string | null
   }
 
-  export type TodoUpdateManyMutationInput = {
+  export type TaskUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TodoUncheckedUpdateManyInput = {
+  export type TaskUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type SuggestionCreateInput = {
+  export type ResourceCreateInput = {
     id?: string
-    suggestionType: $Enums.SuggestionType
-    content: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
     createdAt?: Date | string
-    forDate: Date | string
-    isAccepted?: boolean
-    user: UserCreateNestedOneWithoutSuggestionsInput
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutResourcesInput
+    subject: SubjectCreateNestedOneWithoutResourcesInput
   }
 
-  export type SuggestionUncheckedCreateInput = {
+  export type ResourceUncheckedCreateInput = {
     id?: string
-    suggestionType: $Enums.SuggestionType
-    content: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
     createdAt?: Date | string
-    forDate: Date | string
-    isAccepted?: boolean
+    updatedAt?: Date | string
     userId: string
+    subjectId: string
   }
 
-  export type SuggestionUpdateInput = {
+  export type ResourceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
-    user?: UserUpdateOneRequiredWithoutSuggestionsNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutResourcesNestedInput
+    subject?: SubjectUpdateOneRequiredWithoutResourcesNestedInput
   }
 
-  export type SuggestionUncheckedUpdateInput = {
+  export type ResourceUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
   }
 
-  export type SuggestionCreateManyInput = {
+  export type ResourceCreateManyInput = {
     id?: string
-    suggestionType: $Enums.SuggestionType
-    content: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
     createdAt?: Date | string
-    forDate: Date | string
-    isAccepted?: boolean
+    updatedAt?: Date | string
     userId: string
+    subjectId: string
   }
 
-  export type SuggestionUpdateManyMutationInput = {
+  export type ResourceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SuggestionUncheckedUpdateManyInput = {
+  export type ResourceUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
   }
 
   export type TimerSessionCreateInput = {
@@ -6619,7 +9599,7 @@ export namespace Prisma {
     startedAt: Date | string
     endedAt?: Date | string | null
     duration?: number | null
-    todo: TodoCreateNestedOneWithoutTimerSessionsInput
+    task: TaskCreateNestedOneWithoutTimerSessionsInput
   }
 
   export type TimerSessionUncheckedCreateInput = {
@@ -6627,7 +9607,7 @@ export namespace Prisma {
     startedAt: Date | string
     endedAt?: Date | string | null
     duration?: number | null
-    todoId: string
+    taskId: string
   }
 
   export type TimerSessionUpdateInput = {
@@ -6635,7 +9615,7 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
-    todo?: TodoUpdateOneRequiredWithoutTimerSessionsNestedInput
+    task?: TaskUpdateOneRequiredWithoutTimerSessionsNestedInput
   }
 
   export type TimerSessionUncheckedUpdateInput = {
@@ -6643,7 +9623,7 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
-    todoId?: StringFieldUpdateOperationsInput | string
+    taskId?: StringFieldUpdateOperationsInput | string
   }
 
   export type TimerSessionCreateManyInput = {
@@ -6651,7 +9631,7 @@ export namespace Prisma {
     startedAt: Date | string
     endedAt?: Date | string | null
     duration?: number | null
-    todoId: string
+    taskId: string
   }
 
   export type TimerSessionUpdateManyMutationInput = {
@@ -6666,7 +9646,7 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
-    todoId?: StringFieldUpdateOperationsInput | string
+    taskId?: StringFieldUpdateOperationsInput | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -6710,38 +9690,22 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type SubjectListRelationFilter = {
+    every?: SubjectWhereInput
+    some?: SubjectWhereInput
+    none?: SubjectWhereInput
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  export type TaskListRelationFilter = {
+    every?: TaskWhereInput
+    some?: TaskWhereInput
+    none?: TaskWhereInput
   }
 
-  export type TodoListRelationFilter = {
-    every?: TodoWhereInput
-    some?: TodoWhereInput
-    none?: TodoWhereInput
-  }
-
-  export type SuggestionListRelationFilter = {
-    every?: SuggestionWhereInput
-    some?: SuggestionWhereInput
-    none?: SuggestionWhereInput
+  export type ResourceListRelationFilter = {
+    every?: ResourceWhereInput
+    some?: ResourceWhereInput
+    none?: ResourceWhereInput
   }
 
   export type SortOrderInput = {
@@ -6749,11 +9713,15 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type TodoOrderByRelationAggregateInput = {
+  export type SubjectOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type SuggestionOrderByRelationAggregateInput = {
+  export type TaskOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ResourceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -6764,16 +9732,6 @@ export namespace Prisma {
     password?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
-    lastActiveDate?: SortOrder
-  }
-
-  export type UserAvgOrderByAggregateInput = {
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -6783,10 +9741,6 @@ export namespace Prisma {
     password?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
-    lastActiveDate?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -6796,16 +9750,6 @@ export namespace Prisma {
     password?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
-    lastActiveDate?: SortOrder
-  }
-
-  export type UserSumOrderByAggregateInput = {
-    xp?: SortOrder
-    level?: SortOrder
-    streak?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -6858,6 +9802,124 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type MilestoneListRelationFilter = {
+    every?: MilestoneWhereInput
+    some?: MilestoneWhereInput
+    none?: MilestoneWhereInput
+  }
+
+  export type MilestoneOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SubjectCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    color?: SortOrder
+    isArchived?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type SubjectMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    color?: SortOrder
+    isArchived?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type SubjectMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    color?: SortOrder
+    isArchived?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type SubjectScalarRelationFilter = {
+    is?: SubjectWhereInput
+    isNot?: SubjectWhereInput
+  }
+
+  export type MilestoneCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    notes?: SortOrder
+    order?: SortOrder
+    isCompleted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    subjectId?: SortOrder
+  }
+
+  export type MilestoneAvgOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
+  export type MilestoneMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    notes?: SortOrder
+    order?: SortOrder
+    isCompleted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    subjectId?: SortOrder
+  }
+
+  export type MilestoneMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    notes?: SortOrder
+    order?: SortOrder
+    isCompleted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    subjectId?: SortOrder
+  }
+
+  export type MilestoneSumOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -6874,7 +9936,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -6882,15 +9944,7 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type EnumPriorityFilter<$PrismaModel = never> = {
@@ -6911,82 +9965,91 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type MilestoneNullableScalarRelationFilter = {
+    is?: MilestoneWhereInput | null
+    isNot?: MilestoneWhereInput | null
+  }
+
   export type TimerSessionListRelationFilter = {
     every?: TimerSessionWhereInput
     some?: TimerSessionWhereInput
     none?: TimerSessionWhereInput
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
   export type TimerSessionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type TodoCountOrderByAggregateInput = {
+  export type TaskCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
     isCompleted?: SortOrder
-    createdAt?: SortOrder
-    dueDate?: SortOrder
     completedAt?: SortOrder
+    dueDate?: SortOrder
     priority?: SortOrder
-    isAiSuggested?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    createdAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
+    milestoneId?: SortOrder
   }
 
-  export type TodoAvgOrderByAggregateInput = {
+  export type TaskAvgOrderByAggregateInput = {
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
   }
 
-  export type TodoMaxOrderByAggregateInput = {
+  export type TaskMaxOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
     isCompleted?: SortOrder
-    createdAt?: SortOrder
-    dueDate?: SortOrder
     completedAt?: SortOrder
+    dueDate?: SortOrder
     priority?: SortOrder
-    isAiSuggested?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    createdAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
+    milestoneId?: SortOrder
   }
 
-  export type TodoMinOrderByAggregateInput = {
+  export type TaskMinOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
     isCompleted?: SortOrder
-    createdAt?: SortOrder
-    dueDate?: SortOrder
     completedAt?: SortOrder
+    dueDate?: SortOrder
     priority?: SortOrder
-    isAiSuggested?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    createdAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
+    milestoneId?: SortOrder
   }
 
-  export type TodoSumOrderByAggregateInput = {
+  export type TaskSumOrderByAggregateInput = {
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type EnumPriorityWithAggregatesFilter<$PrismaModel = never> = {
@@ -7015,56 +10078,62 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type EnumSuggestionTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.SuggestionType | EnumSuggestionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumSuggestionTypeFilter<$PrismaModel> | $Enums.SuggestionType
+  export type EnumResourceTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ResourceType | EnumResourceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumResourceTypeFilter<$PrismaModel> | $Enums.ResourceType
   }
 
-  export type SuggestionCountOrderByAggregateInput = {
+  export type ResourceCountOrderByAggregateInput = {
     id?: SortOrder
-    suggestionType?: SortOrder
-    content?: SortOrder
+    type?: SortOrder
+    url?: SortOrder
+    title?: SortOrder
+    note?: SortOrder
     createdAt?: SortOrder
-    forDate?: SortOrder
-    isAccepted?: SortOrder
+    updatedAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
   }
 
-  export type SuggestionMaxOrderByAggregateInput = {
+  export type ResourceMaxOrderByAggregateInput = {
     id?: SortOrder
-    suggestionType?: SortOrder
-    content?: SortOrder
+    type?: SortOrder
+    url?: SortOrder
+    title?: SortOrder
+    note?: SortOrder
     createdAt?: SortOrder
-    forDate?: SortOrder
-    isAccepted?: SortOrder
+    updatedAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
   }
 
-  export type SuggestionMinOrderByAggregateInput = {
+  export type ResourceMinOrderByAggregateInput = {
     id?: SortOrder
-    suggestionType?: SortOrder
-    content?: SortOrder
+    type?: SortOrder
+    url?: SortOrder
+    title?: SortOrder
+    note?: SortOrder
     createdAt?: SortOrder
-    forDate?: SortOrder
-    isAccepted?: SortOrder
+    updatedAt?: SortOrder
     userId?: SortOrder
+    subjectId?: SortOrder
   }
 
-  export type EnumSuggestionTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.SuggestionType | EnumSuggestionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumSuggestionTypeWithAggregatesFilter<$PrismaModel> | $Enums.SuggestionType
+  export type EnumResourceTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ResourceType | EnumResourceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumResourceTypeWithAggregatesFilter<$PrismaModel> | $Enums.ResourceType
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumSuggestionTypeFilter<$PrismaModel>
-    _max?: NestedEnumSuggestionTypeFilter<$PrismaModel>
+    _min?: NestedEnumResourceTypeFilter<$PrismaModel>
+    _max?: NestedEnumResourceTypeFilter<$PrismaModel>
   }
 
-  export type TodoScalarRelationFilter = {
-    is?: TodoWhereInput
-    isNot?: TodoWhereInput
+  export type TaskScalarRelationFilter = {
+    is?: TaskWhereInput
+    isNot?: TaskWhereInput
   }
 
   export type TimerSessionCountOrderByAggregateInput = {
@@ -7072,7 +10141,7 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrder
     duration?: SortOrder
-    todoId?: SortOrder
+    taskId?: SortOrder
   }
 
   export type TimerSessionAvgOrderByAggregateInput = {
@@ -7084,7 +10153,7 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrder
     duration?: SortOrder
-    todoId?: SortOrder
+    taskId?: SortOrder
   }
 
   export type TimerSessionMinOrderByAggregateInput = {
@@ -7092,39 +10161,53 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrder
     duration?: SortOrder
-    todoId?: SortOrder
+    taskId?: SortOrder
   }
 
   export type TimerSessionSumOrderByAggregateInput = {
     duration?: SortOrder
   }
 
-  export type TodoCreateNestedManyWithoutUserInput = {
-    create?: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput> | TodoCreateWithoutUserInput[] | TodoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TodoCreateOrConnectWithoutUserInput | TodoCreateOrConnectWithoutUserInput[]
-    createMany?: TodoCreateManyUserInputEnvelope
-    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  export type SubjectCreateNestedManyWithoutUserInput = {
+    create?: XOR<SubjectCreateWithoutUserInput, SubjectUncheckedCreateWithoutUserInput> | SubjectCreateWithoutUserInput[] | SubjectUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SubjectCreateOrConnectWithoutUserInput | SubjectCreateOrConnectWithoutUserInput[]
+    createMany?: SubjectCreateManyUserInputEnvelope
+    connect?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
   }
 
-  export type SuggestionCreateNestedManyWithoutUserInput = {
-    create?: XOR<SuggestionCreateWithoutUserInput, SuggestionUncheckedCreateWithoutUserInput> | SuggestionCreateWithoutUserInput[] | SuggestionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SuggestionCreateOrConnectWithoutUserInput | SuggestionCreateOrConnectWithoutUserInput[]
-    createMany?: SuggestionCreateManyUserInputEnvelope
-    connect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
+  export type TaskCreateNestedManyWithoutUserInput = {
+    create?: XOR<TaskCreateWithoutUserInput, TaskUncheckedCreateWithoutUserInput> | TaskCreateWithoutUserInput[] | TaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutUserInput | TaskCreateOrConnectWithoutUserInput[]
+    createMany?: TaskCreateManyUserInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
   }
 
-  export type TodoUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput> | TodoCreateWithoutUserInput[] | TodoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TodoCreateOrConnectWithoutUserInput | TodoCreateOrConnectWithoutUserInput[]
-    createMany?: TodoCreateManyUserInputEnvelope
-    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
+  export type ResourceCreateNestedManyWithoutUserInput = {
+    create?: XOR<ResourceCreateWithoutUserInput, ResourceUncheckedCreateWithoutUserInput> | ResourceCreateWithoutUserInput[] | ResourceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutUserInput | ResourceCreateOrConnectWithoutUserInput[]
+    createMany?: ResourceCreateManyUserInputEnvelope
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
   }
 
-  export type SuggestionUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<SuggestionCreateWithoutUserInput, SuggestionUncheckedCreateWithoutUserInput> | SuggestionCreateWithoutUserInput[] | SuggestionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SuggestionCreateOrConnectWithoutUserInput | SuggestionCreateOrConnectWithoutUserInput[]
-    createMany?: SuggestionCreateManyUserInputEnvelope
-    connect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
+  export type SubjectUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<SubjectCreateWithoutUserInput, SubjectUncheckedCreateWithoutUserInput> | SubjectCreateWithoutUserInput[] | SubjectUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SubjectCreateOrConnectWithoutUserInput | SubjectCreateOrConnectWithoutUserInput[]
+    createMany?: SubjectCreateManyUserInputEnvelope
+    connect?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+  }
+
+  export type TaskUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TaskCreateWithoutUserInput, TaskUncheckedCreateWithoutUserInput> | TaskCreateWithoutUserInput[] | TaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutUserInput | TaskCreateOrConnectWithoutUserInput[]
+    createMany?: TaskCreateManyUserInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
+  export type ResourceUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ResourceCreateWithoutUserInput, ResourceUncheckedCreateWithoutUserInput> | ResourceCreateWithoutUserInput[] | ResourceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutUserInput | ResourceCreateOrConnectWithoutUserInput[]
+    createMany?: ResourceCreateManyUserInputEnvelope
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -7139,6 +10222,254 @@ export namespace Prisma {
     set?: Date | string
   }
 
+  export type SubjectUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SubjectCreateWithoutUserInput, SubjectUncheckedCreateWithoutUserInput> | SubjectCreateWithoutUserInput[] | SubjectUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SubjectCreateOrConnectWithoutUserInput | SubjectCreateOrConnectWithoutUserInput[]
+    upsert?: SubjectUpsertWithWhereUniqueWithoutUserInput | SubjectUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SubjectCreateManyUserInputEnvelope
+    set?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    disconnect?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    delete?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    connect?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    update?: SubjectUpdateWithWhereUniqueWithoutUserInput | SubjectUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SubjectUpdateManyWithWhereWithoutUserInput | SubjectUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SubjectScalarWhereInput | SubjectScalarWhereInput[]
+  }
+
+  export type TaskUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TaskCreateWithoutUserInput, TaskUncheckedCreateWithoutUserInput> | TaskCreateWithoutUserInput[] | TaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutUserInput | TaskCreateOrConnectWithoutUserInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutUserInput | TaskUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TaskCreateManyUserInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutUserInput | TaskUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutUserInput | TaskUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
+  }
+
+  export type ResourceUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ResourceCreateWithoutUserInput, ResourceUncheckedCreateWithoutUserInput> | ResourceCreateWithoutUserInput[] | ResourceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutUserInput | ResourceCreateOrConnectWithoutUserInput[]
+    upsert?: ResourceUpsertWithWhereUniqueWithoutUserInput | ResourceUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ResourceCreateManyUserInputEnvelope
+    set?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    disconnect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    delete?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    update?: ResourceUpdateWithWhereUniqueWithoutUserInput | ResourceUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ResourceUpdateManyWithWhereWithoutUserInput | ResourceUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ResourceScalarWhereInput | ResourceScalarWhereInput[]
+  }
+
+  export type SubjectUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SubjectCreateWithoutUserInput, SubjectUncheckedCreateWithoutUserInput> | SubjectCreateWithoutUserInput[] | SubjectUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SubjectCreateOrConnectWithoutUserInput | SubjectCreateOrConnectWithoutUserInput[]
+    upsert?: SubjectUpsertWithWhereUniqueWithoutUserInput | SubjectUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SubjectCreateManyUserInputEnvelope
+    set?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    disconnect?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    delete?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    connect?: SubjectWhereUniqueInput | SubjectWhereUniqueInput[]
+    update?: SubjectUpdateWithWhereUniqueWithoutUserInput | SubjectUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SubjectUpdateManyWithWhereWithoutUserInput | SubjectUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SubjectScalarWhereInput | SubjectScalarWhereInput[]
+  }
+
+  export type TaskUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TaskCreateWithoutUserInput, TaskUncheckedCreateWithoutUserInput> | TaskCreateWithoutUserInput[] | TaskUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutUserInput | TaskCreateOrConnectWithoutUserInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutUserInput | TaskUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TaskCreateManyUserInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutUserInput | TaskUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutUserInput | TaskUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
+  }
+
+  export type ResourceUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ResourceCreateWithoutUserInput, ResourceUncheckedCreateWithoutUserInput> | ResourceCreateWithoutUserInput[] | ResourceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutUserInput | ResourceCreateOrConnectWithoutUserInput[]
+    upsert?: ResourceUpsertWithWhereUniqueWithoutUserInput | ResourceUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ResourceCreateManyUserInputEnvelope
+    set?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    disconnect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    delete?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    update?: ResourceUpdateWithWhereUniqueWithoutUserInput | ResourceUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ResourceUpdateManyWithWhereWithoutUserInput | ResourceUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ResourceScalarWhereInput | ResourceScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutSubjectsInput = {
+    create?: XOR<UserCreateWithoutSubjectsInput, UserUncheckedCreateWithoutSubjectsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSubjectsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type MilestoneCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<MilestoneCreateWithoutSubjectInput, MilestoneUncheckedCreateWithoutSubjectInput> | MilestoneCreateWithoutSubjectInput[] | MilestoneUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: MilestoneCreateOrConnectWithoutSubjectInput | MilestoneCreateOrConnectWithoutSubjectInput[]
+    createMany?: MilestoneCreateManySubjectInputEnvelope
+    connect?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+  }
+
+  export type ResourceCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<ResourceCreateWithoutSubjectInput, ResourceUncheckedCreateWithoutSubjectInput> | ResourceCreateWithoutSubjectInput[] | ResourceUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutSubjectInput | ResourceCreateOrConnectWithoutSubjectInput[]
+    createMany?: ResourceCreateManySubjectInputEnvelope
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+  }
+
+  export type TaskCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<TaskCreateWithoutSubjectInput, TaskUncheckedCreateWithoutSubjectInput> | TaskCreateWithoutSubjectInput[] | TaskUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutSubjectInput | TaskCreateOrConnectWithoutSubjectInput[]
+    createMany?: TaskCreateManySubjectInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
+  export type MilestoneUncheckedCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<MilestoneCreateWithoutSubjectInput, MilestoneUncheckedCreateWithoutSubjectInput> | MilestoneCreateWithoutSubjectInput[] | MilestoneUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: MilestoneCreateOrConnectWithoutSubjectInput | MilestoneCreateOrConnectWithoutSubjectInput[]
+    createMany?: MilestoneCreateManySubjectInputEnvelope
+    connect?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+  }
+
+  export type ResourceUncheckedCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<ResourceCreateWithoutSubjectInput, ResourceUncheckedCreateWithoutSubjectInput> | ResourceCreateWithoutSubjectInput[] | ResourceUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutSubjectInput | ResourceCreateOrConnectWithoutSubjectInput[]
+    createMany?: ResourceCreateManySubjectInputEnvelope
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+  }
+
+  export type TaskUncheckedCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<TaskCreateWithoutSubjectInput, TaskUncheckedCreateWithoutSubjectInput> | TaskCreateWithoutSubjectInput[] | TaskUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutSubjectInput | TaskCreateOrConnectWithoutSubjectInput[]
+    createMany?: TaskCreateManySubjectInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type UserUpdateOneRequiredWithoutSubjectsNestedInput = {
+    create?: XOR<UserCreateWithoutSubjectsInput, UserUncheckedCreateWithoutSubjectsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSubjectsInput
+    upsert?: UserUpsertWithoutSubjectsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSubjectsInput, UserUpdateWithoutSubjectsInput>, UserUncheckedUpdateWithoutSubjectsInput>
+  }
+
+  export type MilestoneUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<MilestoneCreateWithoutSubjectInput, MilestoneUncheckedCreateWithoutSubjectInput> | MilestoneCreateWithoutSubjectInput[] | MilestoneUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: MilestoneCreateOrConnectWithoutSubjectInput | MilestoneCreateOrConnectWithoutSubjectInput[]
+    upsert?: MilestoneUpsertWithWhereUniqueWithoutSubjectInput | MilestoneUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: MilestoneCreateManySubjectInputEnvelope
+    set?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    disconnect?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    delete?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    connect?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    update?: MilestoneUpdateWithWhereUniqueWithoutSubjectInput | MilestoneUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: MilestoneUpdateManyWithWhereWithoutSubjectInput | MilestoneUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: MilestoneScalarWhereInput | MilestoneScalarWhereInput[]
+  }
+
+  export type ResourceUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<ResourceCreateWithoutSubjectInput, ResourceUncheckedCreateWithoutSubjectInput> | ResourceCreateWithoutSubjectInput[] | ResourceUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutSubjectInput | ResourceCreateOrConnectWithoutSubjectInput[]
+    upsert?: ResourceUpsertWithWhereUniqueWithoutSubjectInput | ResourceUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: ResourceCreateManySubjectInputEnvelope
+    set?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    disconnect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    delete?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    update?: ResourceUpdateWithWhereUniqueWithoutSubjectInput | ResourceUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: ResourceUpdateManyWithWhereWithoutSubjectInput | ResourceUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: ResourceScalarWhereInput | ResourceScalarWhereInput[]
+  }
+
+  export type TaskUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<TaskCreateWithoutSubjectInput, TaskUncheckedCreateWithoutSubjectInput> | TaskCreateWithoutSubjectInput[] | TaskUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutSubjectInput | TaskCreateOrConnectWithoutSubjectInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutSubjectInput | TaskUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: TaskCreateManySubjectInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutSubjectInput | TaskUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutSubjectInput | TaskUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
+  }
+
+  export type MilestoneUncheckedUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<MilestoneCreateWithoutSubjectInput, MilestoneUncheckedCreateWithoutSubjectInput> | MilestoneCreateWithoutSubjectInput[] | MilestoneUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: MilestoneCreateOrConnectWithoutSubjectInput | MilestoneCreateOrConnectWithoutSubjectInput[]
+    upsert?: MilestoneUpsertWithWhereUniqueWithoutSubjectInput | MilestoneUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: MilestoneCreateManySubjectInputEnvelope
+    set?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    disconnect?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    delete?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    connect?: MilestoneWhereUniqueInput | MilestoneWhereUniqueInput[]
+    update?: MilestoneUpdateWithWhereUniqueWithoutSubjectInput | MilestoneUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: MilestoneUpdateManyWithWhereWithoutSubjectInput | MilestoneUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: MilestoneScalarWhereInput | MilestoneScalarWhereInput[]
+  }
+
+  export type ResourceUncheckedUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<ResourceCreateWithoutSubjectInput, ResourceUncheckedCreateWithoutSubjectInput> | ResourceCreateWithoutSubjectInput[] | ResourceUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ResourceCreateOrConnectWithoutSubjectInput | ResourceCreateOrConnectWithoutSubjectInput[]
+    upsert?: ResourceUpsertWithWhereUniqueWithoutSubjectInput | ResourceUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: ResourceCreateManySubjectInputEnvelope
+    set?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    disconnect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    delete?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    connect?: ResourceWhereUniqueInput | ResourceWhereUniqueInput[]
+    update?: ResourceUpdateWithWhereUniqueWithoutSubjectInput | ResourceUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: ResourceUpdateManyWithWhereWithoutSubjectInput | ResourceUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: ResourceScalarWhereInput | ResourceScalarWhereInput[]
+  }
+
+  export type TaskUncheckedUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<TaskCreateWithoutSubjectInput, TaskUncheckedCreateWithoutSubjectInput> | TaskCreateWithoutSubjectInput[] | TaskUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutSubjectInput | TaskCreateOrConnectWithoutSubjectInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutSubjectInput | TaskUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: TaskCreateManySubjectInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutSubjectInput | TaskUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutSubjectInput | TaskUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
+  }
+
+  export type SubjectCreateNestedOneWithoutMilestonesInput = {
+    create?: XOR<SubjectCreateWithoutMilestonesInput, SubjectUncheckedCreateWithoutMilestonesInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutMilestonesInput
+    connect?: SubjectWhereUniqueInput
+  }
+
+  export type TaskCreateNestedManyWithoutMilestoneInput = {
+    create?: XOR<TaskCreateWithoutMilestoneInput, TaskUncheckedCreateWithoutMilestoneInput> | TaskCreateWithoutMilestoneInput[] | TaskUncheckedCreateWithoutMilestoneInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutMilestoneInput | TaskCreateOrConnectWithoutMilestoneInput[]
+    createMany?: TaskCreateManyMilestoneInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
+  export type TaskUncheckedCreateNestedManyWithoutMilestoneInput = {
+    create?: XOR<TaskCreateWithoutMilestoneInput, TaskUncheckedCreateWithoutMilestoneInput> | TaskCreateWithoutMilestoneInput[] | TaskUncheckedCreateWithoutMilestoneInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutMilestoneInput | TaskCreateOrConnectWithoutMilestoneInput[]
+    createMany?: TaskCreateManyMilestoneInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -7147,88 +10478,76 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
+  export type SubjectUpdateOneRequiredWithoutMilestonesNestedInput = {
+    create?: XOR<SubjectCreateWithoutMilestonesInput, SubjectUncheckedCreateWithoutMilestonesInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutMilestonesInput
+    upsert?: SubjectUpsertWithoutMilestonesInput
+    connect?: SubjectWhereUniqueInput
+    update?: XOR<XOR<SubjectUpdateToOneWithWhereWithoutMilestonesInput, SubjectUpdateWithoutMilestonesInput>, SubjectUncheckedUpdateWithoutMilestonesInput>
   }
 
-  export type TodoUpdateManyWithoutUserNestedInput = {
-    create?: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput> | TodoCreateWithoutUserInput[] | TodoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TodoCreateOrConnectWithoutUserInput | TodoCreateOrConnectWithoutUserInput[]
-    upsert?: TodoUpsertWithWhereUniqueWithoutUserInput | TodoUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: TodoCreateManyUserInputEnvelope
-    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    update?: TodoUpdateWithWhereUniqueWithoutUserInput | TodoUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: TodoUpdateManyWithWhereWithoutUserInput | TodoUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
+  export type TaskUpdateManyWithoutMilestoneNestedInput = {
+    create?: XOR<TaskCreateWithoutMilestoneInput, TaskUncheckedCreateWithoutMilestoneInput> | TaskCreateWithoutMilestoneInput[] | TaskUncheckedCreateWithoutMilestoneInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutMilestoneInput | TaskCreateOrConnectWithoutMilestoneInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutMilestoneInput | TaskUpsertWithWhereUniqueWithoutMilestoneInput[]
+    createMany?: TaskCreateManyMilestoneInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutMilestoneInput | TaskUpdateWithWhereUniqueWithoutMilestoneInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutMilestoneInput | TaskUpdateManyWithWhereWithoutMilestoneInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
   }
 
-  export type SuggestionUpdateManyWithoutUserNestedInput = {
-    create?: XOR<SuggestionCreateWithoutUserInput, SuggestionUncheckedCreateWithoutUserInput> | SuggestionCreateWithoutUserInput[] | SuggestionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SuggestionCreateOrConnectWithoutUserInput | SuggestionCreateOrConnectWithoutUserInput[]
-    upsert?: SuggestionUpsertWithWhereUniqueWithoutUserInput | SuggestionUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: SuggestionCreateManyUserInputEnvelope
-    set?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    disconnect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    delete?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    connect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    update?: SuggestionUpdateWithWhereUniqueWithoutUserInput | SuggestionUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: SuggestionUpdateManyWithWhereWithoutUserInput | SuggestionUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: SuggestionScalarWhereInput | SuggestionScalarWhereInput[]
+  export type TaskUncheckedUpdateManyWithoutMilestoneNestedInput = {
+    create?: XOR<TaskCreateWithoutMilestoneInput, TaskUncheckedCreateWithoutMilestoneInput> | TaskCreateWithoutMilestoneInput[] | TaskUncheckedCreateWithoutMilestoneInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutMilestoneInput | TaskCreateOrConnectWithoutMilestoneInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutMilestoneInput | TaskUpsertWithWhereUniqueWithoutMilestoneInput[]
+    createMany?: TaskCreateManyMilestoneInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutMilestoneInput | TaskUpdateWithWhereUniqueWithoutMilestoneInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutMilestoneInput | TaskUpdateManyWithWhereWithoutMilestoneInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
   }
 
-  export type TodoUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput> | TodoCreateWithoutUserInput[] | TodoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TodoCreateOrConnectWithoutUserInput | TodoCreateOrConnectWithoutUserInput[]
-    upsert?: TodoUpsertWithWhereUniqueWithoutUserInput | TodoUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: TodoCreateManyUserInputEnvelope
-    set?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    disconnect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    delete?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    connect?: TodoWhereUniqueInput | TodoWhereUniqueInput[]
-    update?: TodoUpdateWithWhereUniqueWithoutUserInput | TodoUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: TodoUpdateManyWithWhereWithoutUserInput | TodoUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: TodoScalarWhereInput | TodoScalarWhereInput[]
-  }
-
-  export type SuggestionUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<SuggestionCreateWithoutUserInput, SuggestionUncheckedCreateWithoutUserInput> | SuggestionCreateWithoutUserInput[] | SuggestionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SuggestionCreateOrConnectWithoutUserInput | SuggestionCreateOrConnectWithoutUserInput[]
-    upsert?: SuggestionUpsertWithWhereUniqueWithoutUserInput | SuggestionUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: SuggestionCreateManyUserInputEnvelope
-    set?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    disconnect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    delete?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    connect?: SuggestionWhereUniqueInput | SuggestionWhereUniqueInput[]
-    update?: SuggestionUpdateWithWhereUniqueWithoutUserInput | SuggestionUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: SuggestionUpdateManyWithWhereWithoutUserInput | SuggestionUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: SuggestionScalarWhereInput | SuggestionScalarWhereInput[]
-  }
-
-  export type TimerSessionCreateNestedManyWithoutTodoInput = {
-    create?: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput> | TimerSessionCreateWithoutTodoInput[] | TimerSessionUncheckedCreateWithoutTodoInput[]
-    connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
-    createMany?: TimerSessionCreateManyTodoInputEnvelope
-    connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
-  }
-
-  export type UserCreateNestedOneWithoutTodosInput = {
-    create?: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTodosInput
+  export type UserCreateNestedOneWithoutTasksInput = {
+    create?: XOR<UserCreateWithoutTasksInput, UserUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTasksInput
     connect?: UserWhereUniqueInput
   }
 
-  export type TimerSessionUncheckedCreateNestedManyWithoutTodoInput = {
-    create?: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput> | TimerSessionCreateWithoutTodoInput[] | TimerSessionUncheckedCreateWithoutTodoInput[]
-    connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
-    createMany?: TimerSessionCreateManyTodoInputEnvelope
+  export type SubjectCreateNestedOneWithoutTasksInput = {
+    create?: XOR<SubjectCreateWithoutTasksInput, SubjectUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutTasksInput
+    connect?: SubjectWhereUniqueInput
+  }
+
+  export type MilestoneCreateNestedOneWithoutTasksInput = {
+    create?: XOR<MilestoneCreateWithoutTasksInput, MilestoneUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: MilestoneCreateOrConnectWithoutTasksInput
+    connect?: MilestoneWhereUniqueInput
+  }
+
+  export type TimerSessionCreateNestedManyWithoutTaskInput = {
+    create?: XOR<TimerSessionCreateWithoutTaskInput, TimerSessionUncheckedCreateWithoutTaskInput> | TimerSessionCreateWithoutTaskInput[] | TimerSessionUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TimerSessionCreateOrConnectWithoutTaskInput | TimerSessionCreateOrConnectWithoutTaskInput[]
+    createMany?: TimerSessionCreateManyTaskInputEnvelope
     connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
+  export type TimerSessionUncheckedCreateNestedManyWithoutTaskInput = {
+    create?: XOR<TimerSessionCreateWithoutTaskInput, TimerSessionUncheckedCreateWithoutTaskInput> | TimerSessionCreateWithoutTaskInput[] | TimerSessionUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TimerSessionCreateOrConnectWithoutTaskInput | TimerSessionCreateOrConnectWithoutTaskInput[]
+    createMany?: TimerSessionCreateManyTaskInputEnvelope
+    connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type EnumPriorityFieldUpdateOperationsInput = {
@@ -7243,72 +10562,104 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type TimerSessionUpdateManyWithoutTodoNestedInput = {
-    create?: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput> | TimerSessionCreateWithoutTodoInput[] | TimerSessionUncheckedCreateWithoutTodoInput[]
-    connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
-    upsert?: TimerSessionUpsertWithWhereUniqueWithoutTodoInput | TimerSessionUpsertWithWhereUniqueWithoutTodoInput[]
-    createMany?: TimerSessionCreateManyTodoInputEnvelope
+  export type UserUpdateOneRequiredWithoutTasksNestedInput = {
+    create?: XOR<UserCreateWithoutTasksInput, UserUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTasksInput
+    upsert?: UserUpsertWithoutTasksInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTasksInput, UserUpdateWithoutTasksInput>, UserUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type SubjectUpdateOneRequiredWithoutTasksNestedInput = {
+    create?: XOR<SubjectCreateWithoutTasksInput, SubjectUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutTasksInput
+    upsert?: SubjectUpsertWithoutTasksInput
+    connect?: SubjectWhereUniqueInput
+    update?: XOR<XOR<SubjectUpdateToOneWithWhereWithoutTasksInput, SubjectUpdateWithoutTasksInput>, SubjectUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type MilestoneUpdateOneWithoutTasksNestedInput = {
+    create?: XOR<MilestoneCreateWithoutTasksInput, MilestoneUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: MilestoneCreateOrConnectWithoutTasksInput
+    upsert?: MilestoneUpsertWithoutTasksInput
+    disconnect?: MilestoneWhereInput | boolean
+    delete?: MilestoneWhereInput | boolean
+    connect?: MilestoneWhereUniqueInput
+    update?: XOR<XOR<MilestoneUpdateToOneWithWhereWithoutTasksInput, MilestoneUpdateWithoutTasksInput>, MilestoneUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type TimerSessionUpdateManyWithoutTaskNestedInput = {
+    create?: XOR<TimerSessionCreateWithoutTaskInput, TimerSessionUncheckedCreateWithoutTaskInput> | TimerSessionCreateWithoutTaskInput[] | TimerSessionUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TimerSessionCreateOrConnectWithoutTaskInput | TimerSessionCreateOrConnectWithoutTaskInput[]
+    upsert?: TimerSessionUpsertWithWhereUniqueWithoutTaskInput | TimerSessionUpsertWithWhereUniqueWithoutTaskInput[]
+    createMany?: TimerSessionCreateManyTaskInputEnvelope
     set?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
     disconnect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
     delete?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
     connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
-    update?: TimerSessionUpdateWithWhereUniqueWithoutTodoInput | TimerSessionUpdateWithWhereUniqueWithoutTodoInput[]
-    updateMany?: TimerSessionUpdateManyWithWhereWithoutTodoInput | TimerSessionUpdateManyWithWhereWithoutTodoInput[]
+    update?: TimerSessionUpdateWithWhereUniqueWithoutTaskInput | TimerSessionUpdateWithWhereUniqueWithoutTaskInput[]
+    updateMany?: TimerSessionUpdateManyWithWhereWithoutTaskInput | TimerSessionUpdateManyWithWhereWithoutTaskInput[]
     deleteMany?: TimerSessionScalarWhereInput | TimerSessionScalarWhereInput[]
   }
 
-  export type UserUpdateOneRequiredWithoutTodosNestedInput = {
-    create?: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTodosInput
-    upsert?: UserUpsertWithoutTodosInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTodosInput, UserUpdateWithoutTodosInput>, UserUncheckedUpdateWithoutTodosInput>
-  }
-
-  export type TimerSessionUncheckedUpdateManyWithoutTodoNestedInput = {
-    create?: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput> | TimerSessionCreateWithoutTodoInput[] | TimerSessionUncheckedCreateWithoutTodoInput[]
-    connectOrCreate?: TimerSessionCreateOrConnectWithoutTodoInput | TimerSessionCreateOrConnectWithoutTodoInput[]
-    upsert?: TimerSessionUpsertWithWhereUniqueWithoutTodoInput | TimerSessionUpsertWithWhereUniqueWithoutTodoInput[]
-    createMany?: TimerSessionCreateManyTodoInputEnvelope
+  export type TimerSessionUncheckedUpdateManyWithoutTaskNestedInput = {
+    create?: XOR<TimerSessionCreateWithoutTaskInput, TimerSessionUncheckedCreateWithoutTaskInput> | TimerSessionCreateWithoutTaskInput[] | TimerSessionUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TimerSessionCreateOrConnectWithoutTaskInput | TimerSessionCreateOrConnectWithoutTaskInput[]
+    upsert?: TimerSessionUpsertWithWhereUniqueWithoutTaskInput | TimerSessionUpsertWithWhereUniqueWithoutTaskInput[]
+    createMany?: TimerSessionCreateManyTaskInputEnvelope
     set?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
     disconnect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
     delete?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
     connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
-    update?: TimerSessionUpdateWithWhereUniqueWithoutTodoInput | TimerSessionUpdateWithWhereUniqueWithoutTodoInput[]
-    updateMany?: TimerSessionUpdateManyWithWhereWithoutTodoInput | TimerSessionUpdateManyWithWhereWithoutTodoInput[]
+    update?: TimerSessionUpdateWithWhereUniqueWithoutTaskInput | TimerSessionUpdateWithWhereUniqueWithoutTaskInput[]
+    updateMany?: TimerSessionUpdateManyWithWhereWithoutTaskInput | TimerSessionUpdateManyWithWhereWithoutTaskInput[]
     deleteMany?: TimerSessionScalarWhereInput | TimerSessionScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutSuggestionsInput = {
-    create?: XOR<UserCreateWithoutSuggestionsInput, UserUncheckedCreateWithoutSuggestionsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSuggestionsInput
+  export type UserCreateNestedOneWithoutResourcesInput = {
+    create?: XOR<UserCreateWithoutResourcesInput, UserUncheckedCreateWithoutResourcesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutResourcesInput
     connect?: UserWhereUniqueInput
   }
 
-  export type EnumSuggestionTypeFieldUpdateOperationsInput = {
-    set?: $Enums.SuggestionType
+  export type SubjectCreateNestedOneWithoutResourcesInput = {
+    create?: XOR<SubjectCreateWithoutResourcesInput, SubjectUncheckedCreateWithoutResourcesInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutResourcesInput
+    connect?: SubjectWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutSuggestionsNestedInput = {
-    create?: XOR<UserCreateWithoutSuggestionsInput, UserUncheckedCreateWithoutSuggestionsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSuggestionsInput
-    upsert?: UserUpsertWithoutSuggestionsInput
+  export type EnumResourceTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ResourceType
+  }
+
+  export type UserUpdateOneRequiredWithoutResourcesNestedInput = {
+    create?: XOR<UserCreateWithoutResourcesInput, UserUncheckedCreateWithoutResourcesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutResourcesInput
+    upsert?: UserUpsertWithoutResourcesInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSuggestionsInput, UserUpdateWithoutSuggestionsInput>, UserUncheckedUpdateWithoutSuggestionsInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutResourcesInput, UserUpdateWithoutResourcesInput>, UserUncheckedUpdateWithoutResourcesInput>
   }
 
-  export type TodoCreateNestedOneWithoutTimerSessionsInput = {
-    create?: XOR<TodoCreateWithoutTimerSessionsInput, TodoUncheckedCreateWithoutTimerSessionsInput>
-    connectOrCreate?: TodoCreateOrConnectWithoutTimerSessionsInput
-    connect?: TodoWhereUniqueInput
+  export type SubjectUpdateOneRequiredWithoutResourcesNestedInput = {
+    create?: XOR<SubjectCreateWithoutResourcesInput, SubjectUncheckedCreateWithoutResourcesInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutResourcesInput
+    upsert?: SubjectUpsertWithoutResourcesInput
+    connect?: SubjectWhereUniqueInput
+    update?: XOR<XOR<SubjectUpdateToOneWithWhereWithoutResourcesInput, SubjectUpdateWithoutResourcesInput>, SubjectUncheckedUpdateWithoutResourcesInput>
   }
 
-  export type TodoUpdateOneRequiredWithoutTimerSessionsNestedInput = {
-    create?: XOR<TodoCreateWithoutTimerSessionsInput, TodoUncheckedCreateWithoutTimerSessionsInput>
-    connectOrCreate?: TodoCreateOrConnectWithoutTimerSessionsInput
-    upsert?: TodoUpsertWithoutTimerSessionsInput
-    connect?: TodoWhereUniqueInput
-    update?: XOR<XOR<TodoUpdateToOneWithWhereWithoutTimerSessionsInput, TodoUpdateWithoutTimerSessionsInput>, TodoUncheckedUpdateWithoutTimerSessionsInput>
+  export type TaskCreateNestedOneWithoutTimerSessionsInput = {
+    create?: XOR<TaskCreateWithoutTimerSessionsInput, TaskUncheckedCreateWithoutTimerSessionsInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutTimerSessionsInput
+    connect?: TaskWhereUniqueInput
+  }
+
+  export type TaskUpdateOneRequiredWithoutTimerSessionsNestedInput = {
+    create?: XOR<TaskCreateWithoutTimerSessionsInput, TaskUncheckedCreateWithoutTimerSessionsInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutTimerSessionsInput
+    upsert?: TaskUpsertWithoutTimerSessionsInput
+    connect?: TaskWhereUniqueInput
+    update?: XOR<XOR<TaskUpdateToOneWithWhereWithoutTimerSessionsInput, TaskUpdateWithoutTimerSessionsInput>, TaskUncheckedUpdateWithoutTimerSessionsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -7350,28 +10701,6 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -7387,6 +10716,17 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7431,6 +10771,19 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -7458,6 +10811,24 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
+  }
+
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -7470,26 +10841,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedEnumPriorityFilter<$PrismaModel = never> = {
-    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
-    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumPriorityWithAggregatesFilter<$PrismaModel = never> = {
@@ -7529,225 +10880,809 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedEnumSuggestionTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.SuggestionType | EnumSuggestionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumSuggestionTypeFilter<$PrismaModel> | $Enums.SuggestionType
+  export type NestedEnumResourceTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ResourceType | EnumResourceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumResourceTypeFilter<$PrismaModel> | $Enums.ResourceType
   }
 
-  export type NestedEnumSuggestionTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.SuggestionType | EnumSuggestionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.SuggestionType[] | ListEnumSuggestionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumSuggestionTypeWithAggregatesFilter<$PrismaModel> | $Enums.SuggestionType
+  export type NestedEnumResourceTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ResourceType | EnumResourceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumResourceTypeWithAggregatesFilter<$PrismaModel> | $Enums.ResourceType
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumSuggestionTypeFilter<$PrismaModel>
-    _max?: NestedEnumSuggestionTypeFilter<$PrismaModel>
+    _min?: NestedEnumResourceTypeFilter<$PrismaModel>
+    _max?: NestedEnumResourceTypeFilter<$PrismaModel>
   }
 
-  export type TodoCreateWithoutUserInput = {
+  export type SubjectCreateWithoutUserInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    milestones?: MilestoneCreateNestedManyWithoutSubjectInput
+    resources?: ResourceCreateNestedManyWithoutSubjectInput
+    tasks?: TaskCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUncheckedCreateWithoutUserInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    milestones?: MilestoneUncheckedCreateNestedManyWithoutSubjectInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSubjectInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectCreateOrConnectWithoutUserInput = {
+    where: SubjectWhereUniqueInput
+    create: XOR<SubjectCreateWithoutUserInput, SubjectUncheckedCreateWithoutUserInput>
+  }
+
+  export type SubjectCreateManyUserInputEnvelope = {
+    data: SubjectCreateManyUserInput | SubjectCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TaskCreateWithoutUserInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
-    timerSessions?: TimerSessionCreateNestedManyWithoutTodoInput
+    createdAt?: Date | string
+    subject: SubjectCreateNestedOneWithoutTasksInput
+    milestone?: MilestoneCreateNestedOneWithoutTasksInput
+    timerSessions?: TimerSessionCreateNestedManyWithoutTaskInput
   }
 
-  export type TodoUncheckedCreateWithoutUserInput = {
+  export type TaskUncheckedCreateWithoutUserInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
-    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTodoInput
-  }
-
-  export type TodoCreateOrConnectWithoutUserInput = {
-    where: TodoWhereUniqueInput
-    create: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput>
-  }
-
-  export type TodoCreateManyUserInputEnvelope = {
-    data: TodoCreateManyUserInput | TodoCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SuggestionCreateWithoutUserInput = {
-    id?: string
-    suggestionType: $Enums.SuggestionType
-    content: string
     createdAt?: Date | string
-    forDate: Date | string
-    isAccepted?: boolean
+    subjectId: string
+    milestoneId?: string | null
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTaskInput
   }
 
-  export type SuggestionUncheckedCreateWithoutUserInput = {
+  export type TaskCreateOrConnectWithoutUserInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutUserInput, TaskUncheckedCreateWithoutUserInput>
+  }
+
+  export type TaskCreateManyUserInputEnvelope = {
+    data: TaskCreateManyUserInput | TaskCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ResourceCreateWithoutUserInput = {
     id?: string
-    suggestionType: $Enums.SuggestionType
-    content: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
     createdAt?: Date | string
-    forDate: Date | string
-    isAccepted?: boolean
+    updatedAt?: Date | string
+    subject: SubjectCreateNestedOneWithoutResourcesInput
   }
 
-  export type SuggestionCreateOrConnectWithoutUserInput = {
-    where: SuggestionWhereUniqueInput
-    create: XOR<SuggestionCreateWithoutUserInput, SuggestionUncheckedCreateWithoutUserInput>
+  export type ResourceUncheckedCreateWithoutUserInput = {
+    id?: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjectId: string
   }
 
-  export type SuggestionCreateManyUserInputEnvelope = {
-    data: SuggestionCreateManyUserInput | SuggestionCreateManyUserInput[]
+  export type ResourceCreateOrConnectWithoutUserInput = {
+    where: ResourceWhereUniqueInput
+    create: XOR<ResourceCreateWithoutUserInput, ResourceUncheckedCreateWithoutUserInput>
+  }
+
+  export type ResourceCreateManyUserInputEnvelope = {
+    data: ResourceCreateManyUserInput | ResourceCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
-  export type TodoUpsertWithWhereUniqueWithoutUserInput = {
-    where: TodoWhereUniqueInput
-    update: XOR<TodoUpdateWithoutUserInput, TodoUncheckedUpdateWithoutUserInput>
-    create: XOR<TodoCreateWithoutUserInput, TodoUncheckedCreateWithoutUserInput>
+  export type SubjectUpsertWithWhereUniqueWithoutUserInput = {
+    where: SubjectWhereUniqueInput
+    update: XOR<SubjectUpdateWithoutUserInput, SubjectUncheckedUpdateWithoutUserInput>
+    create: XOR<SubjectCreateWithoutUserInput, SubjectUncheckedCreateWithoutUserInput>
   }
 
-  export type TodoUpdateWithWhereUniqueWithoutUserInput = {
-    where: TodoWhereUniqueInput
-    data: XOR<TodoUpdateWithoutUserInput, TodoUncheckedUpdateWithoutUserInput>
+  export type SubjectUpdateWithWhereUniqueWithoutUserInput = {
+    where: SubjectWhereUniqueInput
+    data: XOR<SubjectUpdateWithoutUserInput, SubjectUncheckedUpdateWithoutUserInput>
   }
 
-  export type TodoUpdateManyWithWhereWithoutUserInput = {
-    where: TodoScalarWhereInput
-    data: XOR<TodoUpdateManyMutationInput, TodoUncheckedUpdateManyWithoutUserInput>
+  export type SubjectUpdateManyWithWhereWithoutUserInput = {
+    where: SubjectScalarWhereInput
+    data: XOR<SubjectUpdateManyMutationInput, SubjectUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type TodoScalarWhereInput = {
-    AND?: TodoScalarWhereInput | TodoScalarWhereInput[]
-    OR?: TodoScalarWhereInput[]
-    NOT?: TodoScalarWhereInput | TodoScalarWhereInput[]
-    id?: StringFilter<"Todo"> | string
-    title?: StringFilter<"Todo"> | string
-    description?: StringNullableFilter<"Todo"> | string | null
-    isCompleted?: BoolFilter<"Todo"> | boolean
-    createdAt?: DateTimeFilter<"Todo"> | Date | string
-    dueDate?: DateTimeNullableFilter<"Todo"> | Date | string | null
-    completedAt?: DateTimeNullableFilter<"Todo"> | Date | string | null
-    priority?: EnumPriorityFilter<"Todo"> | $Enums.Priority
-    isAiSuggested?: BoolFilter<"Todo"> | boolean
-    estimatedTime?: IntNullableFilter<"Todo"> | number | null
-    timeSpent?: IntNullableFilter<"Todo"> | number | null
-    userId?: StringFilter<"Todo"> | string
+  export type SubjectScalarWhereInput = {
+    AND?: SubjectScalarWhereInput | SubjectScalarWhereInput[]
+    OR?: SubjectScalarWhereInput[]
+    NOT?: SubjectScalarWhereInput | SubjectScalarWhereInput[]
+    id?: StringFilter<"Subject"> | string
+    title?: StringFilter<"Subject"> | string
+    description?: StringNullableFilter<"Subject"> | string | null
+    color?: StringNullableFilter<"Subject"> | string | null
+    isArchived?: BoolFilter<"Subject"> | boolean
+    createdAt?: DateTimeFilter<"Subject"> | Date | string
+    updatedAt?: DateTimeFilter<"Subject"> | Date | string
+    userId?: StringFilter<"Subject"> | string
   }
 
-  export type SuggestionUpsertWithWhereUniqueWithoutUserInput = {
-    where: SuggestionWhereUniqueInput
-    update: XOR<SuggestionUpdateWithoutUserInput, SuggestionUncheckedUpdateWithoutUserInput>
-    create: XOR<SuggestionCreateWithoutUserInput, SuggestionUncheckedCreateWithoutUserInput>
+  export type TaskUpsertWithWhereUniqueWithoutUserInput = {
+    where: TaskWhereUniqueInput
+    update: XOR<TaskUpdateWithoutUserInput, TaskUncheckedUpdateWithoutUserInput>
+    create: XOR<TaskCreateWithoutUserInput, TaskUncheckedCreateWithoutUserInput>
   }
 
-  export type SuggestionUpdateWithWhereUniqueWithoutUserInput = {
-    where: SuggestionWhereUniqueInput
-    data: XOR<SuggestionUpdateWithoutUserInput, SuggestionUncheckedUpdateWithoutUserInput>
+  export type TaskUpdateWithWhereUniqueWithoutUserInput = {
+    where: TaskWhereUniqueInput
+    data: XOR<TaskUpdateWithoutUserInput, TaskUncheckedUpdateWithoutUserInput>
   }
 
-  export type SuggestionUpdateManyWithWhereWithoutUserInput = {
-    where: SuggestionScalarWhereInput
-    data: XOR<SuggestionUpdateManyMutationInput, SuggestionUncheckedUpdateManyWithoutUserInput>
+  export type TaskUpdateManyWithWhereWithoutUserInput = {
+    where: TaskScalarWhereInput
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type SuggestionScalarWhereInput = {
-    AND?: SuggestionScalarWhereInput | SuggestionScalarWhereInput[]
-    OR?: SuggestionScalarWhereInput[]
-    NOT?: SuggestionScalarWhereInput | SuggestionScalarWhereInput[]
-    id?: StringFilter<"Suggestion"> | string
-    suggestionType?: EnumSuggestionTypeFilter<"Suggestion"> | $Enums.SuggestionType
-    content?: StringFilter<"Suggestion"> | string
-    createdAt?: DateTimeFilter<"Suggestion"> | Date | string
-    forDate?: DateTimeFilter<"Suggestion"> | Date | string
-    isAccepted?: BoolFilter<"Suggestion"> | boolean
-    userId?: StringFilter<"Suggestion"> | string
+  export type TaskScalarWhereInput = {
+    AND?: TaskScalarWhereInput | TaskScalarWhereInput[]
+    OR?: TaskScalarWhereInput[]
+    NOT?: TaskScalarWhereInput | TaskScalarWhereInput[]
+    id?: StringFilter<"Task"> | string
+    title?: StringFilter<"Task"> | string
+    description?: StringNullableFilter<"Task"> | string | null
+    isCompleted?: BoolFilter<"Task"> | boolean
+    completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
+    dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
+    priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
+    estimatedTime?: IntNullableFilter<"Task"> | number | null
+    timeSpent?: IntNullableFilter<"Task"> | number | null
+    createdAt?: DateTimeFilter<"Task"> | Date | string
+    userId?: StringFilter<"Task"> | string
+    subjectId?: StringFilter<"Task"> | string
+    milestoneId?: StringNullableFilter<"Task"> | string | null
   }
 
-  export type TimerSessionCreateWithoutTodoInput = {
-    id?: string
-    startedAt: Date | string
-    endedAt?: Date | string | null
-    duration?: number | null
+  export type ResourceUpsertWithWhereUniqueWithoutUserInput = {
+    where: ResourceWhereUniqueInput
+    update: XOR<ResourceUpdateWithoutUserInput, ResourceUncheckedUpdateWithoutUserInput>
+    create: XOR<ResourceCreateWithoutUserInput, ResourceUncheckedCreateWithoutUserInput>
   }
 
-  export type TimerSessionUncheckedCreateWithoutTodoInput = {
-    id?: string
-    startedAt: Date | string
-    endedAt?: Date | string | null
-    duration?: number | null
+  export type ResourceUpdateWithWhereUniqueWithoutUserInput = {
+    where: ResourceWhereUniqueInput
+    data: XOR<ResourceUpdateWithoutUserInput, ResourceUncheckedUpdateWithoutUserInput>
   }
 
-  export type TimerSessionCreateOrConnectWithoutTodoInput = {
-    where: TimerSessionWhereUniqueInput
-    create: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput>
+  export type ResourceUpdateManyWithWhereWithoutUserInput = {
+    where: ResourceScalarWhereInput
+    data: XOR<ResourceUpdateManyMutationInput, ResourceUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type TimerSessionCreateManyTodoInputEnvelope = {
-    data: TimerSessionCreateManyTodoInput | TimerSessionCreateManyTodoInput[]
-    skipDuplicates?: boolean
+  export type ResourceScalarWhereInput = {
+    AND?: ResourceScalarWhereInput | ResourceScalarWhereInput[]
+    OR?: ResourceScalarWhereInput[]
+    NOT?: ResourceScalarWhereInput | ResourceScalarWhereInput[]
+    id?: StringFilter<"Resource"> | string
+    type?: EnumResourceTypeFilter<"Resource"> | $Enums.ResourceType
+    url?: StringFilter<"Resource"> | string
+    title?: StringFilter<"Resource"> | string
+    note?: StringNullableFilter<"Resource"> | string | null
+    createdAt?: DateTimeFilter<"Resource"> | Date | string
+    updatedAt?: DateTimeFilter<"Resource"> | Date | string
+    userId?: StringFilter<"Resource"> | string
+    subjectId?: StringFilter<"Resource"> | string
   }
 
-  export type UserCreateWithoutTodosInput = {
+  export type UserCreateWithoutSubjectsInput = {
     id?: string
     email: string
     name?: string | null
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
-    suggestions?: SuggestionCreateNestedManyWithoutUserInput
+    tasks?: TaskCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutTodosInput = {
+  export type UserUncheckedCreateWithoutSubjectsInput = {
     id?: string
     email: string
     name?: string | null
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
-    suggestions?: SuggestionUncheckedCreateNestedManyWithoutUserInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutTodosInput = {
+  export type UserCreateOrConnectWithoutSubjectsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
+    create: XOR<UserCreateWithoutSubjectsInput, UserUncheckedCreateWithoutSubjectsInput>
   }
 
-  export type TimerSessionUpsertWithWhereUniqueWithoutTodoInput = {
+  export type MilestoneCreateWithoutSubjectInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tasks?: TaskCreateNestedManyWithoutMilestoneInput
+  }
+
+  export type MilestoneUncheckedCreateWithoutSubjectInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tasks?: TaskUncheckedCreateNestedManyWithoutMilestoneInput
+  }
+
+  export type MilestoneCreateOrConnectWithoutSubjectInput = {
+    where: MilestoneWhereUniqueInput
+    create: XOR<MilestoneCreateWithoutSubjectInput, MilestoneUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type MilestoneCreateManySubjectInputEnvelope = {
+    data: MilestoneCreateManySubjectInput | MilestoneCreateManySubjectInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ResourceCreateWithoutSubjectInput = {
+    id?: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutResourcesInput
+  }
+
+  export type ResourceUncheckedCreateWithoutSubjectInput = {
+    id?: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+  }
+
+  export type ResourceCreateOrConnectWithoutSubjectInput = {
+    where: ResourceWhereUniqueInput
+    create: XOR<ResourceCreateWithoutSubjectInput, ResourceUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type ResourceCreateManySubjectInputEnvelope = {
+    data: ResourceCreateManySubjectInput | ResourceCreateManySubjectInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TaskCreateWithoutSubjectInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    priority?: $Enums.Priority
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutTasksInput
+    milestone?: MilestoneCreateNestedOneWithoutTasksInput
+    timerSessions?: TimerSessionCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutSubjectInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    priority?: $Enums.Priority
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    createdAt?: Date | string
+    userId: string
+    milestoneId?: string | null
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutSubjectInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutSubjectInput, TaskUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type TaskCreateManySubjectInputEnvelope = {
+    data: TaskCreateManySubjectInput | TaskCreateManySubjectInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutSubjectsInput = {
+    update: XOR<UserUpdateWithoutSubjectsInput, UserUncheckedUpdateWithoutSubjectsInput>
+    create: XOR<UserCreateWithoutSubjectsInput, UserUncheckedCreateWithoutSubjectsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSubjectsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSubjectsInput, UserUncheckedUpdateWithoutSubjectsInput>
+  }
+
+  export type UserUpdateWithoutSubjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: TaskUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSubjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: TaskUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type MilestoneUpsertWithWhereUniqueWithoutSubjectInput = {
+    where: MilestoneWhereUniqueInput
+    update: XOR<MilestoneUpdateWithoutSubjectInput, MilestoneUncheckedUpdateWithoutSubjectInput>
+    create: XOR<MilestoneCreateWithoutSubjectInput, MilestoneUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type MilestoneUpdateWithWhereUniqueWithoutSubjectInput = {
+    where: MilestoneWhereUniqueInput
+    data: XOR<MilestoneUpdateWithoutSubjectInput, MilestoneUncheckedUpdateWithoutSubjectInput>
+  }
+
+  export type MilestoneUpdateManyWithWhereWithoutSubjectInput = {
+    where: MilestoneScalarWhereInput
+    data: XOR<MilestoneUpdateManyMutationInput, MilestoneUncheckedUpdateManyWithoutSubjectInput>
+  }
+
+  export type MilestoneScalarWhereInput = {
+    AND?: MilestoneScalarWhereInput | MilestoneScalarWhereInput[]
+    OR?: MilestoneScalarWhereInput[]
+    NOT?: MilestoneScalarWhereInput | MilestoneScalarWhereInput[]
+    id?: StringFilter<"Milestone"> | string
+    title?: StringFilter<"Milestone"> | string
+    notes?: StringFilter<"Milestone"> | string
+    order?: IntFilter<"Milestone"> | number
+    isCompleted?: BoolFilter<"Milestone"> | boolean
+    createdAt?: DateTimeFilter<"Milestone"> | Date | string
+    updatedAt?: DateTimeFilter<"Milestone"> | Date | string
+    subjectId?: StringFilter<"Milestone"> | string
+  }
+
+  export type ResourceUpsertWithWhereUniqueWithoutSubjectInput = {
+    where: ResourceWhereUniqueInput
+    update: XOR<ResourceUpdateWithoutSubjectInput, ResourceUncheckedUpdateWithoutSubjectInput>
+    create: XOR<ResourceCreateWithoutSubjectInput, ResourceUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type ResourceUpdateWithWhereUniqueWithoutSubjectInput = {
+    where: ResourceWhereUniqueInput
+    data: XOR<ResourceUpdateWithoutSubjectInput, ResourceUncheckedUpdateWithoutSubjectInput>
+  }
+
+  export type ResourceUpdateManyWithWhereWithoutSubjectInput = {
+    where: ResourceScalarWhereInput
+    data: XOR<ResourceUpdateManyMutationInput, ResourceUncheckedUpdateManyWithoutSubjectInput>
+  }
+
+  export type TaskUpsertWithWhereUniqueWithoutSubjectInput = {
+    where: TaskWhereUniqueInput
+    update: XOR<TaskUpdateWithoutSubjectInput, TaskUncheckedUpdateWithoutSubjectInput>
+    create: XOR<TaskCreateWithoutSubjectInput, TaskUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type TaskUpdateWithWhereUniqueWithoutSubjectInput = {
+    where: TaskWhereUniqueInput
+    data: XOR<TaskUpdateWithoutSubjectInput, TaskUncheckedUpdateWithoutSubjectInput>
+  }
+
+  export type TaskUpdateManyWithWhereWithoutSubjectInput = {
+    where: TaskScalarWhereInput
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutSubjectInput>
+  }
+
+  export type SubjectCreateWithoutMilestonesInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutSubjectsInput
+    resources?: ResourceCreateNestedManyWithoutSubjectInput
+    tasks?: TaskCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUncheckedCreateWithoutMilestonesInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    resources?: ResourceUncheckedCreateNestedManyWithoutSubjectInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectCreateOrConnectWithoutMilestonesInput = {
+    where: SubjectWhereUniqueInput
+    create: XOR<SubjectCreateWithoutMilestonesInput, SubjectUncheckedCreateWithoutMilestonesInput>
+  }
+
+  export type TaskCreateWithoutMilestoneInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    priority?: $Enums.Priority
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutTasksInput
+    subject: SubjectCreateNestedOneWithoutTasksInput
+    timerSessions?: TimerSessionCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutMilestoneInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    priority?: $Enums.Priority
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    createdAt?: Date | string
+    userId: string
+    subjectId: string
+    timerSessions?: TimerSessionUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutMilestoneInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutMilestoneInput, TaskUncheckedCreateWithoutMilestoneInput>
+  }
+
+  export type TaskCreateManyMilestoneInputEnvelope = {
+    data: TaskCreateManyMilestoneInput | TaskCreateManyMilestoneInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SubjectUpsertWithoutMilestonesInput = {
+    update: XOR<SubjectUpdateWithoutMilestonesInput, SubjectUncheckedUpdateWithoutMilestonesInput>
+    create: XOR<SubjectCreateWithoutMilestonesInput, SubjectUncheckedCreateWithoutMilestonesInput>
+    where?: SubjectWhereInput
+  }
+
+  export type SubjectUpdateToOneWithWhereWithoutMilestonesInput = {
+    where?: SubjectWhereInput
+    data: XOR<SubjectUpdateWithoutMilestonesInput, SubjectUncheckedUpdateWithoutMilestonesInput>
+  }
+
+  export type SubjectUpdateWithoutMilestonesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
+    resources?: ResourceUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateWithoutMilestonesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    resources?: ResourceUncheckedUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type TaskUpsertWithWhereUniqueWithoutMilestoneInput = {
+    where: TaskWhereUniqueInput
+    update: XOR<TaskUpdateWithoutMilestoneInput, TaskUncheckedUpdateWithoutMilestoneInput>
+    create: XOR<TaskCreateWithoutMilestoneInput, TaskUncheckedCreateWithoutMilestoneInput>
+  }
+
+  export type TaskUpdateWithWhereUniqueWithoutMilestoneInput = {
+    where: TaskWhereUniqueInput
+    data: XOR<TaskUpdateWithoutMilestoneInput, TaskUncheckedUpdateWithoutMilestoneInput>
+  }
+
+  export type TaskUpdateManyWithWhereWithoutMilestoneInput = {
+    where: TaskScalarWhereInput
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutMilestoneInput>
+  }
+
+  export type UserCreateWithoutTasksInput = {
+    id?: string
+    email: string
+    name?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjects?: SubjectCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTasksInput = {
+    id?: string
+    email: string
+    name?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjects?: SubjectUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTasksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTasksInput, UserUncheckedCreateWithoutTasksInput>
+  }
+
+  export type SubjectCreateWithoutTasksInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutSubjectsInput
+    milestones?: MilestoneCreateNestedManyWithoutSubjectInput
+    resources?: ResourceCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUncheckedCreateWithoutTasksInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    milestones?: MilestoneUncheckedCreateNestedManyWithoutSubjectInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectCreateOrConnectWithoutTasksInput = {
+    where: SubjectWhereUniqueInput
+    create: XOR<SubjectCreateWithoutTasksInput, SubjectUncheckedCreateWithoutTasksInput>
+  }
+
+  export type MilestoneCreateWithoutTasksInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subject: SubjectCreateNestedOneWithoutMilestonesInput
+  }
+
+  export type MilestoneUncheckedCreateWithoutTasksInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjectId: string
+  }
+
+  export type MilestoneCreateOrConnectWithoutTasksInput = {
+    where: MilestoneWhereUniqueInput
+    create: XOR<MilestoneCreateWithoutTasksInput, MilestoneUncheckedCreateWithoutTasksInput>
+  }
+
+  export type TimerSessionCreateWithoutTaskInput = {
+    id?: string
+    startedAt: Date | string
+    endedAt?: Date | string | null
+    duration?: number | null
+  }
+
+  export type TimerSessionUncheckedCreateWithoutTaskInput = {
+    id?: string
+    startedAt: Date | string
+    endedAt?: Date | string | null
+    duration?: number | null
+  }
+
+  export type TimerSessionCreateOrConnectWithoutTaskInput = {
     where: TimerSessionWhereUniqueInput
-    update: XOR<TimerSessionUpdateWithoutTodoInput, TimerSessionUncheckedUpdateWithoutTodoInput>
-    create: XOR<TimerSessionCreateWithoutTodoInput, TimerSessionUncheckedCreateWithoutTodoInput>
+    create: XOR<TimerSessionCreateWithoutTaskInput, TimerSessionUncheckedCreateWithoutTaskInput>
   }
 
-  export type TimerSessionUpdateWithWhereUniqueWithoutTodoInput = {
+  export type TimerSessionCreateManyTaskInputEnvelope = {
+    data: TimerSessionCreateManyTaskInput | TimerSessionCreateManyTaskInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutTasksInput = {
+    update: XOR<UserUpdateWithoutTasksInput, UserUncheckedUpdateWithoutTasksInput>
+    create: XOR<UserCreateWithoutTasksInput, UserUncheckedCreateWithoutTasksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTasksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTasksInput, UserUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type UserUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjects?: SubjectUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjects?: SubjectUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type SubjectUpsertWithoutTasksInput = {
+    update: XOR<SubjectUpdateWithoutTasksInput, SubjectUncheckedUpdateWithoutTasksInput>
+    create: XOR<SubjectCreateWithoutTasksInput, SubjectUncheckedCreateWithoutTasksInput>
+    where?: SubjectWhereInput
+  }
+
+  export type SubjectUpdateToOneWithWhereWithoutTasksInput = {
+    where?: SubjectWhereInput
+    data: XOR<SubjectUpdateWithoutTasksInput, SubjectUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type SubjectUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
+    milestones?: MilestoneUpdateManyWithoutSubjectNestedInput
+    resources?: ResourceUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    milestones?: MilestoneUncheckedUpdateManyWithoutSubjectNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type MilestoneUpsertWithoutTasksInput = {
+    update: XOR<MilestoneUpdateWithoutTasksInput, MilestoneUncheckedUpdateWithoutTasksInput>
+    create: XOR<MilestoneCreateWithoutTasksInput, MilestoneUncheckedCreateWithoutTasksInput>
+    where?: MilestoneWhereInput
+  }
+
+  export type MilestoneUpdateToOneWithWhereWithoutTasksInput = {
+    where?: MilestoneWhereInput
+    data: XOR<MilestoneUpdateWithoutTasksInput, MilestoneUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type MilestoneUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subject?: SubjectUpdateOneRequiredWithoutMilestonesNestedInput
+  }
+
+  export type MilestoneUncheckedUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TimerSessionUpsertWithWhereUniqueWithoutTaskInput = {
     where: TimerSessionWhereUniqueInput
-    data: XOR<TimerSessionUpdateWithoutTodoInput, TimerSessionUncheckedUpdateWithoutTodoInput>
+    update: XOR<TimerSessionUpdateWithoutTaskInput, TimerSessionUncheckedUpdateWithoutTaskInput>
+    create: XOR<TimerSessionCreateWithoutTaskInput, TimerSessionUncheckedCreateWithoutTaskInput>
   }
 
-  export type TimerSessionUpdateManyWithWhereWithoutTodoInput = {
+  export type TimerSessionUpdateWithWhereUniqueWithoutTaskInput = {
+    where: TimerSessionWhereUniqueInput
+    data: XOR<TimerSessionUpdateWithoutTaskInput, TimerSessionUncheckedUpdateWithoutTaskInput>
+  }
+
+  export type TimerSessionUpdateManyWithWhereWithoutTaskInput = {
     where: TimerSessionScalarWhereInput
-    data: XOR<TimerSessionUpdateManyMutationInput, TimerSessionUncheckedUpdateManyWithoutTodoInput>
+    data: XOR<TimerSessionUpdateManyMutationInput, TimerSessionUncheckedUpdateManyWithoutTaskInput>
   }
 
   export type TimerSessionScalarWhereInput = {
@@ -7758,312 +11693,601 @@ export namespace Prisma {
     startedAt?: DateTimeFilter<"TimerSession"> | Date | string
     endedAt?: DateTimeNullableFilter<"TimerSession"> | Date | string | null
     duration?: IntNullableFilter<"TimerSession"> | number | null
-    todoId?: StringFilter<"TimerSession"> | string
+    taskId?: StringFilter<"TimerSession"> | string
   }
 
-  export type UserUpsertWithoutTodosInput = {
-    update: XOR<UserUpdateWithoutTodosInput, UserUncheckedUpdateWithoutTodosInput>
-    create: XOR<UserCreateWithoutTodosInput, UserUncheckedCreateWithoutTodosInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutTodosInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutTodosInput, UserUncheckedUpdateWithoutTodosInput>
-  }
-
-  export type UserUpdateWithoutTodosInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suggestions?: SuggestionUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutTodosInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suggestions?: SuggestionUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserCreateWithoutSuggestionsInput = {
+  export type UserCreateWithoutResourcesInput = {
     id?: string
     email: string
     name?: string | null
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
-    todos?: TodoCreateNestedManyWithoutUserInput
+    subjects?: SubjectCreateNestedManyWithoutUserInput
+    tasks?: TaskCreateNestedManyWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutSuggestionsInput = {
+  export type UserUncheckedCreateWithoutResourcesInput = {
     id?: string
     email: string
     name?: string | null
     password?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    xp?: number
-    level?: number
-    streak?: number
-    lastActiveDate?: Date | string | null
-    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    subjects?: SubjectUncheckedCreateNestedManyWithoutUserInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutSuggestionsInput = {
+  export type UserCreateOrConnectWithoutResourcesInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutSuggestionsInput, UserUncheckedCreateWithoutSuggestionsInput>
+    create: XOR<UserCreateWithoutResourcesInput, UserUncheckedCreateWithoutResourcesInput>
   }
 
-  export type UserUpsertWithoutSuggestionsInput = {
-    update: XOR<UserUpdateWithoutSuggestionsInput, UserUncheckedUpdateWithoutSuggestionsInput>
-    create: XOR<UserCreateWithoutSuggestionsInput, UserUncheckedCreateWithoutSuggestionsInput>
+  export type SubjectCreateWithoutResourcesInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutSubjectsInput
+    milestones?: MilestoneCreateNestedManyWithoutSubjectInput
+    tasks?: TaskCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUncheckedCreateWithoutResourcesInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    milestones?: MilestoneUncheckedCreateNestedManyWithoutSubjectInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectCreateOrConnectWithoutResourcesInput = {
+    where: SubjectWhereUniqueInput
+    create: XOR<SubjectCreateWithoutResourcesInput, SubjectUncheckedCreateWithoutResourcesInput>
+  }
+
+  export type UserUpsertWithoutResourcesInput = {
+    update: XOR<UserUpdateWithoutResourcesInput, UserUncheckedUpdateWithoutResourcesInput>
+    create: XOR<UserCreateWithoutResourcesInput, UserUncheckedCreateWithoutResourcesInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutSuggestionsInput = {
+  export type UserUpdateToOneWithWhereWithoutResourcesInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutSuggestionsInput, UserUncheckedUpdateWithoutSuggestionsInput>
+    data: XOR<UserUpdateWithoutResourcesInput, UserUncheckedUpdateWithoutResourcesInput>
   }
 
-  export type UserUpdateWithoutSuggestionsInput = {
+  export type UserUpdateWithoutResourcesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    todos?: TodoUpdateManyWithoutUserNestedInput
+    subjects?: SubjectUpdateManyWithoutUserNestedInput
+    tasks?: TaskUpdateManyWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutSuggestionsInput = {
+  export type UserUncheckedUpdateWithoutResourcesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    xp?: IntFieldUpdateOperationsInput | number
-    level?: IntFieldUpdateOperationsInput | number
-    streak?: IntFieldUpdateOperationsInput | number
-    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    subjects?: SubjectUncheckedUpdateManyWithoutUserNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutUserNestedInput
   }
 
-  export type TodoCreateWithoutTimerSessionsInput = {
+  export type SubjectUpsertWithoutResourcesInput = {
+    update: XOR<SubjectUpdateWithoutResourcesInput, SubjectUncheckedUpdateWithoutResourcesInput>
+    create: XOR<SubjectCreateWithoutResourcesInput, SubjectUncheckedCreateWithoutResourcesInput>
+    where?: SubjectWhereInput
+  }
+
+  export type SubjectUpdateToOneWithWhereWithoutResourcesInput = {
+    where?: SubjectWhereInput
+    data: XOR<SubjectUpdateWithoutResourcesInput, SubjectUncheckedUpdateWithoutResourcesInput>
+  }
+
+  export type SubjectUpdateWithoutResourcesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
+    milestones?: MilestoneUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateWithoutResourcesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    milestones?: MilestoneUncheckedUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type TaskCreateWithoutTimerSessionsInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
-    user: UserCreateNestedOneWithoutTodosInput
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutTasksInput
+    subject: SubjectCreateNestedOneWithoutTasksInput
+    milestone?: MilestoneCreateNestedOneWithoutTasksInput
   }
 
-  export type TodoUncheckedCreateWithoutTimerSessionsInput = {
+  export type TaskUncheckedCreateWithoutTimerSessionsInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
+    createdAt?: Date | string
+    userId: string
+    subjectId: string
+    milestoneId?: string | null
+  }
+
+  export type TaskCreateOrConnectWithoutTimerSessionsInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutTimerSessionsInput, TaskUncheckedCreateWithoutTimerSessionsInput>
+  }
+
+  export type TaskUpsertWithoutTimerSessionsInput = {
+    update: XOR<TaskUpdateWithoutTimerSessionsInput, TaskUncheckedUpdateWithoutTimerSessionsInput>
+    create: XOR<TaskCreateWithoutTimerSessionsInput, TaskUncheckedCreateWithoutTimerSessionsInput>
+    where?: TaskWhereInput
+  }
+
+  export type TaskUpdateToOneWithWhereWithoutTimerSessionsInput = {
+    where?: TaskWhereInput
+    data: XOR<TaskUpdateWithoutTimerSessionsInput, TaskUncheckedUpdateWithoutTimerSessionsInput>
+  }
+
+  export type TaskUpdateWithoutTimerSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTasksNestedInput
+    subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
+    milestone?: MilestoneUpdateOneWithoutTasksNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutTimerSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type SubjectCreateManyUserInput = {
+    id?: string
+    title: string
+    description?: string | null
+    color?: string | null
+    isArchived?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TaskCreateManyUserInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    priority?: $Enums.Priority
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    createdAt?: Date | string
+    subjectId: string
+    milestoneId?: string | null
+  }
+
+  export type ResourceCreateManyUserInput = {
+    id?: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subjectId: string
+  }
+
+  export type SubjectUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    milestones?: MilestoneUpdateManyWithoutSubjectNestedInput
+    resources?: ResourceUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    milestones?: MilestoneUncheckedUpdateManyWithoutSubjectNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSubjectNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: NullableStringFieldUpdateOperationsInput | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
+    milestone?: MilestoneUpdateOneWithoutTasksNestedInput
+    timerSessions?: TimerSessionUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ResourceUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subject?: SubjectUpdateOneRequiredWithoutResourcesNestedInput
+  }
+
+  export type ResourceUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ResourceUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type MilestoneCreateManySubjectInput = {
+    id?: string
+    title: string
+    notes?: string
+    order?: number
+    isCompleted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ResourceCreateManySubjectInput = {
+    id?: string
+    type: $Enums.ResourceType
+    url: string
+    title: string
+    note?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     userId: string
   }
 
-  export type TodoCreateOrConnectWithoutTimerSessionsInput = {
-    where: TodoWhereUniqueInput
-    create: XOR<TodoCreateWithoutTimerSessionsInput, TodoUncheckedCreateWithoutTimerSessionsInput>
-  }
-
-  export type TodoUpsertWithoutTimerSessionsInput = {
-    update: XOR<TodoUpdateWithoutTimerSessionsInput, TodoUncheckedUpdateWithoutTimerSessionsInput>
-    create: XOR<TodoCreateWithoutTimerSessionsInput, TodoUncheckedCreateWithoutTimerSessionsInput>
-    where?: TodoWhereInput
-  }
-
-  export type TodoUpdateToOneWithWhereWithoutTimerSessionsInput = {
-    where?: TodoWhereInput
-    data: XOR<TodoUpdateWithoutTimerSessionsInput, TodoUncheckedUpdateWithoutTimerSessionsInput>
-  }
-
-  export type TodoUpdateWithoutTimerSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
-    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
-    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
-    user?: UserUpdateOneRequiredWithoutTodosNestedInput
-  }
-
-  export type TodoUncheckedUpdateWithoutTimerSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
-    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
-    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
-    userId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type TodoCreateManyUserInput = {
+  export type TaskCreateManySubjectInput = {
     id?: string
     title: string
     description?: string | null
     isCompleted?: boolean
-    createdAt?: Date | string
-    dueDate?: Date | string | null
     completedAt?: Date | string | null
+    dueDate?: Date | string | null
     priority?: $Enums.Priority
-    isAiSuggested?: boolean
     estimatedTime?: number | null
     timeSpent?: number | null
-  }
-
-  export type SuggestionCreateManyUserInput = {
-    id?: string
-    suggestionType: $Enums.SuggestionType
-    content: string
     createdAt?: Date | string
-    forDate: Date | string
-    isAccepted?: boolean
+    userId: string
+    milestoneId?: string | null
   }
 
-  export type TodoUpdateWithoutUserInput = {
+  export type MilestoneUpdateWithoutSubjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: TaskUpdateManyWithoutMilestoneNestedInput
+  }
+
+  export type MilestoneUncheckedUpdateWithoutSubjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: TaskUncheckedUpdateManyWithoutMilestoneNestedInput
+  }
+
+  export type MilestoneUncheckedUpdateManyWithoutSubjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResourceUpdateWithoutSubjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutResourcesNestedInput
+  }
+
+  export type ResourceUncheckedUpdateWithoutSubjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ResourceUncheckedUpdateManyWithoutSubjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumResourceTypeFieldUpdateOperationsInput | $Enums.ResourceType
+    url?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskUpdateWithoutSubjectInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
-    timerSessions?: TimerSessionUpdateManyWithoutTodoNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTasksNestedInput
+    milestone?: MilestoneUpdateOneWithoutTasksNestedInput
+    timerSessions?: TimerSessionUpdateManyWithoutTaskNestedInput
   }
 
-  export type TodoUncheckedUpdateWithoutUserInput = {
+  export type TaskUncheckedUpdateWithoutSubjectInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
-    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTodoNestedInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTaskNestedInput
   }
 
-  export type TodoUncheckedUpdateManyWithoutUserInput = {
+  export type TaskUncheckedUpdateManyWithoutSubjectInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    isAiSuggested?: BoolFieldUpdateOperationsInput | boolean
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
-  }
-
-  export type SuggestionUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
+    userId?: StringFieldUpdateOperationsInput | string
+    milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type SuggestionUncheckedUpdateWithoutUserInput = {
+  export type TaskCreateManyMilestoneInput = {
+    id?: string
+    title: string
+    description?: string | null
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    priority?: $Enums.Priority
+    estimatedTime?: number | null
+    timeSpent?: number | null
+    createdAt?: Date | string
+    userId: string
+    subjectId: string
+  }
+
+  export type TaskUpdateWithoutMilestoneInput = {
     id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
+    user?: UserUpdateOneRequiredWithoutTasksNestedInput
+    subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
+    timerSessions?: TimerSessionUpdateManyWithoutTaskNestedInput
   }
 
-  export type SuggestionUncheckedUpdateManyWithoutUserInput = {
+  export type TaskUncheckedUpdateWithoutMilestoneInput = {
     id?: StringFieldUpdateOperationsInput | string
-    suggestionType?: EnumSuggestionTypeFieldUpdateOperationsInput | $Enums.SuggestionType
-    content?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    forDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAccepted?: BoolFieldUpdateOperationsInput | boolean
+    userId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+    timerSessions?: TimerSessionUncheckedUpdateManyWithoutTaskNestedInput
   }
 
-  export type TimerSessionCreateManyTodoInput = {
+  export type TaskUncheckedUpdateManyWithoutMilestoneInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
+    timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TimerSessionCreateManyTaskInput = {
     id?: string
     startedAt: Date | string
     endedAt?: Date | string | null
     duration?: number | null
   }
 
-  export type TimerSessionUpdateWithoutTodoInput = {
+  export type TimerSessionUpdateWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type TimerSessionUncheckedUpdateWithoutTodoInput = {
+  export type TimerSessionUncheckedUpdateWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type TimerSessionUncheckedUpdateManyWithoutTodoInput = {
+  export type TimerSessionUncheckedUpdateManyWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

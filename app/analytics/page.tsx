@@ -1,10 +1,5 @@
-import React from 'react'
-import AnalyticsPage from '../components/analytics-page'
+import AnalyticsPage from "@/app/components/analytics-page";
 
-const page = () => {
-  return (
-    <AnalyticsPage />
-  )
+export default function Page() {
+  return <AnalyticsPage />;
 }
-
-export default page

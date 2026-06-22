@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LockIn
 
-## Getting Started
+A personal **study & resource hub** — not an AI generator. You're the brain; LockIn is the shelf + planner. Everything is organized around **Subjects**.
 
-First, run the development server:
+- **Subjects** (e.g. "Operating Systems", "GATE Prep") — each holds a plan and resources.
+- **Plan** — an ordered list of **Milestones** (phases) with markdown notes, each holding a checklist of **Tasks**.
+- **Resources** — saved URLs only: web links, AI chat links, book/PDF references.
+- **Today** — a cross-subject view of tasks due or overdue.
+- **Focus** — a timer (Pomodoro / stopwatch) that logs time against a task.
+- **Progress** — streaks, completions, focus time and a GitHub-style activity heatmap.
+
+Single user per account. Two interchangeable looks via the theme toggle: **Creative** (light, neobrutalist) and **Focus** (dark, editor-calm).
+
+## Stack
+
+Next.js (App Router) · React 19 · TypeScript · Prisma + PostgreSQL · NextAuth v4 (JWT) · TanStack React Query · shadcn/ui + Tailwind v4 · next-themes.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000 (auto-bumps to 3001 if taken)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set the following in `.env` (Prisma CLI) **and** `.env.local` (the app):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+DATABASE_URL=            # Postgres; if the password contains `$`, encode it as %24
+AUTH_SECRET=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=            # e.g. http://localhost:3001
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Commands
 
-## Learn More
+```bash
+npm run dev      # Next.js + Turbopack
+npm run build    # prisma generate && next build
+npm run start    # serve the production build
+npm run lint     # next lint
 
-To learn more about Next.js, take a look at the following resources:
+npx prisma db push   # sync schema to the database
+npx prisma studio    # browse data
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data model
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`User ──< Subject ──< Milestone ──< Task ──< TimerSession`, and `Subject ──< Resource`.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The Prisma client is generated into `app/generated/prisma/` (committed) — regenerate with `npx prisma generate` after schema changes; never hand-edit.

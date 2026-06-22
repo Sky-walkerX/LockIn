@@ -1,81 +1,61 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import TodayTasks from "@/app/components/today-tasks"
-import PomodoroTimer from "@/app/components/timer"
-import SpotifyWidget from "@/app/components/spotify-widget"
-import AISuggestionsPanel from "@/app/components/ai-suggestion-panel"
-import { useTodos } from "@/hooks/useTodos"
+import { useSession } from "next-auth/react";
+import { useSubjects } from "@/hooks/useSubjects";
+import { SubjectCard } from "./components/home/subject-card";
+import { TodayPanel } from "./components/home/today-panel";
+import { NewSubject } from "./components/home/new-subject";
 
 export default function HomePage() {
-  const { status } = useSession()
-  const router = useRouter()
-  const { isLoading: todosLoading } = useTodos()
+  const { status } = useSession({ required: true });
+  const { data, isLoading } = useSubjects();
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login")
-    }
-  }, [status, router])
-
-  if (status === "loading" || todosLoading) {
+  if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-[var(--accent1bg)] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[var(--accent2bg)] dark:text-[var(--accent2bgdark)]">Loading your workspace...</p>
-        </div>
-      </div>
-    )
+      <main className="mx-auto max-w-5xl px-5 py-10 md:px-8">
+        <p className="lk-mono text-sm text-muted-foreground">loading…</p>
+      </main>
+    );
   }
 
-  if (status === "unauthenticated") {
-    return null
-  }
-
+  const list = data ?? [];
+  const activeTasks = list.reduce((n, s) => n + (s.totalTasks - s.completedTasks), 0);
 
   return (
-    <div className="min-h-screen bg-[var(--primarybg)] dark:bg-[var(--primarybgdark)]">
+    <main className="mx-auto max-w-5xl px-5 py-6 md:px-8">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h1 className="lk-display text-2xl font-black tracking-tight">Your subjects</h1>
+        <NewSubject />
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <TodayPanel />
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(100vh-300px)]">
-          {/* Today's Tasks with Smart Plan Integration */}
-          <div className="lg:row-span-1">
-            <TodayTasks />
-          </div>
+      <div className="lk-sec mt-7 mb-3">subjects · {list.length}</div>
 
-          {/* Pomodoro Timer */}
-          <div className="lg:row-span-1">
-            <PomodoroTimer />
-          </div>
-
-          {/* AI Suggestions Panel */}
-          <div className="lg:row-span-1">
-            <AISuggestionsPanel />
-          </div>
-
-          {/* Spotify Widget */}
-          <div className="lg:row-span-1">
-            <SpotifyWidget />
-          </div>
+      {isLoading ? (
+        <p className="lk-mono text-sm text-muted-foreground">loading subjects…</p>
+      ) : list.length === 0 ? (
+        <div className="lk-card p-8 text-center">
+          <p className="lk-display text-lg font-bold">No subjects yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Create your first subject to start collecting plans &amp; resources.
+          </p>
         </div>
-
-        {/* Quick Actions Footer */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-
-          {/* Productivity Tip */}
-          <div className="text-center">
-            <p className="text-sm text-[var(--mutedbg)] dark:text-[var(--mutedbgdark)]">
-              💡 <strong>Pro tip:</strong> Use the AI smart plan feature to optimize your daily task order
-            </p>
-          </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((s) => (
+            <SubjectCard key={s.id} subject={s} />
+          ))}
         </div>
-      </main>
-    </div>
-  )
+      )}
+
+      <div className="lk-statusbar mt-10">
+        <span className="seg mode">LOCKIN</span>
+        <span className="seg">{list.length} subjects</span>
+        <span className="seg">{activeTasks} active tasks</span>
+        <span className="seg grow" />
+        <span className="seg">~/lockin</span>
+      </div>
+    </main>
+  );
 }

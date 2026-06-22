@@ -3,152 +3,344 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+  LockIn — two modes, one token system.
+  :root  = CREATIVE mode (light, neobrutalist)
+  .dark  = FOCUS mode    (dark, editor / tiling-wm calm)
+  Components read the same tokens; personality comes from the values
+  (+ a few .dark-only flourishes near the bottom).
+*/
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ok: var(--lk-ok);
+  --color-warn: var(--lk-warn);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--lk-font-body);
+  --font-display: var(--lk-font-display);
+  --font-mono: var(--lk-font-mono);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ============================ CREATIVE (light) ============================ */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 10px;
+
+  --background: #efe9da;
+  --foreground: #141414;
+  --card: #ffffff;
+  --card-foreground: #141414;
+  --popover: #ffffff;
+  --popover-foreground: #141414;
+  --primary: #141414;
+  --primary-foreground: #f4efe3;
+  --secondary: #f3eede;
+  --secondary-foreground: #141414;
+  --muted: #e7e0cf;
+  --muted-foreground: #7a7264;
+  --accent: #c6f135;            /* brand lime */
+  --accent-foreground: #141414;
+  --destructive: #d6202b;       /* alert / overdue */
+  --border: #141414;
+  --input: #141414;
+  --ring: #c6f135;
+
+  --chart-1: #2f6bff;
+  --chart-2: #ff4d9d;
+  --chart-3: #ff7a1a;
+  --chart-4: #12b981;
+  --chart-5: #8b5cf6;
+
+  /* LockIn custom tokens */
+  --lk-font-display: var(--font-archivo), system-ui, sans-serif;
+  --lk-font-body: var(--font-hanken), system-ui, sans-serif;
+  --lk-font-mono: var(--font-space-mono), ui-monospace, monospace;
+  --lk-bw: 2.5px;                /* border width */
+  --lk-shadow: 4px 4px 0 #141414;
+  --lk-shadow-sm: 2px 2px 0 #141414;
+  --lk-hero-bg: #ffd23f;         /* yellow Today block */
+  --lk-hero-ink: #141414;
+  --lk-ok: #3a7d1e;
+  --lk-warn: #b45309;
+  --lk-bar-track: #efe9da;
+  --lk-soften: 100%;             /* subject color used as-is */
 }
 
+/* ============================== FOCUS (dark) ============================== */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --radius: 8px;
+
+  --background: #0e0f14;
+  --foreground: #c0c6e0;
+  --card: #14151c;
+  --card-foreground: #c0c6e0;
+  --popover: #14151c;
+  --popover-foreground: #c0c6e0;
+  --primary: #9ece6a;
+  --primary-foreground: #0e0f14;
+  --secondary: #191b22;
+  --secondary-foreground: #c0c6e0;
+  --muted: #191b22;
+  --muted-foreground: #565a70;
+  --accent: #9ece6a;            /* brand softens to a syntax green */
+  --accent-foreground: #0e0f14;
+  --destructive: #f7768e;
+  --border: #22232f;
+  --input: #22232f;
+  --ring: #9ece6a;
+
+  --chart-1: #7aa2f7;
+  --chart-2: #bb9af7;
+  --chart-3: #e0af68;
+  --chart-4: #9ece6a;
+  --chart-5: #7dcfff;
+
+  --lk-font-display: var(--font-jetbrains), ui-monospace, monospace;
+  --lk-font-body: var(--font-hanken), system-ui, sans-serif;
+  --lk-font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --lk-bw: 1px;
+  --lk-shadow: none;
+  --lk-shadow-sm: none;
+  --lk-hero-bg: #14151c;
+  --lk-hero-ink: #c0c6e0;
+  --lk-ok: #9ece6a;
+  --lk-warn: #e0af68;
+  --lk-bar-track: #1b1c26;
+  --lk-comment: #474b63;
 }
-
-/* @theme {
-    --primarybg: #FAF7F2;
-    --secondarybg: #F0D1A8;
-    --mutedbg: #C4A49F;
-    --accent1bg: #F87777;
-    --accent2bg: #1E293B;
-
-    --primarybgdark: #0f172a; 
-    --secondarybgdark: #1e293b; 
-    --mutedbgdark: #64748b; 
-    --accent1bgdark: #ef4444; 
-    --accent2bgdark: #f1f5f9;
-} */
-
-/* globals.css */
-@layer base {
-  :root {
-    --primarybg: #FAF7F2;
-    --secondarybg: #F0D1A8;
-    --mutedbg: #C4A49F;
-    --accent1bg: #F87777;
-    --accent2bg: #1E293B;
-  }
-
-  .dark {
-    --primarybg: #0f172a;
-    --secondarybg: #1e293b;
-    --mutedbg: #64748b;
-    --accent1bg: #ef4444;
-    --accent2bg: #f1f5f9;
-  }
-}
-
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
-  
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--lk-font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ============================ Component layer ============================ */
+@layer components {
+  .lk-display { font-family: var(--lk-font-display); }
+  .lk-mono { font-family: var(--lk-font-mono); }
+
+  /* Subject color: bold in Creative, softened to a syntax tone in Focus.
+     Set `style="--c: #hex"` on the element (or an ancestor with .lk-subject). */
+  .lk-subject { --c-eff: var(--c); }
+  .dark .lk-subject { --c-eff: color-mix(in srgb, var(--c) 64%, #9398b0); }
+
+  .lk-card {
+    background: var(--card);
+    border: var(--lk-bw) solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--lk-shadow);
+  }
+
+  .lk-hero {
+    background: var(--lk-hero-bg);
+    color: var(--lk-hero-ink);
+    border: var(--lk-bw) solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--lk-shadow);
+  }
+
+  .lk-btn {
+    font-family: var(--lk-font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    border: var(--lk-bw) solid var(--border);
+    border-radius: calc(var(--radius) - 3px);
+    box-shadow: var(--lk-shadow-sm);
+    transition: transform 0.06s ease, box-shadow 0.06s ease;
+  }
+  .lk-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+  .lk-brand-mark {
+    background: var(--accent);
+    color: var(--accent-foreground);
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    padding: 0 5px;
+  }
+  .dark .lk-brand-mark { border-width: 1px; }
+
+  .lk-pill {
+    display: inline-block;
+    font-family: var(--lk-font-mono);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: var(--lk-bw) solid currentColor;
+    border-radius: 6px;
+  }
+  .dark .lk-pill { border-width: 1px; }
+
+  .lk-bar {
+    height: 12px;
+    border: var(--lk-bw) solid var(--border);
+    border-radius: 5px;
+    background: var(--lk-bar-track);
+    overflow: hidden;
+  }
+  .lk-bar > i { display: block; height: 100%; background: var(--c-eff, var(--accent)); }
+  .dark .lk-bar { height: 5px; border: none; border-radius: 2px; }
+  .dark .lk-bar > i { border-radius: 2px; }
+
+  .lk-swatch {
+    width: 15px; height: 15px; flex: none;
+    border: var(--lk-bw) solid var(--border);
+    border-radius: 4px;
+    background: var(--c-eff, var(--accent));
+    box-shadow: var(--lk-shadow-sm);
+  }
+  .dark .lk-swatch { width: 9px; height: 9px; border: none; border-radius: 2px; box-shadow: none; }
+
+  .lk-pct { font-family: var(--lk-font-mono); font-weight: 700; font-size: 30px; line-height: 1; color: var(--c-eff, var(--foreground)); }
+  .dark .lk-pct { font-size: 13px; }
+
+  /* Section label: bold mono in Creative; `// comment` in Focus */
+  .lk-sec {
+    font-family: var(--lk-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted-foreground);
+  }
+  .dark .lk-sec { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--lk-comment); }
+  .dark .lk-sec::before { content: "// "; }
+
+  /* Today list: line numbers appear only in Focus mode */
+  .lk-rows { counter-reset: lk-ln; }
+  .dark .lk-row::before {
+    counter-increment: lk-ln;
+    content: counter(lk-ln, decimal-leading-zero);
+    font-family: var(--lk-font-mono);
+    font-size: 10px;
+    color: var(--lk-comment);
+    margin-right: 4px;
+  }
+
+  /* Status bar: brutalist footer in Creative, vim statusline in Focus */
+  .lk-statusbar {
+    display: flex; align-items: center;
+    font-family: var(--lk-font-mono); font-size: 11px;
+    border-top: var(--lk-bw) solid var(--border);
+  }
+  .lk-statusbar .seg { padding: 6px 11px; color: var(--muted-foreground); }
+  .lk-statusbar .seg.mode { background: var(--accent); color: var(--accent-foreground); font-weight: 700; letter-spacing: 0.06em; }
+  .lk-statusbar .seg.grow { flex: 1; }
+
+  /* Task checkbox: ticks in the subject's color (falls back to brand accent).
+     `!important` beats shadcn's `dark:data-[state=checked]:bg-primary` utility,
+     which otherwise outranks this component-layer rule in Focus mode. */
+  .lk-check[data-state="checked"] {
+    background: var(--c-eff, var(--primary)) !important;
+    border-color: var(--c-eff, var(--primary)) !important;
+    color: #fff !important;
+  }
+
+  /* Small ghost button — used for inline row actions (reorder, edit, delete) */
+  .lk-iconbtn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; flex: none;
+    border-radius: calc(var(--radius) - 4px);
+    color: var(--muted-foreground);
+    transition: color 0.1s ease, background 0.1s ease;
+  }
+  .lk-iconbtn:hover { color: var(--foreground); background: var(--muted); }
+  .lk-iconbtn:disabled { opacity: 0.35; pointer-events: none; }
+
+  /* Type pill for resources — outlined, mono, neutral */
+  .lk-tag {
+    font-family: var(--lk-font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 5px;
+    border: var(--lk-bw) solid var(--border);
+    color: var(--muted-foreground);
+  }
+  .dark .lk-tag { border-width: 1px; }
+
+  /* ---- Markdown notes (react-markdown output) ---- */
+  .lk-prose { font-size: 13.5px; line-height: 1.65; color: var(--foreground); }
+  .lk-prose > :first-child { margin-top: 0; }
+  .lk-prose > :last-child { margin-bottom: 0; }
+  .lk-prose p { margin: 0.6em 0; }
+  .lk-prose h1, .lk-prose h2, .lk-prose h3, .lk-prose h4 {
+    font-family: var(--lk-font-display);
+    font-weight: 800; line-height: 1.25;
+    margin: 1.1em 0 0.45em;
+  }
+  .lk-prose h1 { font-size: 1.35em; }
+  .lk-prose h2 { font-size: 1.18em; }
+  .lk-prose h3 { font-size: 1.05em; }
+  .lk-prose h4 { font-size: 0.95em; }
+  .lk-prose ul, .lk-prose ol { margin: 0.55em 0; padding-left: 1.4em; }
+  .lk-prose ul { list-style: disc; }
+  .lk-prose ol { list-style: decimal; }
+  .lk-prose li { margin: 0.22em 0; }
+  .lk-prose li::marker { color: var(--muted-foreground); }
+  .lk-prose a { color: var(--c-eff, var(--accent-foreground)); text-decoration: underline; text-underline-offset: 2px; }
+  .dark .lk-prose a { color: var(--c-eff, var(--accent)); }
+  .lk-prose strong { font-weight: 700; }
+  .lk-prose em { font-style: italic; }
+  .lk-prose code {
+    font-family: var(--lk-font-mono);
+    font-size: 0.85em;
+    background: var(--muted);
+    padding: 0.12em 0.36em; border-radius: 4px;
+  }
+  .lk-prose pre {
+    font-family: var(--lk-font-mono);
+    background: var(--muted);
+    border: var(--lk-bw) solid var(--border);
+    border-radius: calc(var(--radius) - 3px);
+    padding: 0.7em 0.85em; margin: 0.7em 0;
+    overflow-x: auto; font-size: 0.82em; line-height: 1.5;
+  }
+  .dark .lk-prose pre { border-width: 1px; }
+  .lk-prose pre code { background: none; padding: 0; font-size: 1em; }
+  .lk-prose blockquote {
+    border-left: 3px solid var(--c-eff, var(--border));
+    padding-left: 0.9em; margin: 0.7em 0;
+    color: var(--muted-foreground); font-style: italic;
+  }
+  .lk-prose hr { border: none; border-top: var(--lk-bw) solid var(--border); margin: 1.1em 0; }
+  .lk-prose table { width: 100%; border-collapse: collapse; margin: 0.7em 0; font-size: 0.92em; }
+  .lk-prose th, .lk-prose td { border: 1px solid var(--border); padding: 0.4em 0.6em; text-align: left; }
+  .lk-prose th { background: var(--muted); font-weight: 700; }
+  .lk-prose input[type="checkbox"] { margin-right: 0.45em; accent-color: var(--c-eff, var(--accent)); }
+  .lk-prose ul:has(> li > input[type="checkbox"]) { list-style: none; padding-left: 0.2em; }
 }

@@ -1,166 +1,70 @@
-import { useQuery } from "@tanstack/react-query"
-import { useTodos } from "./useTodos"
-import { subDays, format, isToday, startOfWeek, addDays } from "date-fns" // Import startOfWeek and addDays
+import { useMemo } from "react";
+import { useTasks } from "./useTasks";
+import { format, isToday, subDays, startOfWeek, addDays } from "date-fns";
 
-export interface UserStats {
-  totalXP: number
-  level: number
-  currentStreak: number
-  longestStreak: number
-  xpToNextLevel: number
-  xpForCurrentLevel: number
-  totalTasksCompleted: number
-  pomodoroSessions: number
-  tasksCompletedToday: number
-  weeklyProgress: number[]
-  heatmapData: { date: string; count: number; xp: number }[]
+// Study-progress stats derived from the user's tasks (no gamification/XP).
+export interface StudyStats {
+  totalCompleted: number;
+  completedToday: number;
+  currentStreak: number; // consecutive days (ending today) with ≥1 completion
+  longestStreak: number; // best run within the last 30 days
+  totalFocusMinutes: number; // sum of Task.timeSpent
+  activeTasks: number; // incomplete
+  weeklyProgress: number[]; // completions per day, Sun…Sat of the current week
 }
 
+const dayKey = (d: Date | string) => format(new Date(d), "yyyy-MM-dd");
+
 export function useAnalytics() {
-  const { data: todos = [] } = useTodos()
+  const { data: tasks = [], isLoading } = useTasks();
 
-  return useQuery({
-    queryKey: ["analytics", todos],
-    queryFn: (): UserStats => {
-      const completedTodos = todos.filter((todo) => todo.isCompleted && todo.completedAt)
+  const data = useMemo<StudyStats>(() => {
+    const completed = tasks.filter((t) => t.isCompleted && t.completedAt);
+    const totalCompleted = completed.length;
+    const completedToday = completed.filter((t) => t.completedAt && isToday(new Date(t.completedAt))).length;
+    const activeTasks = tasks.filter((t) => !t.isCompleted).length;
+    const totalFocusMinutes = tasks.reduce((sum, t) => sum + (t.timeSpent ?? 0), 0);
 
-      // Calculate total XP (rest of this logic is fine, no changes needed)
-      let totalXP = 0
-      completedTodos.forEach((todo) => {
-        // Base XP for task completion
-        switch (todo.priority) {
-          case "LOW":
-            totalXP += 5
-            break
-          case "MEDIUM":
-            totalXP += 10
-            break
-          case "HIGH":
-            totalXP += 20
-            break
-        }
+    // Completion count per day for the last 30 days (index 0 = today).
+    const today = new Date();
+    const last30 = Array.from({ length: 30 }, (_, i) => {
+      const key = dayKey(subDays(today, i));
+      return completed.filter((t) => t.completedAt && dayKey(t.completedAt) === key).length;
+    });
 
-        // Bonus XP for completing before due date
-        if (todo.dueDate && todo.completedAt) {
-          const dueDate = new Date(todo.dueDate)
-          const completedDate = new Date(todo.completedAt)
-          if (completedDate < dueDate) {
-            totalXP += 5
-          }
-        }
+    let currentStreak = 0;
+    for (const c of last30) {
+      if (c > 0) currentStreak++;
+      else break;
+    }
 
-        // Bonus XP for AI suggested tasks
-        if (todo.isAiSuggested) {
-          totalXP += 10
-        }
-      })
-
-      // Mock Pomodoro sessions (you can replace with real data)
-      const pomodoroSessions = Math.floor(completedTodos.length * 0.7) // Assume 70% of tasks had pomodoro
-      totalXP += pomodoroSessions * 10
-
-      // Calculate level
-      const level = Math.floor(totalXP / 100) + 1
-      const xpForCurrentLevel = (level - 1) * 100
-      const xpToNextLevel = level * 100 - totalXP
-
-      // Calculate streaks (rest of this logic is fine, no changes needed)
-      const today = new Date()
-      const last30Days = Array.from({ length: 30 }, (_, i) => {
-        const date = subDays(today, i)
-        const dayTodos = completedTodos.filter((todo) => {
-          if (!todo.completedAt) return false
-          const completedDate = new Date(todo.completedAt)
-          return format(completedDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-        })
-        return {
-          date: format(date, "yyyy-MM-dd"),
-          count: dayTodos.length,
-          xp: dayTodos.reduce((acc, todo) => {
-            let xp = 0
-            switch (todo.priority) {
-              case "LOW":
-                xp += 5
-                break
-              case "MEDIUM":
-                xp += 10
-                break
-                case "HIGH":
-                xp += 20
-                break
-            }
-            if (todo.dueDate && todo.completedAt) {
-              const dueDate = new Date(todo.dueDate)
-              const completedDate = new Date(todo.completedAt)
-              if (completedDate < dueDate) xp += 5
-            }
-            if (todo.isAiSuggested) xp += 10
-            return acc + xp
-          }, 0),
-        }
-      }).reverse()
-
-      // Calculate current streak
-      let currentStreak = 0
-      for (let i = last30Days.length - 1; i >= 0; i--) {
-        if (last30Days[i].count > 0) {
-          currentStreak++
-        } else {
-          break
-        }
+    let longestStreak = 0;
+    let run = 0;
+    for (const c of last30) {
+      if (c > 0) {
+        run++;
+        longestStreak = Math.max(longestStreak, run);
+      } else {
+        run = 0;
       }
+    }
 
-      // Calculate longest streak
-      let longestStreak = 0
-      let tempStreak = 0
-      last30Days.forEach((day) => {
-        if (day.count > 0) {
-          tempStreak++
-          longestStreak = Math.max(longestStreak, tempStreak)
-        } else {
-          tempStreak = 0
-        }
-      })
+    const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+    const weeklyProgress = Array.from({ length: 7 }, (_, i) => {
+      const key = dayKey(addDays(weekStart, i));
+      return completed.filter((t) => t.completedAt && dayKey(t.completedAt) === key).length;
+    });
 
-      // Add streak bonus XP
-      if (currentStreak > 0) {
-        if (currentStreak >= 10) totalXP += 10
-        else if (currentStreak >= 5) totalXP += 5
-        else totalXP += Math.min(currentStreak, 2)
-      }
+    return {
+      totalCompleted,
+      completedToday,
+      currentStreak,
+      longestStreak,
+      totalFocusMinutes,
+      activeTasks,
+      weeklyProgress,
+    };
+  }, [tasks]);
 
-      // Tasks completed today
-      const tasksCompletedToday = completedTodos.filter((todo) => {
-        if (!todo.completedAt) return false
-        return isToday(new Date(todo.completedAt))
-      }).length
-
-      // *** MODIFIED WEEKLY PROGRESS CALCULATION ***
-      const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 0 }); // Sunday is 0
-      const weeklyProgress = Array.from({ length: 7 }, (_, i) => {
-        const date = addDays(startOfCurrentWeek, i); // Get each day of the week
-        return completedTodos.filter((todo) => {
-          if (!todo.completedAt) return false;
-          const completedDate = new Date(todo.completedAt);
-          return format(completedDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd");
-        }).length;
-      });
-      // *** END MODIFIED WEEKLY PROGRESS CALCULATION ***
-
-      return {
-        totalXP,
-        level,
-        currentStreak,
-        longestStreak,
-        xpToNextLevel,
-        xpForCurrentLevel,
-        totalTasksCompleted: completedTodos.length,
-        pomodoroSessions,
-        tasksCompletedToday,
-        weeklyProgress,
-        heatmapData: last30Days,
-      }
-    },
-    enabled: todos.length > 0,
-  })
+  return { data, isLoading };
 }

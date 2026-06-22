@@ -126,36 +126,57 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   password: 'password',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  xp: 'xp',
-  level: 'level',
-  streak: 'streak',
-  lastActiveDate: 'lastActiveDate'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.TodoScalarFieldEnum = {
+exports.Prisma.SubjectScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  color: 'color',
+  isArchived: 'isArchived',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.MilestoneScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  notes: 'notes',
+  order: 'order',
+  isCompleted: 'isCompleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  subjectId: 'subjectId'
+};
+
+exports.Prisma.TaskScalarFieldEnum = {
   id: 'id',
   title: 'title',
   description: 'description',
   isCompleted: 'isCompleted',
-  createdAt: 'createdAt',
-  dueDate: 'dueDate',
   completedAt: 'completedAt',
+  dueDate: 'dueDate',
   priority: 'priority',
-  isAiSuggested: 'isAiSuggested',
   estimatedTime: 'estimatedTime',
   timeSpent: 'timeSpent',
-  userId: 'userId'
+  createdAt: 'createdAt',
+  userId: 'userId',
+  subjectId: 'subjectId',
+  milestoneId: 'milestoneId'
 };
 
-exports.Prisma.SuggestionScalarFieldEnum = {
+exports.Prisma.ResourceScalarFieldEnum = {
   id: 'id',
-  suggestionType: 'suggestionType',
-  content: 'content',
+  type: 'type',
+  url: 'url',
+  title: 'title',
+  note: 'note',
   createdAt: 'createdAt',
-  forDate: 'forDate',
-  isAccepted: 'isAccepted',
-  userId: 'userId'
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  subjectId: 'subjectId'
 };
 
 exports.Prisma.TimerSessionScalarFieldEnum = {
@@ -163,7 +184,7 @@ exports.Prisma.TimerSessionScalarFieldEnum = {
   startedAt: 'startedAt',
   endedAt: 'endedAt',
   duration: 'duration',
-  todoId: 'todoId'
+  taskId: 'taskId'
 };
 
 exports.Prisma.SortOrder = {
@@ -186,16 +207,19 @@ exports.Priority = exports.$Enums.Priority = {
   HIGH: 'HIGH'
 };
 
-exports.SuggestionType = exports.$Enums.SuggestionType = {
-  ADD: 'ADD',
-  SKIP: 'SKIP',
-  RESCHEDULE: 'RESCHEDULE'
+exports.ResourceType = exports.$Enums.ResourceType = {
+  LINK: 'LINK',
+  AI_CHAT: 'AI_CHAT',
+  PDF: 'PDF',
+  BOOK: 'BOOK'
 };
 
 exports.Prisma.ModelName = {
   User: 'User',
-  Todo: 'Todo',
-  Suggestion: 'Suggestion',
+  Subject: 'Subject',
+  Milestone: 'Milestone',
+  Task: 'Task',
+  Resource: 'Resource',
   TimerSession: 'TimerSession'
 };
 

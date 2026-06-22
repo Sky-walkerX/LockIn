@@ -41,3 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 /generated/prisma
+
+# Visual brainstorm companion
+.superpowers/
+
+# Playwright MCP output (snapshots, console logs, screenshots)
+.playwright-mcp/
