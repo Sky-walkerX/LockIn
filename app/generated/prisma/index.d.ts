@@ -66,6 +66,15 @@ export const ResourceType: {
 
 export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType]
 
+
+export const Recurrence: {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
+export type Recurrence = (typeof Recurrence)[keyof typeof Recurrence]
+
 }
 
 export type Priority = $Enums.Priority
@@ -75,6 +84,10 @@ export const Priority: typeof $Enums.Priority
 export type ResourceType = $Enums.ResourceType
 
 export const ResourceType: typeof $Enums.ResourceType
+
+export type Recurrence = $Enums.Recurrence
+
+export const Recurrence: typeof $Enums.Recurrence
 
 /**
  * ##  Prisma Client ʲˢ
@@ -5030,6 +5043,7 @@ export namespace Prisma {
     priority: $Enums.Priority | null
     estimatedTime: number | null
     timeSpent: number | null
+    recurrence: $Enums.Recurrence | null
     createdAt: Date | null
     userId: string | null
     subjectId: string | null
@@ -5046,6 +5060,7 @@ export namespace Prisma {
     priority: $Enums.Priority | null
     estimatedTime: number | null
     timeSpent: number | null
+    recurrence: $Enums.Recurrence | null
     createdAt: Date | null
     userId: string | null
     subjectId: string | null
@@ -5062,6 +5077,7 @@ export namespace Prisma {
     priority: number
     estimatedTime: number
     timeSpent: number
+    recurrence: number
     createdAt: number
     userId: number
     subjectId: number
@@ -5090,6 +5106,7 @@ export namespace Prisma {
     priority?: true
     estimatedTime?: true
     timeSpent?: true
+    recurrence?: true
     createdAt?: true
     userId?: true
     subjectId?: true
@@ -5106,6 +5123,7 @@ export namespace Prisma {
     priority?: true
     estimatedTime?: true
     timeSpent?: true
+    recurrence?: true
     createdAt?: true
     userId?: true
     subjectId?: true
@@ -5122,6 +5140,7 @@ export namespace Prisma {
     priority?: true
     estimatedTime?: true
     timeSpent?: true
+    recurrence?: true
     createdAt?: true
     userId?: true
     subjectId?: true
@@ -5225,6 +5244,7 @@ export namespace Prisma {
     priority: $Enums.Priority
     estimatedTime: number | null
     timeSpent: number | null
+    recurrence: $Enums.Recurrence | null
     createdAt: Date
     userId: string
     subjectId: string
@@ -5260,6 +5280,7 @@ export namespace Prisma {
     priority?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    recurrence?: boolean
     createdAt?: boolean
     userId?: boolean
     subjectId?: boolean
@@ -5281,6 +5302,7 @@ export namespace Prisma {
     priority?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    recurrence?: boolean
     createdAt?: boolean
     userId?: boolean
     subjectId?: boolean
@@ -5300,6 +5322,7 @@ export namespace Prisma {
     priority?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    recurrence?: boolean
     createdAt?: boolean
     userId?: boolean
     subjectId?: boolean
@@ -5319,13 +5342,14 @@ export namespace Prisma {
     priority?: boolean
     estimatedTime?: boolean
     timeSpent?: boolean
+    recurrence?: boolean
     createdAt?: boolean
     userId?: boolean
     subjectId?: boolean
     milestoneId?: boolean
   }
 
-  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "isCompleted" | "completedAt" | "dueDate" | "priority" | "estimatedTime" | "timeSpent" | "createdAt" | "userId" | "subjectId" | "milestoneId", ExtArgs["result"]["task"]>
+  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "isCompleted" | "completedAt" | "dueDate" | "priority" | "estimatedTime" | "timeSpent" | "recurrence" | "createdAt" | "userId" | "subjectId" | "milestoneId", ExtArgs["result"]["task"]>
   export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
@@ -5362,6 +5386,7 @@ export namespace Prisma {
       priority: $Enums.Priority
       estimatedTime: number | null
       timeSpent: number | null
+      recurrence: $Enums.Recurrence | null
       createdAt: Date
       userId: string
       subjectId: string
@@ -5802,6 +5827,7 @@ export namespace Prisma {
     readonly priority: FieldRef<"Task", 'Priority'>
     readonly estimatedTime: FieldRef<"Task", 'Int'>
     readonly timeSpent: FieldRef<"Task", 'Int'>
+    readonly recurrence: FieldRef<"Task", 'Recurrence'>
     readonly createdAt: FieldRef<"Task", 'DateTime'>
     readonly userId: FieldRef<"Task", 'String'>
     readonly subjectId: FieldRef<"Task", 'String'>
@@ -8537,6 +8563,7 @@ export namespace Prisma {
     priority: 'priority',
     estimatedTime: 'estimatedTime',
     timeSpent: 'timeSpent',
+    recurrence: 'recurrence',
     createdAt: 'createdAt',
     userId: 'userId',
     subjectId: 'subjectId',
@@ -8661,6 +8688,20 @@ export namespace Prisma {
    * Reference to a field of type 'Priority[]'
    */
   export type ListEnumPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Priority[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Recurrence'
+   */
+  export type EnumRecurrenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Recurrence'>
+    
+
+
+  /**
+   * Reference to a field of type 'Recurrence[]'
+   */
+  export type ListEnumRecurrenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Recurrence[]'>
     
 
 
@@ -8928,6 +8969,7 @@ export namespace Prisma {
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     estimatedTime?: IntNullableFilter<"Task"> | number | null
     timeSpent?: IntNullableFilter<"Task"> | number | null
+    recurrence?: EnumRecurrenceNullableFilter<"Task"> | $Enums.Recurrence | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     userId?: StringFilter<"Task"> | string
     subjectId?: StringFilter<"Task"> | string
@@ -8948,6 +8990,7 @@ export namespace Prisma {
     priority?: SortOrder
     estimatedTime?: SortOrderInput | SortOrder
     timeSpent?: SortOrderInput | SortOrder
+    recurrence?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
@@ -8971,6 +9014,7 @@ export namespace Prisma {
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     estimatedTime?: IntNullableFilter<"Task"> | number | null
     timeSpent?: IntNullableFilter<"Task"> | number | null
+    recurrence?: EnumRecurrenceNullableFilter<"Task"> | $Enums.Recurrence | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     userId?: StringFilter<"Task"> | string
     subjectId?: StringFilter<"Task"> | string
@@ -8991,6 +9035,7 @@ export namespace Prisma {
     priority?: SortOrder
     estimatedTime?: SortOrderInput | SortOrder
     timeSpent?: SortOrderInput | SortOrder
+    recurrence?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
@@ -9015,6 +9060,7 @@ export namespace Prisma {
     priority?: EnumPriorityWithAggregatesFilter<"Task"> | $Enums.Priority
     estimatedTime?: IntNullableWithAggregatesFilter<"Task"> | number | null
     timeSpent?: IntNullableWithAggregatesFilter<"Task"> | number | null
+    recurrence?: EnumRecurrenceNullableWithAggregatesFilter<"Task"> | $Enums.Recurrence | null
     createdAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     userId?: StringWithAggregatesFilter<"Task"> | string
     subjectId?: StringWithAggregatesFilter<"Task"> | string
@@ -9409,6 +9455,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutTasksInput
     subject: SubjectCreateNestedOneWithoutTasksInput
@@ -9426,6 +9473,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     subjectId: string
@@ -9443,6 +9491,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTasksNestedInput
     subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
@@ -9460,6 +9509,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string
@@ -9477,6 +9527,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     subjectId: string
@@ -9493,6 +9544,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -9506,6 +9558,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string
@@ -9965,6 +10018,13 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type EnumRecurrenceNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRecurrenceNullableFilter<$PrismaModel> | $Enums.Recurrence | null
+  }
+
   export type MilestoneNullableScalarRelationFilter = {
     is?: MilestoneWhereInput | null
     isNot?: MilestoneWhereInput | null
@@ -9990,6 +10050,7 @@ export namespace Prisma {
     priority?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    recurrence?: SortOrder
     createdAt?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
@@ -10011,6 +10072,7 @@ export namespace Prisma {
     priority?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    recurrence?: SortOrder
     createdAt?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
@@ -10027,6 +10089,7 @@ export namespace Prisma {
     priority?: SortOrder
     estimatedTime?: SortOrder
     timeSpent?: SortOrder
+    recurrence?: SortOrder
     createdAt?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
@@ -10076,6 +10139,16 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type EnumRecurrenceNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRecurrenceNullableWithAggregatesFilter<$PrismaModel> | $Enums.Recurrence | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumRecurrenceNullableFilter<$PrismaModel>
+    _max?: NestedEnumRecurrenceNullableFilter<$PrismaModel>
   }
 
   export type EnumResourceTypeFilter<$PrismaModel = never> = {
@@ -10562,6 +10635,10 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableEnumRecurrenceFieldUpdateOperationsInput = {
+    set?: $Enums.Recurrence | null
+  }
+
   export type UserUpdateOneRequiredWithoutTasksNestedInput = {
     create?: XOR<UserCreateWithoutTasksInput, UserUncheckedCreateWithoutTasksInput>
     connectOrCreate?: UserCreateOrConnectWithoutTasksInput
@@ -10829,6 +10906,13 @@ export namespace Prisma {
     not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
   }
 
+  export type NestedEnumRecurrenceNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRecurrenceNullableFilter<$PrismaModel> | $Enums.Recurrence | null
+  }
+
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -10878,6 +10962,16 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumRecurrenceNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRecurrenceNullableWithAggregatesFilter<$PrismaModel> | $Enums.Recurrence | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumRecurrenceNullableFilter<$PrismaModel>
+    _max?: NestedEnumRecurrenceNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumResourceTypeFilter<$PrismaModel = never> = {
@@ -10943,6 +11037,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     subject: SubjectCreateNestedOneWithoutTasksInput
     milestone?: MilestoneCreateNestedOneWithoutTasksInput
@@ -10959,6 +11054,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     subjectId: string
     milestoneId?: string | null
@@ -11066,6 +11162,7 @@ export namespace Prisma {
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     estimatedTime?: IntNullableFilter<"Task"> | number | null
     timeSpent?: IntNullableFilter<"Task"> | number | null
+    recurrence?: EnumRecurrenceNullableFilter<"Task"> | $Enums.Recurrence | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     userId?: StringFilter<"Task"> | string
     subjectId?: StringFilter<"Task"> | string
@@ -11204,6 +11301,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutTasksInput
     milestone?: MilestoneCreateNestedOneWithoutTasksInput
@@ -11220,6 +11318,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     milestoneId?: string | null
@@ -11372,6 +11471,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutTasksInput
     subject: SubjectCreateNestedOneWithoutTasksInput
@@ -11388,6 +11488,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     subjectId: string
@@ -11834,6 +11935,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutTasksInput
     subject: SubjectCreateNestedOneWithoutTasksInput
@@ -11850,6 +11952,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     subjectId: string
@@ -11882,6 +11985,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTasksNestedInput
     subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
@@ -11898,6 +12002,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string
@@ -11924,6 +12029,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     subjectId: string
     milestoneId?: string | null
@@ -11986,6 +12092,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
     milestone?: MilestoneUpdateOneWithoutTasksNestedInput
@@ -12002,6 +12109,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subjectId?: StringFieldUpdateOperationsInput | string
     milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12018,6 +12126,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subjectId?: StringFieldUpdateOperationsInput | string
     milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12087,6 +12196,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     milestoneId?: string | null
@@ -12167,6 +12277,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTasksNestedInput
     milestone?: MilestoneUpdateOneWithoutTasksNestedInput
@@ -12183,6 +12294,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12199,6 +12311,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12214,6 +12327,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     estimatedTime?: number | null
     timeSpent?: number | null
+    recurrence?: $Enums.Recurrence | null
     createdAt?: Date | string
     userId: string
     subjectId: string
@@ -12229,6 +12343,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTasksNestedInput
     subject?: SubjectUpdateOneRequiredWithoutTasksNestedInput
@@ -12245,6 +12360,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string
@@ -12261,6 +12377,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     estimatedTime?: NullableIntFieldUpdateOperationsInput | number | null
     timeSpent?: NullableIntFieldUpdateOperationsInput | number | null
+    recurrence?: NullableEnumRecurrenceFieldUpdateOperationsInput | $Enums.Recurrence | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string

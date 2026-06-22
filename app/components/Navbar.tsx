@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Sparkles, Terminal, LogOut } from "lucide-react";
+import { Sparkles, Terminal, LogOut, Plus } from "lucide-react";
+import { useQuickAdd } from "./quick-add";
 
 const HIDE_ON = ["/login", "/signup", "/forgot-password"];
 
@@ -13,6 +14,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { resolvedTheme, setTheme } = useTheme();
+  const { open: openQuickAdd } = useQuickAdd();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -48,6 +50,17 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        {session?.user && (
+          <button
+            type="button"
+            onClick={openQuickAdd}
+            title="Quick add (⌘K)"
+            className="lk-mono flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[11px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Plus size={13} />
+            <span className="hidden md:inline">⌘K</span>
+          </button>
+        )}
         {mounted && (
           <button
             type="button"

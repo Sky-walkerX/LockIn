@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Task, Priority } from "@/app/generated/prisma";
+import type { Task, Priority, Recurrence } from "@/app/generated/prisma";
 import { api } from "@/lib/fetcher";
 
 export type TaskWithSubject = Task & {
@@ -14,6 +14,7 @@ export type CreateTaskInput = {
   dueDate?: string | null;
   priority?: Priority;
   estimatedTime?: number;
+  recurrence?: Recurrence | null;
 };
 
 export type UpdateTaskInput = Partial<

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format, isBefore, startOfDay } from "date-fns";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Repeat } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
-import type { Task, Priority } from "@/app/generated/prisma";
+import type { Task, Priority, Recurrence } from "@/app/generated/prisma";
 
 const PRIORITY_COLOR: Record<Priority, string> = {
   HIGH: "var(--destructive)",
@@ -30,6 +30,7 @@ export function TaskRow({ task }: { task: Task }) {
   const [title, setTitle] = useState(task.title);
   const [priority, setPriority] = useState<Priority>(task.priority);
   const [due, setDue] = useState(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
+  const [recurrence, setRecurrence] = useState<"NONE" | Recurrence>(task.recurrence ?? "NONE");
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
   const overdue = !task.isCompleted && dueDate ? isBefore(dueDate, startOfDay(new Date())) : false;
@@ -47,6 +48,7 @@ export function TaskRow({ task }: { task: Task }) {
           title: title.trim(),
           priority,
           dueDate: due ? new Date(`${due}T00:00:00`).toISOString() : null,
+          recurrence: recurrence === "NONE" ? null : recurrence,
         },
       },
       { onSuccess: () => setEditOpen(false) },
@@ -69,6 +71,16 @@ export function TaskRow({ task }: { task: Task }) {
           style={{ color: PRIORITY_COLOR[task.priority] }}
         >
           {task.priority}
+        </span>
+      )}
+
+      {task.recurrence && (
+        <span
+          className="lk-mono inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wide text-muted-foreground"
+          title={`Repeats ${task.recurrence.toLowerCase()}`}
+        >
+          <Repeat size={10} />
+          {task.recurrence.toLowerCase()}
         </span>
       )}
 
@@ -108,6 +120,17 @@ export function TaskRow({ task }: { task: Task }) {
                   className="flex-1"
                 />
               </div>
+              <Select value={recurrence} onValueChange={(v) => setRecurrence(v as "NONE" | Recurrence)}>
+                <SelectTrigger size="sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">No repeat</SelectItem>
+                  <SelectItem value="DAILY">Repeat daily</SelectItem>
+                  <SelectItem value="WEEKLY">Repeat weekly</SelectItem>
+                  <SelectItem value="MONTHLY">Repeat monthly</SelectItem>
+                </SelectContent>
+              </Select>
               <button
                 type="submit"
                 disabled={update.isPending || !title.trim()}

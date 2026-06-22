@@ -161,6 +161,7 @@ exports.Prisma.TaskScalarFieldEnum = {
   priority: 'priority',
   estimatedTime: 'estimatedTime',
   timeSpent: 'timeSpent',
+  recurrence: 'recurrence',
   createdAt: 'createdAt',
   userId: 'userId',
   subjectId: 'subjectId',
@@ -205,6 +206,12 @@ exports.Priority = exports.$Enums.Priority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
   HIGH: 'HIGH'
+};
+
+exports.Recurrence = exports.$Enums.Recurrence = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
 };
 
 exports.ResourceType = exports.$Enums.ResourceType = {

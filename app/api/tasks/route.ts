@@ -11,6 +11,7 @@ const TaskSchema = z.object({
   dueDate: z.string().datetime().nullable().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   estimatedTime: z.number().int().positive().optional(),
+  recurrence: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
 });
 
 // GET /api/tasks

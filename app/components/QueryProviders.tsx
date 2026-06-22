@@ -4,6 +4,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
+import { QuickAddProvider } from "./quick-add";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -12,7 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        {children}
+        <QuickAddProvider>{children}</QuickAddProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

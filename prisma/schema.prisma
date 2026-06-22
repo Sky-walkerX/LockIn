@@ -21,6 +21,12 @@ enum ResourceType {
   BOOK
 }
 
+enum Recurrence {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -76,6 +82,7 @@ model Task {
   priority      Priority       @default(MEDIUM)
   estimatedTime Int?           // estimate in minutes
   timeSpent     Int?           // total actual minutes (updated on timer stop)
+  recurrence    Recurrence?    // null = one-off; otherwise spawns next instance on completion
   createdAt     DateTime       @default(now())
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
