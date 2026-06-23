@@ -20,9 +20,14 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async () => {
-      const result = await signIn("credentials", { callbackUrl: "/", email, password });
-      if (result?.error) throw new Error(result.error);
-      if (!result?.ok) throw new Error("Login failed. Please check your credentials.");
+      // redirect:false → signIn returns { ok, error } instead of doing its own
+      // full-page redirect. Without it, a successful login still resolves to
+      // undefined and trips the error path, flashing "Login failed" before the
+      // redirect lands. We navigate manually in onSuccess.
+      const result = await signIn("credentials", { redirect: false, email, password });
+      if (!result?.ok || result.error) {
+        throw new Error("Login failed. Please check your credentials.");
+      }
       return result;
     },
     onSuccess: () => {

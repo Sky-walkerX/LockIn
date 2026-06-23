@@ -37,7 +37,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-border bg-background/90 px-5 py-3 backdrop-blur md:px-8">
+    <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-border bg-background/90 px-4 py-3 backdrop-blur sm:px-6 lg:px-10 xl:px-16">
       <div className="flex items-center gap-7">
         <Link href="/" className="lk-display text-xl font-black tracking-tight">
           Lock<span className="lk-brand-mark">In</span>

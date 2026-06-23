@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
 
   if (status === "loading" || isLoading || !stats) {
     return (
-      <main className="mx-auto max-w-5xl px-5 py-10 md:px-8">
+      <main className="w-full px-4 py-10 sm:px-6 lg:px-10 xl:px-16">
         <p className="lk-mono text-sm text-muted-foreground">loading…</p>
       </main>
     );
@@ -36,11 +36,11 @@ export default function AnalyticsPage() {
   const todayIdx = new Date().getDay();
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-6 md:px-8">
+    <main className="w-full px-4 py-6 sm:px-6 lg:px-10 xl:px-16">
       <h1 className="lk-display mb-5 text-2xl font-black tracking-tight">Progress</h1>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <StatCard icon={CheckCircle2} label="Completed" value={stats.totalCompleted} sub="all time" />
         <StatCard icon={CalendarCheck} label="Today" value={stats.completedToday} sub="tasks done" />
         <StatCard icon={Flame} label="Streak" value={`${stats.currentStreak}d`} sub="current run" />

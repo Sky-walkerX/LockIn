@@ -34,17 +34,19 @@ export default function FocusPage() {
 
   if (status === "loading") {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-10 md:px-8">
+      <main className="w-full px-4 py-10 sm:px-6 lg:px-10 xl:px-16">
         <p className="lk-mono text-sm text-muted-foreground">loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-6 md:px-8">
+    <main className="w-full px-4 py-6 sm:px-6 lg:px-10 xl:px-16">
       <h1 className="lk-display mb-5 text-2xl font-black tracking-tight">Focus</h1>
 
-      <FocusTimer />
+      <div className="mx-auto max-w-2xl">
+        <FocusTimer />
+      </div>
 
       <div className="lk-sec mt-8 mb-3">time logged · {fmt(totalMinutes)}</div>
       {logged.length === 0 ? (

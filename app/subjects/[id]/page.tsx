@@ -19,7 +19,7 @@ export default function SubjectPage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <main className="mx-auto max-w-5xl px-5 py-10 md:px-8">
+      <main className="w-full px-4 py-10 sm:px-6 lg:px-10 xl:px-16">
         <p className="lk-mono text-sm text-muted-foreground">loading…</p>
       </main>
     );
@@ -27,7 +27,7 @@ export default function SubjectPage() {
 
   if (isError || !subject) {
     return (
-      <main className="mx-auto max-w-5xl px-5 py-16 text-center md:px-8">
+      <main className="w-full px-4 py-16 text-center sm:px-6 lg:px-10 xl:px-16">
         <p className="lk-display text-lg font-bold">Subject not found</p>
         <p className="mt-1 text-sm text-muted-foreground">It may have been deleted.</p>
         <Link href="/" className="lk-btn mt-5 inline-block px-3 py-2 text-[10.5px]">
@@ -43,14 +43,14 @@ export default function SubjectPage() {
 
   return (
     <main
-      className="lk-subject mx-auto max-w-5xl px-5 py-6 md:px-8"
+      className="lk-subject w-full px-4 py-6 sm:px-6 lg:px-10 xl:px-16"
       style={{ "--c": subject.color ?? FALLBACK } as React.CSSProperties}
     >
       <SubjectHeader subject={subject} />
 
-      <div className="mt-7 grid grid-cols-1 gap-7 lg:grid-cols-3">
+      <div className="mt-7 grid grid-cols-1 gap-7 lg:grid-cols-3 xl:grid-cols-4">
         {/* Plan + loose tasks */}
-        <div className="flex flex-col gap-7 lg:col-span-2">
+        <div className="flex flex-col gap-7 lg:col-span-2 xl:col-span-3">
           <MilestoneSection subjectId={subject.id} color={subject.color} milestones={subject.milestones} />
 
           <section>

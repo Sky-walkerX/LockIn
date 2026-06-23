@@ -12,7 +12,7 @@ export default function HomePage() {
 
   if (status === "loading") {
     return (
-      <main className="mx-auto max-w-5xl px-5 py-10 md:px-8">
+      <main className="w-full px-4 py-10 sm:px-6 lg:px-10 xl:px-16">
         <p className="lk-mono text-sm text-muted-foreground">loading…</p>
       </main>
     );
@@ -22,7 +22,7 @@ export default function HomePage() {
   const activeTasks = list.reduce((n, s) => n + (s.totalTasks - s.completedTasks), 0);
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-6 md:px-8">
+    <main className="w-full px-4 py-6 sm:px-6 lg:px-10 xl:px-16">
       <div className="mb-5 flex items-center justify-between gap-4">
         <h1 className="lk-display text-2xl font-black tracking-tight">Your subjects</h1>
         <NewSubject />
@@ -42,7 +42,7 @@ export default function HomePage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {list.map((s) => (
             <SubjectCard key={s.id} subject={s} />
           ))}

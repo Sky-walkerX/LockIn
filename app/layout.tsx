@@ -13,7 +13,6 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrai
 export const metadata: Metadata = {
   title: "LockIn",
   description: "Your subjects, plans, and resources — one place to lock in.",
-  icons: { icon: "favicon.png" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
