@@ -4,8 +4,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Runtime: Supabase transaction pooler (:6543, pgbouncer) — safe for serverless.
+  url       = env("DATABASE_URL")
+  // Migrations / db push: session pooler (:5432) — pgbouncer can't run them.
+  directUrl = env("DIRECT_URL")
 }
 
 enum Priority {
