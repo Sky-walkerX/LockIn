@@ -37,12 +37,20 @@ export async function POST(request: NextRequest) {
     if (!milestone) return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
   }
 
+  // Append the batch to the bottom of its list, preserving the given order.
+  const last = await prisma.task.aggregate({
+    where: { userId, subjectId, milestoneId: milestoneId ?? null },
+    _max: { order: true },
+  });
+  const base = (last._max.order ?? -1) + 1;
+
   const result = await prisma.task.createMany({
-    data: tasks.map((t) => ({
+    data: tasks.map((t, i) => ({
       title: t.title,
       priority: t.priority,
       estimatedTime: t.estimatedTime,
       dueDate: t.dueDate ? new Date(t.dueDate) : null,
+      order: base + i,
       subjectId,
       milestoneId: milestoneId ?? null,
       userId,

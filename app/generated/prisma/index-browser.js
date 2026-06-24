@@ -162,10 +162,22 @@ exports.Prisma.TaskScalarFieldEnum = {
   estimatedTime: 'estimatedTime',
   timeSpent: 'timeSpent',
   recurrence: 'recurrence',
+  order: 'order',
   createdAt: 'createdAt',
   userId: 'userId',
   subjectId: 'subjectId',
   milestoneId: 'milestoneId'
+};
+
+exports.Prisma.SubtaskScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  notes: 'notes',
+  isCompleted: 'isCompleted',
+  completedAt: 'completedAt',
+  order: 'order',
+  createdAt: 'createdAt',
+  taskId: 'taskId'
 };
 
 exports.Prisma.ResourceScalarFieldEnum = {
@@ -226,6 +238,7 @@ exports.Prisma.ModelName = {
   Subject: 'Subject',
   Milestone: 'Milestone',
   Task: 'Task',
+  Subtask: 'Subtask',
   Resource: 'Resource',
   TimerSession: 'TimerSession'
 };

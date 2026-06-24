@@ -282,6 +282,19 @@
   .lk-iconbtn:hover { color: var(--foreground); background: var(--muted); }
   .lk-iconbtn:disabled { opacity: 0.35; pointer-events: none; }
 
+  /* Drag handle — faint until the row is hovered, then grabbable */
+  .lk-grip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 24px; flex: none;
+    border-radius: calc(var(--radius) - 5px);
+    color: var(--muted-foreground); opacity: 0.25;
+    cursor: grab; touch-action: none;
+    transition: opacity 0.1s ease, color 0.1s ease, background 0.1s ease;
+  }
+  .group:hover > .lk-grip, .lk-grip:hover { opacity: 1; }
+  .lk-grip:hover { color: var(--foreground); background: var(--muted); }
+  .lk-grip:active { cursor: grabbing; }
+
   /* Type pill for resources — outlined, mono, neutral */
   .lk-tag {
     font-family: var(--lk-font-mono);

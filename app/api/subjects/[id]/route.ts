@@ -17,14 +17,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
 
+  const subtasks = { orderBy: { order: "asc" as const } } as const;
+  const taskInclude = {
+    orderBy: [{ order: "asc" as const }, { createdAt: "asc" as const }],
+    include: { subtasks },
+  };
+
   const subject = await prisma.subject.findFirst({
     where: { id, userId },
     include: {
       milestones: {
         orderBy: { order: "asc" },
-        include: { tasks: { orderBy: { createdAt: "asc" } } },
+        include: { tasks: taskInclude },
       },
-      tasks: { where: { milestoneId: null }, orderBy: { createdAt: "asc" } },
+      tasks: { where: { milestoneId: null }, ...taskInclude },
       resources: { orderBy: { createdAt: "desc" } },
     },
   });

@@ -70,12 +70,19 @@ export async function POST(request: NextRequest) {
     if (!milestone) return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
   }
 
+  // Append to the bottom of its list (the milestone's tasks, or the loose list).
+  const last = await prisma.task.aggregate({
+    where: { userId, subjectId, milestoneId: milestoneId ?? null },
+    _max: { order: true },
+  });
+
   const task = await prisma.task.create({
     data: {
       ...rest,
       subjectId,
       milestoneId: milestoneId ?? null,
       dueDate: dueDate ? new Date(dueDate) : null,
+      order: (last._max.order ?? -1) + 1,
       userId,
     },
   });

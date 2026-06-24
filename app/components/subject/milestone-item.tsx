@@ -6,10 +6,12 @@ import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateMilestone, useDeleteMilestone } from "@/hooks/useMilestones";
+import { useReorderTasks } from "@/hooks/useTasks";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { Markdown } from "./markdown";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
+import { SortableList } from "./sortable-list";
 
 export function MilestoneItem({
   milestone,
@@ -26,6 +28,7 @@ export function MilestoneItem({
 }) {
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
+  const reorderTasks = useReorderTasks();
 
   const [open, setOpen] = useState(true);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -190,9 +193,14 @@ export function MilestoneItem({
 
           {/* Tasks */}
           <div className="flex flex-col gap-0.5">
-            {milestone.tasks.map((t) => (
-              <TaskRow key={t.id} task={t} />
-            ))}
+            <SortableList
+              ids={milestone.tasks.map((t) => t.id)}
+              onReorder={(ids) => reorderTasks.mutate({ ids })}
+            >
+              {milestone.tasks.map((t) => (
+                <TaskRow key={t.id} task={t} />
+              ))}
+            </SortableList>
             <AddTask subjectId={milestone.subjectId} milestoneId={milestone.id} />
           </div>
         </div>

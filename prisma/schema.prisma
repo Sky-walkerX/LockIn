@@ -75,7 +75,7 @@ model Milestone {
 model Task {
   id            String         @id @default(uuid())
   title         String
-  description   String?
+  description   String?        // markdown notes for the task
   isCompleted   Boolean        @default(false)
   completedAt   DateTime?
   dueDate       DateTime?
@@ -83,6 +83,7 @@ model Task {
   estimatedTime Int?           // estimate in minutes
   timeSpent     Int?           // total actual minutes (updated on timer stop)
   recurrence    Recurrence?    // null = one-off; otherwise spawns next instance on completion
+  order         Int            @default(0) // manual ordering within its milestone / loose list
   createdAt     DateTime       @default(now())
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -95,7 +96,23 @@ model Task {
   milestone     Milestone?     @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   milestoneId   String?
 
+  subtasks      Subtask[]
   timerSessions TimerSession[]
+}
+
+// A lightweight checklist item under a Task. Scoped to a user through its task's
+// subject (no userId of its own), mirroring how Milestone is scoped.
+model Subtask {
+  id          String    @id @default(uuid())
+  title       String
+  notes       String    @default("") // markdown
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  order       Int       @default(0)  // manual ordering within its task
+  createdAt   DateTime  @default(now())
+
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      String
 }
 
 model Resource {
