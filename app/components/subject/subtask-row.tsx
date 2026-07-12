@@ -6,11 +6,11 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, GripVertical, Pencil, Trash2, FileText } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
-import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateSubtask, useDeleteSubtask } from "@/hooks/useSubtasks";
 import type { Subtask } from "@/app/generated/prisma";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
+import { NotesEditor } from "./notes-editor";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // subtasks, so only rows whose subtask actually changed re-render.
@@ -26,7 +26,6 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
   const [renaming, setRenaming] = useState(false);
   const [titleVal, setTitleVal] = useState(subtask.title);
   const [editingNotes, setEditingNotes] = useState(false);
-  const [notesVal, setNotesVal] = useState(subtask.notes);
 
   const hasNotes = subtask.notes.trim().length > 0;
   // Optimistic row awaiting its server id — block edits/toggles/drags until then.
@@ -34,15 +33,19 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
 
   const toggle = () => update.mutate({ id: subtask.id, data: { isCompleted: !subtask.isCompleted } });
 
+  // Re-seed the draft at edit-start so it reflects the current value, not
+  // the mount-time one (props may have refetched since). NotesEditor seeds
+  // itself from `value` at mount, so notes need no equivalent.
+  const startRenaming = () => {
+    setTitleVal(subtask.title);
+    setRenaming(true);
+  };
+
   const saveTitle = () => {
     const t = titleVal.trim();
     if (t && t !== subtask.title) update.mutate({ id: subtask.id, data: { title: t } });
     else setTitleVal(subtask.title);
     setRenaming(false);
-  };
-
-  const saveNotes = () => {
-    update.mutate({ id: subtask.id, data: { notes: notesVal } }, { onSuccess: () => setEditingNotes(false) });
   };
 
   return (
@@ -106,7 +109,7 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
         )}
 
         <div className="flex items-center opacity-0 transition-opacity group-hover:opacity-100">
-          <button type="button" onClick={() => setRenaming(true)} className="lk-iconbtn" title="Rename subtask">
+          <button type="button" onClick={startRenaming} className="lk-iconbtn" title="Rename subtask">
             <Pencil size={12} />
           </button>
           <button
@@ -124,36 +127,17 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
       {open && (
         <div className="mb-1 ml-7 mr-1.5">
           {editingNotes ? (
-            <div className="flex flex-col gap-2">
-              <Textarea
-                autoFocus
-                value={notesVal}
-                onChange={(e) => setNotesVal(e.target.value)}
-                placeholder="Notes — markdown supported…"
-                rows={4}
-                className="lk-mono text-[12.5px]"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={saveNotes}
-                  disabled={update.isPending}
-                  className="lk-btn px-2.5 py-1 text-[10px] disabled:opacity-50"
-                >
-                  {update.isPending ? "Saving…" : "Save notes"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNotesVal(subtask.notes);
-                    setEditingNotes(false);
-                  }}
-                  className="lk-mono text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <NotesEditor
+              value={subtask.notes}
+              saving={update.isPending}
+              onSave={(v) =>
+                update.mutate(
+                  { id: subtask.id, data: { notes: v } },
+                  { onSuccess: () => setEditingNotes(false) },
+                )
+              }
+              onCancel={() => setEditingNotes(false)}
+            />
           ) : hasNotes ? (
             <div className="group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{subtask.notes}</Markdown>

@@ -4,12 +4,12 @@ import { memo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronRight, Pencil, Trash2, FileText } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
-import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateMilestone, useDeleteMilestone } from "@/hooks/useMilestones";
 import { useReorderTasks } from "@/hooks/useTasks";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
+import { NotesEditor } from "./notes-editor";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
@@ -35,7 +35,6 @@ export const MilestoneItem = memo(function MilestoneItem({
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleVal, setTitleVal] = useState(milestone.title);
   const [editingNotes, setEditingNotes] = useState(false);
-  const [notesVal, setNotesVal] = useState(milestone.notes);
 
   const total = milestone.tasks.length;
   const done = milestone.tasks.filter((t) => t.isCompleted).length;
@@ -46,18 +45,19 @@ export const MilestoneItem = memo(function MilestoneItem({
   const toggleDone = () =>
     update.mutate({ id: milestone.id, data: { isCompleted: !milestone.isCompleted } });
 
+  // Re-seed the draft at edit-start so it reflects the current value, not
+  // the mount-time one (props may have refetched since). NotesEditor seeds
+  // itself from `value` at mount, so notes need no equivalent.
+  const startEditingTitle = () => {
+    setTitleVal(milestone.title);
+    setEditingTitle(true);
+  };
+
   const saveTitle = () => {
     const t = titleVal.trim();
     if (t && t !== milestone.title) update.mutate({ id: milestone.id, data: { title: t } });
     else setTitleVal(milestone.title);
     setEditingTitle(false);
-  };
-
-  const saveNotes = () => {
-    update.mutate(
-      { id: milestone.id, data: { notes: notesVal } },
-      { onSuccess: () => setEditingNotes(false) },
-    );
   };
 
   return (
@@ -116,7 +116,7 @@ export const MilestoneItem = memo(function MilestoneItem({
         </div>
 
         <div className="flex items-center">
-          <button type="button" onClick={() => setEditingTitle(true)} className="lk-iconbtn" title="Rename">
+          <button type="button" onClick={startEditingTitle} className="lk-iconbtn" title="Rename">
             <Pencil size={13} />
           </button>
           <button
@@ -154,35 +154,19 @@ export const MilestoneItem = memo(function MilestoneItem({
         <div className="border-t border-border px-3 pb-3 pt-3">
           {/* Notes */}
           {editingNotes ? (
-            <div className="mb-3 flex flex-col gap-2">
-              <Textarea
-                autoFocus
-                value={notesVal}
-                onChange={(e) => setNotesVal(e.target.value)}
+            <div className="mb-3">
+              <NotesEditor
+                value={milestone.notes}
+                saving={update.isPending}
                 placeholder="Notes — markdown supported (headings, lists, code, tables, links)…"
-                rows={6}
-                className="lk-mono text-[13px]"
+                onSave={(v) =>
+                  update.mutate(
+                    { id: milestone.id, data: { notes: v } },
+                    { onSuccess: () => setEditingNotes(false) },
+                  )
+                }
+                onCancel={() => setEditingNotes(false)}
               />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={saveNotes}
-                  disabled={update.isPending}
-                  className="lk-btn px-3 py-1.5 text-[10px] disabled:opacity-50"
-                >
-                  {update.isPending ? "Saving…" : "Save notes"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNotesVal(milestone.notes);
-                    setEditingNotes(false);
-                  }}
-                  className="lk-mono text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
-                >
-                  Cancel
-                </button>
-              </div>
             </div>
           ) : milestone.notes.trim() ? (
             <div className="group/notes relative mb-3 rounded-md bg-muted/40 p-3">

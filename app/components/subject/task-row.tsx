@@ -7,7 +7,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, GripVertical, Pencil, Trash2, Repeat, FileText } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
-import { Textarea } from "@/app/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import {
   Select,
@@ -22,6 +21,7 @@ import type { TaskWithSubtasks } from "@/hooks/useSubjects";
 import type { Priority, Recurrence } from "@/app/generated/prisma";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
+import { NotesEditor } from "./notes-editor";
 import { SortableList } from "./sortable-list";
 import { SubtaskRow } from "./subtask-row";
 import { AddSubtask } from "./add-subtask";
@@ -50,7 +50,6 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   const [due, setDue] = useState(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
   const [recurrence, setRecurrence] = useState<"NONE" | Recurrence>(task.recurrence ?? "NONE");
   const [editingNotes, setEditingNotes] = useState(false);
-  const [notesVal, setNotesVal] = useState(task.description ?? "");
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
   const overdue = !task.isCompleted && dueDate ? isBefore(dueDate, startOfDay(new Date())) : false;
@@ -62,6 +61,20 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   const pending = isTempId(task.id);
 
   const toggle = () => update.mutate({ id: task.id, data: { isCompleted: !task.isCompleted } });
+
+  // Re-seed the draft fields every time the popover opens so an edit started
+  // after a background refetch shows current values, not mount-time ones.
+  // (NotesEditor seeds itself from `value` at mount, so notes need no
+  // equivalent.)
+  const openEdit = (o: boolean) => {
+    if (o) {
+      setTitle(task.title);
+      setPriority(task.priority);
+      setDue(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
+      setRecurrence(task.recurrence ?? "NONE");
+    }
+    setEditOpen(o);
+  };
 
   const saveEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,10 +91,6 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
       },
       { onSuccess: () => setEditOpen(false) },
     );
-  };
-
-  const saveNotes = () => {
-    update.mutate({ id: task.id, data: { description: notesVal } }, { onSuccess: () => setEditingNotes(false) });
   };
 
   return (
@@ -154,7 +163,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
         )}
 
         <div className="flex flex-none items-center opacity-0 transition-opacity group-hover:opacity-100">
-          <Popover open={editOpen} onOpenChange={setEditOpen}>
+          <Popover open={editOpen} onOpenChange={openEdit}>
             <PopoverTrigger asChild>
               <button type="button" className="lk-iconbtn" title="Edit task">
                 <Pencil size={13} />
@@ -221,36 +230,17 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
         <div className="mb-1 ml-[34px] mr-1 flex flex-col gap-1.5 border-l border-border/60 pb-1 pl-2.5 pt-1">
           {/* Notes */}
           {editingNotes ? (
-            <div className="flex flex-col gap-2">
-              <Textarea
-                autoFocus
-                value={notesVal}
-                onChange={(e) => setNotesVal(e.target.value)}
-                placeholder="Notes — markdown supported…"
-                rows={4}
-                className="lk-mono text-[12.5px]"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={saveNotes}
-                  disabled={update.isPending}
-                  className="lk-btn px-2.5 py-1 text-[10px] disabled:opacity-50"
-                >
-                  {update.isPending ? "Saving…" : "Save notes"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNotesVal(task.description ?? "");
-                    setEditingNotes(false);
-                  }}
-                  className="lk-mono text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <NotesEditor
+              value={task.description ?? ""}
+              saving={update.isPending}
+              onSave={(v) =>
+                update.mutate(
+                  { id: task.id, data: { description: v } },
+                  { onSuccess: () => setEditingNotes(false) },
+                )
+              }
+              onCancel={() => setEditingNotes(false)}
+            />
           ) : hasNotes ? (
             <div className="group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{task.description ?? ""}</Markdown>
