@@ -10,7 +10,7 @@ import { useUpdateSubtask, useDeleteSubtask } from "@/hooks/useSubtasks";
 import type { Subtask } from "@/app/generated/prisma";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
-import { NotesEditor } from "./notes-editor";
+import { NotesEditor } from "./notes-editor-lazy";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // subtasks, so only rows whose subtask actually changed re-render.

@@ -21,7 +21,7 @@ import type { TaskWithSubtasks } from "@/hooks/useSubjects";
 import type { Priority, Recurrence } from "@/app/generated/prisma";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
-import { NotesEditor } from "./notes-editor";
+import { NotesEditor } from "./notes-editor-lazy";
 import { SortableList } from "./sortable-list";
 import { SubtaskRow } from "./subtask-row";
 import { AddSubtask } from "./add-subtask";

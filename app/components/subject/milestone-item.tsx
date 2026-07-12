@@ -9,7 +9,7 @@ import { useReorderTasks } from "@/hooks/useTasks";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
-import { NotesEditor } from "./notes-editor";
+import { NotesEditor } from "./notes-editor-lazy";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
