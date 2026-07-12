@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronRight, Pencil, Trash2, FileText } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
@@ -14,18 +14,18 @@ import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
 
-export function MilestoneItem({
+// Memoized: the subject-cache mappers preserve identity for untouched
+// milestones, so only cards whose milestone (or tasks) changed re-render.
+export const MilestoneItem = memo(function MilestoneItem({
   milestone,
   isFirst,
   isLast,
-  onMoveUp,
-  onMoveDown,
+  onMove,
 }: {
   milestone: MilestoneWithTasks;
   isFirst: boolean;
   isLast: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
+  onMove: (id: string, dir: -1 | 1) => void;
 }) {
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
@@ -119,10 +119,22 @@ export function MilestoneItem({
           <button type="button" onClick={() => setEditingTitle(true)} className="lk-iconbtn" title="Rename">
             <Pencil size={13} />
           </button>
-          <button type="button" onClick={onMoveUp} disabled={isFirst} className="lk-iconbtn" title="Move up">
+          <button
+            type="button"
+            onClick={() => onMove(milestone.id, -1)}
+            disabled={isFirst}
+            className="lk-iconbtn"
+            title="Move up"
+          >
             <ChevronUp size={14} />
           </button>
-          <button type="button" onClick={onMoveDown} disabled={isLast} className="lk-iconbtn" title="Move down">
+          <button
+            type="button"
+            onClick={() => onMove(milestone.id, 1)}
+            disabled={isLast}
+            className="lk-iconbtn"
+            title="Move down"
+          >
             <ChevronDown size={14} />
           </button>
           <button
@@ -210,4 +222,4 @@ export function MilestoneItem({
       )}
     </div>
   );
-}
+});

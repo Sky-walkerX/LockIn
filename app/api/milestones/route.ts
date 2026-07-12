@@ -35,18 +35,21 @@ export async function POST(request: NextRequest) {
   }
   const { subjectId, title, notes, order } = parsed.data;
 
-  // Ownership: the subject must belong to the user.
-  const subject = await prisma.subject.findFirst({ where: { id: subjectId, userId } });
+  // Ownership check and order lookup run in parallel to keep create latency
+  // low (a failed check just wastes one lookup).
+  const [subject, last] = await Promise.all([
+    prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } }),
+    order === undefined
+      ? prisma.milestone.findFirst({
+          where: { subjectId },
+          orderBy: { order: "desc" },
+          select: { order: true },
+        })
+      : Promise.resolve(null),
+  ]);
   if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
 
-  let resolvedOrder = order;
-  if (resolvedOrder === undefined) {
-    const last = await prisma.milestone.findFirst({
-      where: { subjectId },
-      orderBy: { order: "desc" },
-    });
-    resolvedOrder = last ? last.order + 1 : 0;
-  }
+  const resolvedOrder = order ?? (last ? last.order + 1 : 0);
 
   const milestone = await prisma.milestone.create({
     data: { subjectId, title, notes: notes ?? "", order: resolvedOrder },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { format, isBefore, startOfDay } from "date-fns";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -32,7 +32,9 @@ const PRIORITY_COLOR: Record<Priority, string> = {
   LOW: "var(--muted-foreground)",
 };
 
-export function TaskRow({ task }: { task: TaskWithSubtasks }) {
+// Memoized: the subject-cache mappers preserve identity for untouched tasks,
+// so only rows whose task actually changed re-render.
+export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks }) {
   const update = useUpdateTask();
   const del = useDeleteTask();
   const reorderSubtasks = useReorderSubtasks();
@@ -287,4 +289,4 @@ export function TaskRow({ task }: { task: TaskWithSubtasks }) {
       )}
     </div>
   );
-}
+});

@@ -29,19 +29,29 @@ export async function POST(request: NextRequest) {
   }
   const { subjectId, milestoneId, tasks } = parsed.data;
 
-  const subject = await prisma.subject.findFirst({ where: { id: subjectId, userId } });
-  if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
-
-  if (milestoneId) {
-    const milestone = await prisma.milestone.findFirst({ where: { id: milestoneId, subjectId } });
-    if (!milestone) return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
-  }
+  // Ownership: one relation-scoped lookup covers subject + milestone, run in
+  // parallel with the order aggregate to keep latency low.
+  const ownership = milestoneId
+    ? prisma.milestone.findFirst({
+        where: { id: milestoneId, subjectId, subject: { userId } },
+        select: { id: true },
+      })
+    : prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } });
 
   // Append the batch to the bottom of its list, preserving the given order.
-  const last = await prisma.task.aggregate({
-    where: { userId, subjectId, milestoneId: milestoneId ?? null },
-    _max: { order: true },
-  });
+  const [owned, last] = await Promise.all([
+    ownership,
+    prisma.task.aggregate({
+      where: { userId, subjectId, milestoneId: milestoneId ?? null },
+      _max: { order: true },
+    }),
+  ]);
+  if (!owned) {
+    return NextResponse.json(
+      { error: milestoneId ? "Milestone not found" : "Subject not found" },
+      { status: 404 },
+    );
+  }
   const base = (last._max.order ?? -1) + 1;
 
   const result = await prisma.task.createMany({

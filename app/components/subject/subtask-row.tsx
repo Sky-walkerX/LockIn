@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, GripVertical, Pencil, Trash2, FileText } from "lucide-react";
@@ -12,7 +12,9 @@ import type { Subtask } from "@/app/generated/prisma";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
 
-export function SubtaskRow({ subtask }: { subtask: Subtask }) {
+// Memoized: the subject-cache mappers preserve identity for untouched
+// subtasks, so only rows whose subtask actually changed re-render.
+export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subtask }) {
   const update = useUpdateSubtask();
   const del = useDeleteSubtask();
 
@@ -177,4 +179,4 @@ export function SubtaskRow({ subtask }: { subtask: Subtask }) {
       )}
     </div>
   );
-}
+});

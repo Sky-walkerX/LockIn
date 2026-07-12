@@ -61,20 +61,29 @@ export async function POST(request: NextRequest) {
   const { subjectId, milestoneId, dueDate, ...rest } = parsed.data;
 
   // Ownership: subject must be the user's; if a milestone is given it must
-  // belong to that subject.
-  const subject = await prisma.subject.findFirst({ where: { id: subjectId, userId } });
-  if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
-
-  if (milestoneId) {
-    const milestone = await prisma.milestone.findFirst({ where: { id: milestoneId, subjectId } });
-    if (!milestone) return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
-  }
+  // belong to that subject. One relation-scoped lookup covers both, run in
+  // parallel with the order aggregate to keep create latency low.
+  const ownership = milestoneId
+    ? prisma.milestone.findFirst({
+        where: { id: milestoneId, subjectId, subject: { userId } },
+        select: { id: true },
+      })
+    : prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } });
 
   // Append to the bottom of its list (the milestone's tasks, or the loose list).
-  const last = await prisma.task.aggregate({
-    where: { userId, subjectId, milestoneId: milestoneId ?? null },
-    _max: { order: true },
-  });
+  const [owned, last] = await Promise.all([
+    ownership,
+    prisma.task.aggregate({
+      where: { userId, subjectId, milestoneId: milestoneId ?? null },
+      _max: { order: true },
+    }),
+  ]);
+  if (!owned) {
+    return NextResponse.json(
+      { error: milestoneId ? "Milestone not found" : "Subject not found" },
+      { status: 404 },
+    );
+  }
 
   const task = await prisma.task.create({
     data: {

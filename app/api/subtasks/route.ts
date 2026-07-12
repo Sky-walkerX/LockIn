@@ -21,11 +21,13 @@ export async function POST(request: NextRequest) {
   }
   const { taskId, title, notes } = parsed.data;
 
-  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  // Ownership check and order aggregate run in parallel to keep create latency
+  // low (a failed check just wastes one aggregate).
+  const [task, last] = await Promise.all([
+    prisma.task.findFirst({ where: { id: taskId, userId }, select: { id: true } }),
+    prisma.subtask.aggregate({ where: { taskId }, _max: { order: true } }),
+  ]);
   if (!task) return NextResponse.json({ error: "Task not found" }, { status: 404 });
-
-  // Append to the bottom of the task's subtask list.
-  const last = await prisma.subtask.aggregate({ where: { taskId }, _max: { order: true } });
 
   const subtask = await prisma.subtask.create({
     data: { taskId, title, notes: notes ?? "", order: (last._max.order ?? -1) + 1 },

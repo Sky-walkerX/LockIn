@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { useCreateMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
@@ -21,14 +21,27 @@ export function MilestoneSection({
   const update = useUpdateMilestone();
   const [title, setTitle] = useState("");
 
+  // Read milestones through a ref so `move` stays referentially stable and
+  // memoized MilestoneItems don't re-render on every list change.
+  const milestonesRef = useRef(milestones);
+  useEffect(() => {
+    milestonesRef.current = milestones;
+  });
+
   // Reorder by swapping `order` with the adjacent milestone.
-  const move = (index: number, dir: -1 | 1) => {
-    const a = milestones[index];
-    const b = milestones[index + dir];
-    if (!a || !b) return;
-    update.mutate({ id: a.id, data: { order: b.order } });
-    update.mutate({ id: b.id, data: { order: a.order } });
-  };
+  const { mutate: updateMilestone } = update;
+  const move = useCallback(
+    (id: string, dir: -1 | 1) => {
+      const list = milestonesRef.current;
+      const index = list.findIndex((m) => m.id === id);
+      const a = list[index];
+      const b = list[index + dir];
+      if (!a || !b) return;
+      updateMilestone({ id: a.id, data: { order: b.order } });
+      updateMilestone({ id: b.id, data: { order: a.order } });
+    },
+    [updateMilestone],
+  );
 
   const addMilestone = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +68,7 @@ export function MilestoneSection({
               milestone={m}
               isFirst={i === 0}
               isLast={i === milestones.length - 1}
-              onMoveUp={() => move(i, -1)}
-              onMoveDown={() => move(i, 1)}
+              onMove={move}
             />
           ))}
         </div>
