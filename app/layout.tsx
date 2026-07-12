@@ -18,8 +18,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${archivo.variable} ${hanken.variable} ${inter.variable} ${spaceMono.variable} ${jetbrains.variable} antialiased`}>
+    // Font variables live on <html>: the --lk-font-* tokens in globals.css are
+    // declared on :root, and CSS custom properties substitute var() refs at
+    // computed-value time on the declaring element — on <body> they'd compute
+    // to invalid and the whole app silently falls back to system fonts.
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${archivo.variable} ${hanken.variable} ${inter.variable} ${spaceMono.variable} ${jetbrains.variable}`}
+    >
+      <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Providers>
             <Navbar />
