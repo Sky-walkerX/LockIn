@@ -82,6 +82,9 @@
   /* code blocks/inline code use JetBrains Mono in BOTH modes (readable,
      well-spaced, has ligatures) — distinct from the Space Mono UI chrome. */
   --lk-font-code: var(--font-jetbrains), ui-monospace, "Cascadia Code", monospace;
+  /* notes prose reads in Inter in BOTH modes — a "document" surface distinct
+     from the app chrome (Hanken/Space Mono). */
+  --lk-font-prose: var(--font-inter), var(--lk-font-body);
   --lk-bw: 2.5px;                /* border width */
   --lk-shadow: 4px 4px 0 #141414;
   --lk-shadow-sm: 2px 2px 0 #141414;
@@ -125,6 +128,7 @@
   --lk-font-display: var(--font-jetbrains), ui-monospace, monospace;
   --lk-font-body: var(--font-hanken), system-ui, sans-serif;
   --lk-font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --lk-font-prose: var(--font-inter), var(--lk-font-body);
   --lk-bw: 1px;
   --lk-shadow: none;
   --lk-shadow-sm: none;
@@ -310,10 +314,14 @@
   .dark .lk-tag { border-width: 1px; }
 
   /* ---- Markdown notes (react-markdown output) ---- */
-  .lk-prose { font-size: 13.5px; line-height: 1.65; color: var(--foreground); }
+  .lk-prose {
+    font-family: var(--lk-font-prose);
+    font-size: 14.5px; line-height: 1.7;
+    color: var(--foreground);
+  }
   .lk-prose > :first-child { margin-top: 0; }
   .lk-prose > :last-child { margin-bottom: 0; }
-  .lk-prose p { margin: 0.6em 0; }
+  .lk-prose p { margin: 0.7em 0; }
   .lk-prose h1, .lk-prose h2, .lk-prose h3, .lk-prose h4 {
     font-family: var(--lk-font-display);
     font-weight: 800; line-height: 1.25;
@@ -346,9 +354,11 @@
     border: var(--lk-bw) solid var(--border);
     border-radius: calc(var(--radius) - 3px);
     padding: 0.9em 1em; margin: 0.7em 0;
-    overflow-x: auto; font-size: 13.5px; line-height: 1.65;
+    overflow: auto; max-height: 420px;
+    font-size: 13.5px; line-height: 1.65;
   }
   .dark .lk-prose pre { border-width: 1px; }
+  .lk-prose img { max-width: 100%; height: auto; border-radius: 6px; }
   .lk-prose pre code { background: none; padding: 0; font-size: 1em; }
   .lk-prose blockquote {
     border-left: 3px solid var(--c-eff, var(--border));
