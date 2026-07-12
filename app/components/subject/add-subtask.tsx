@@ -12,7 +12,9 @@ export function AddSubtask({ taskId }: { taskId: string }) {
     e.preventDefault();
     const t = title.trim();
     if (!t) return;
-    create.mutate({ taskId, title: t }, { onSuccess: () => setTitle("") });
+    // Clear immediately (the row appears optimistically); restore on failure.
+    setTitle("");
+    create.mutate({ taskId, title: t }, { onError: () => setTitle(t) });
   };
 
   return (
@@ -27,10 +29,9 @@ export function AddSubtask({ taskId }: { taskId: string }) {
       {title.trim() && (
         <button
           type="submit"
-          disabled={create.isPending}
-          className="lk-mono text-[9px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          className="lk-mono text-[9px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
         >
-          {create.isPending ? "…" : "enter ↵"}
+          enter ↵
         </button>
       )}
     </form>

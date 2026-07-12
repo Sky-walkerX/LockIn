@@ -18,9 +18,11 @@ export function AddTask({
     e.preventDefault();
     const t = title.trim();
     if (!t) return;
+    // Clear immediately (the row appears optimistically); restore on failure.
+    setTitle("");
     create.mutate(
       { subjectId, milestoneId, title: t },
-      { onSuccess: () => setTitle("") },
+      { onError: () => setTitle(t) },
     );
   };
 
@@ -36,10 +38,9 @@ export function AddTask({
       {title.trim() && (
         <button
           type="submit"
-          disabled={create.isPending}
-          className="lk-mono text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          className="lk-mono text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
         >
-          {create.isPending ? "…" : "enter ↵"}
+          enter ↵
         </button>
       )}
     </form>

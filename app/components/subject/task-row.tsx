@@ -20,6 +20,7 @@ import { useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
 import { useReorderSubtasks } from "@/hooks/useSubtasks";
 import type { TaskWithSubtasks } from "@/hooks/useSubjects";
 import type { Priority, Recurrence } from "@/app/generated/prisma";
+import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
 import { SortableList } from "./sortable-list";
 import { SubtaskRow } from "./subtask-row";
@@ -55,6 +56,8 @@ export function TaskRow({ task }: { task: TaskWithSubtasks }) {
   const subtasks = task.subtasks;
   const subDone = subtasks.filter((s) => s.isCompleted).length;
   const hasNotes = (task.description ?? "").trim().length > 0;
+  // Optimistic row awaiting its server id — block edits/toggles/drags until then.
+  const pending = isTempId(task.id);
 
   const toggle = () => update.mutate({ id: task.id, data: { isCompleted: !task.isCompleted } });
 
@@ -83,7 +86,7 @@ export function TaskRow({ task }: { task: TaskWithSubtasks }) {
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`rounded-md ${isDragging ? "relative z-10 bg-background shadow-md" : ""}`}
+      className={`rounded-md ${isDragging ? "relative z-10 bg-background shadow-md" : ""} ${pending ? "pointer-events-none opacity-60" : ""}`}
     >
       {/* Header row */}
       <div className="group flex items-center gap-1.5 rounded-md px-1 py-1.5 transition-colors hover:bg-muted/60">

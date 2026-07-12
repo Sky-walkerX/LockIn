@@ -1,11 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Subtask } from "@/app/generated/prisma";
 import { api } from "@/lib/fetcher";
+import type { SubjectDetail } from "@/hooks/useSubjects";
 import {
   patchSubjectCaches,
   restoreSubjectCaches,
   mapSubtasks,
   reorderSubtaskList,
+  addSubtaskToTask,
+  replaceSubtask,
+  tempId,
 } from "@/lib/subject-cache";
 
 export type CreateSubtaskInput = { taskId: string; title: string; notes?: string };
@@ -26,11 +30,34 @@ function useInvalidate() {
   };
 }
 
+// Optimistic: append a temp subtask immediately, swap for the server row on
+// success, roll back on error.
 export function useCreateSubtask() {
+  const qc = useQueryClient();
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (input: CreateSubtaskInput) => api.post<Subtask>("/api/subtasks", input),
-    onSuccess: invalidate,
+    onMutate: async (input) => {
+      const optimistic: Subtask = {
+        id: tempId(),
+        title: input.title,
+        notes: input.notes ?? "",
+        isCompleted: false,
+        completedAt: null,
+        order: Number.MAX_SAFE_INTEGER, // sorts last, like the server append
+        createdAt: new Date(),
+        taskId: input.taskId,
+      };
+      const prev = await patchSubjectCaches(qc, (s) => addSubtaskToTask(s, optimistic));
+      return { prev, tempId: optimistic.id };
+    },
+    onSuccess: (subtask, _input, ctx) => {
+      qc.setQueriesData<SubjectDetail>({ queryKey: ["subject"] }, (old) =>
+        old && ctx ? replaceSubtask(old, ctx.tempId, subtask) : old,
+      );
+    },
+    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
+    onSettled: invalidate,
   });
 }
 

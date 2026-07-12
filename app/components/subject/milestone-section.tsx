@@ -34,7 +34,9 @@ export function MilestoneSection({
     e.preventDefault();
     const t = title.trim();
     if (!t) return;
-    create.mutate({ subjectId, title: t }, { onSuccess: () => setTitle("") });
+    // Clear immediately (the row appears optimistically); restore on failure.
+    setTitle("");
+    create.mutate({ subjectId, title: t }, { onError: () => setTitle(t) });
   };
 
   return (
@@ -69,12 +71,8 @@ export function MilestoneSection({
           className="lk-display flex-1 bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-muted-foreground"
         />
         {title.trim() && (
-          <button
-            type="submit"
-            disabled={create.isPending}
-            className="lk-btn px-2.5 py-1.5 text-[10px] disabled:opacity-50"
-          >
-            {create.isPending ? "…" : "Add"}
+          <button type="submit" className="lk-btn px-2.5 py-1.5 text-[10px]">
+            Add
           </button>
         )}
       </form>

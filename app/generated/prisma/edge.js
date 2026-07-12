@@ -225,7 +225,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/skywalker/Coding/WebDev/Projects/PlanWise/PlanWise/app/generated/prisma",
+      "value": "/Users/skywalker/Coding/Dev/LockIn/app/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -234,17 +234,16 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/skywalker/Coding/WebDev/Projects/PlanWise/PlanWise/prisma/schema.prisma",
+    "sourceFilePath": "/Users/skywalker/Coding/Dev/LockIn/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../prisma",
   "clientVersion": "6.11.1",
@@ -253,6 +252,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {

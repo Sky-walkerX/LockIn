@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Task, Priority, Recurrence } from "@/app/generated/prisma";
 import { api } from "@/lib/fetcher";
-import type { TaskWithSubtasks } from "@/hooks/useSubjects";
+import type { SubjectDetail, TaskWithSubtasks } from "@/hooks/useSubjects";
 import {
   patchSubjectCaches,
   restoreSubjectCaches,
   mapTasks,
   reorderTaskList,
+  addTaskToSubject,
+  replaceTask,
+  tempId,
 } from "@/lib/subject-cache";
 
 export type TaskWithSubject = Task & {
@@ -59,11 +62,42 @@ function useInvalidateTasks() {
   };
 }
 
+// Optimistic: append a temp task to the cached subject immediately, swap it
+// for the server row on success, roll back on error.
 export function useCreateTask() {
+  const qc = useQueryClient();
   const invalidate = useInvalidateTasks();
   return useMutation({
     mutationFn: (input: CreateTaskInput) => api.post<Task>("/api/tasks", input),
-    onSuccess: () => invalidate(),
+    onMutate: async (input) => {
+      const optimistic: TaskWithSubtasks = {
+        id: tempId(),
+        title: input.title,
+        description: input.description ?? null,
+        isCompleted: false,
+        completedAt: null,
+        dueDate: (input.dueDate ? new Date(input.dueDate) : null) as Task["dueDate"],
+        priority: input.priority ?? "MEDIUM",
+        estimatedTime: input.estimatedTime ?? null,
+        timeSpent: null,
+        recurrence: input.recurrence ?? null,
+        order: Number.MAX_SAFE_INTEGER, // sorts last, like the server append
+        createdAt: new Date(),
+        userId: "",
+        subjectId: input.subjectId,
+        milestoneId: input.milestoneId ?? null,
+        subtasks: [],
+      };
+      const prev = await patchSubjectCaches(qc, (s) => addTaskToSubject(s, optimistic));
+      return { prev, tempId: optimistic.id };
+    },
+    onSuccess: (task, _input, ctx) => {
+      qc.setQueriesData<SubjectDetail>({ queryKey: ["subject"] }, (old) =>
+        old && ctx ? replaceTask(old, ctx.tempId, task) : old,
+      );
+    },
+    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
+    onSettled: (_d, _e, input) => invalidate(input.subjectId),
   });
 }
 

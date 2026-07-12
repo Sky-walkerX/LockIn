@@ -9,6 +9,7 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateSubtask, useDeleteSubtask } from "@/hooks/useSubtasks";
 import type { Subtask } from "@/app/generated/prisma";
+import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
 
 export function SubtaskRow({ subtask }: { subtask: Subtask }) {
@@ -26,6 +27,8 @@ export function SubtaskRow({ subtask }: { subtask: Subtask }) {
   const [notesVal, setNotesVal] = useState(subtask.notes);
 
   const hasNotes = subtask.notes.trim().length > 0;
+  // Optimistic row awaiting its server id — block edits/toggles/drags until then.
+  const pending = isTempId(subtask.id);
 
   const toggle = () => update.mutate({ id: subtask.id, data: { isCompleted: !subtask.isCompleted } });
 
@@ -44,7 +47,7 @@ export function SubtaskRow({ subtask }: { subtask: Subtask }) {
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`rounded-md ${isDragging ? "relative z-10 bg-muted/70 shadow-sm" : ""}`}
+      className={`rounded-md ${isDragging ? "relative z-10 bg-muted/70 shadow-sm" : ""} ${pending ? "pointer-events-none opacity-60" : ""}`}
     >
       <div className="group flex items-center gap-1.5 py-1 pl-1 pr-1.5">
         <button

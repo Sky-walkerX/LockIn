@@ -1,7 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Milestone } from "@/app/generated/prisma";
 import { api } from "@/lib/fetcher";
-import { patchSubjectCaches, restoreSubjectCaches } from "@/lib/subject-cache";
+import type { MilestoneWithTasks, SubjectDetail } from "@/hooks/useSubjects";
+import {
+  patchSubjectCaches,
+  restoreSubjectCaches,
+  addMilestoneToSubject,
+  replaceMilestone,
+  tempId,
+} from "@/lib/subject-cache";
 
 // Milestones are read through the subject detail query (["subject", id]).
 // These mutations invalidate that and the subject grid progress.
@@ -13,12 +20,36 @@ function useInvalidate() {
   };
 }
 
+// Optimistic: append a temp milestone immediately, swap for the server row on
+// success, roll back on error.
 export function useCreateMilestone() {
+  const qc = useQueryClient();
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (input: { subjectId: string; title: string; notes?: string; order?: number }) =>
       api.post<Milestone>("/api/milestones", input),
-    onSuccess: invalidate,
+    onMutate: async (input) => {
+      const optimistic: MilestoneWithTasks = {
+        id: tempId(),
+        title: input.title,
+        notes: input.notes ?? "",
+        order: input.order ?? Number.MAX_SAFE_INTEGER, // sorts last, like the server append
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        subjectId: input.subjectId,
+        tasks: [],
+      };
+      const prev = await patchSubjectCaches(qc, (s) => addMilestoneToSubject(s, optimistic));
+      return { prev, tempId: optimistic.id };
+    },
+    onSuccess: (milestone, _input, ctx) => {
+      qc.setQueriesData<SubjectDetail>({ queryKey: ["subject"] }, (old) =>
+        old && ctx ? replaceMilestone(old, ctx.tempId, milestone) : old,
+      );
+    },
+    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
+    onSettled: invalidate,
   });
 }
 

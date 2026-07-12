@@ -8,6 +8,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateMilestone, useDeleteMilestone } from "@/hooks/useMilestones";
 import { useReorderTasks } from "@/hooks/useTasks";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
+import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
@@ -39,6 +40,8 @@ export function MilestoneItem({
   const total = milestone.tasks.length;
   const done = milestone.tasks.filter((t) => t.isCompleted).length;
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  // Optimistic card awaiting its server id — block edits/reorders until then.
+  const pending = isTempId(milestone.id);
 
   const toggleDone = () =>
     update.mutate({ id: milestone.id, data: { isCompleted: !milestone.isCompleted } });
@@ -58,7 +61,7 @@ export function MilestoneItem({
   };
 
   return (
-    <div className="lk-card overflow-hidden">
+    <div className={`lk-card overflow-hidden ${pending ? "pointer-events-none opacity-60" : ""}`}>
       {/* Header */}
       <div className="flex items-center gap-2 p-3">
         <Checkbox checked={milestone.isCompleted} onCheckedChange={toggleDone} className="lk-check" />
