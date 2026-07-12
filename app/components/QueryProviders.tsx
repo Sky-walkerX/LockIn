@@ -6,8 +6,17 @@ import { SessionProvider } from "next-auth/react";
 import React from "react";
 import { QuickAddProvider } from "./quick-add";
 
-// Create a client
-const queryClient = new QueryClient();
+// Data stays fresh for 30s so navigation doesn't refetch the heavy subject
+// detail payload; mutations invalidate explicitly, so correctness holds.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

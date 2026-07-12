@@ -49,12 +49,13 @@ export function useTodayTasks() {
 }
 
 // A task change can move progress bars on the subject grid and detail views.
+// Pass subjectId when known to avoid refetching every cached subject detail.
 function useInvalidateTasks() {
   const qc = useQueryClient();
-  return () => {
+  return (subjectId?: string) => {
     qc.invalidateQueries({ queryKey: ["tasks"] });
     qc.invalidateQueries({ queryKey: ["subjects"] });
-    qc.invalidateQueries({ queryKey: ["subject"] });
+    qc.invalidateQueries({ queryKey: subjectId ? ["subject", subjectId] : ["subject"] });
   };
 }
 
@@ -62,7 +63,7 @@ export function useCreateTask() {
   const invalidate = useInvalidateTasks();
   return useMutation({
     mutationFn: (input: CreateTaskInput) => api.post<Task>("/api/tasks", input),
-    onSuccess: invalidate,
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -87,7 +88,7 @@ export function useUpdateTask() {
       return { prev };
     },
     onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
-    onSettled: invalidate,
+    onSettled: () => invalidate(),
   });
 }
 
@@ -101,7 +102,7 @@ export function useReorderTasks() {
       return { prev };
     },
     onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
-    onSettled: invalidate,
+    onSettled: () => invalidate(),
   });
 }
 
@@ -119,7 +120,7 @@ export function useDeleteTask() {
       return { prev };
     },
     onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
-    onSettled: invalidate,
+    onSettled: () => invalidate(),
   });
 }
 
@@ -128,6 +129,6 @@ export function useTaskTimer() {
   return useMutation({
     mutationFn: ({ id, action }: { id: string; action: "start" | "stop" }) =>
       api.post(`/api/tasks/${id}/timer`, { action }),
-    onSuccess: invalidate,
+    onSuccess: () => invalidate(),
   });
 }
