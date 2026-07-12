@@ -53,14 +53,14 @@ No test runner is configured (no framework, scripts, or test files). Verify chan
 
 ## Architecture
 
-Next.js **16.2.2** (App Router) + React 19 + TypeScript, Prisma 6 + PostgreSQL, NextAuth v4 (JWT), TanStack React Query, shadcn/ui (new-york) + Tailwind v4 + next-themes. (package.json still pins `next@15.3.8`, but node_modules resolved 16.2.2 via the security bumps; dynamic route `params` is a Promise — handled. `middleware.ts` shows a "use proxy instead" deprecation warning under 16.)
+Next.js **15.3.8** (App Router; a fresh `npm install` resolves the package.json pin — an earlier session had 16.2.2 via security bumps) + React 19 + TypeScript, Prisma 6 + PostgreSQL, NextAuth v4 (JWT), TanStack React Query, shadcn/ui (new-york) + Tailwind v4 + next-themes. Dynamic route `params` is a Promise — handled.
 
 ### Two modes (the theme toggle is a personality switch)
 `next-themes` (class strategy, **default `dark`**) drives **one component tree, two looks** via tokens in `app/globals.css`:
 - **Creative** (`:root`, light) — neobrutalist: cream bg, thick black borders, hard offset shadows, Archivo + Space Mono, **bold** per-subject colors, yellow Today block.
 - **Focus** (`.dark`) — editor/tiling-wm calm: near-black, hairline borders, no shadows, JetBrains Mono, **softened** subject colors (`color-mix`), `//`-comment section labels, line-numbered Today list, a vim statusline.
 
-Key tokens: `--lk-bw` (border width), `--lk-shadow`, `--lk-font-{display,body,mono}`, `--lk-hero-bg`; the shadcn semantic tokens (`--background`/`--foreground`/`--accent`=lime/…) are remapped to LockIn values so shadcn primitives stay on-theme. Per-subject color: set `style={{ "--c": hex } as React.CSSProperties}` on a `.lk-subject` element (Focus auto-softens it). Helper classes: `.lk-card/.lk-hero/.lk-bar/.lk-pill/.lk-swatch/.lk-sec/.lk-statusbar/.lk-pct/.lk-display/.lk-mono`. Fonts loaded in `layout.tsx` via `next/font` (`--font-archivo/-hanken/-space-mono/-jetbrains`).
+Key tokens: `--lk-bw` (border width), `--lk-shadow`, `--lk-font-{display,body,mono,code,prose}`, `--lk-hero-bg`; the shadcn semantic tokens (`--background`/`--foreground`/`--accent`=lime/…) are remapped to LockIn values so shadcn primitives stay on-theme. **⚠ The next/font variable classes must stay on `<html>` (layout.tsx), not `<body>`** — the `--lk-font-*` tokens are declared on `:root` and CSS custom properties substitute `var()` refs at computed-value time on the declaring element; on `<body>` every `--lk-font-*` computes to invalid and the whole app silently falls back to system fonts. Per-subject color: set `style={{ "--c": hex } as React.CSSProperties}` on a `.lk-subject` element (Focus auto-softens it). Helper classes: `.lk-card/.lk-hero/.lk-bar/.lk-pill/.lk-swatch/.lk-sec/.lk-statusbar/.lk-pct/.lk-display/.lk-mono`. Fonts loaded in `layout.tsx` via `next/font` (`--font-archivo/-hanken/-space-mono/-jetbrains`).
 
 ### Data model (`prisma/schema.prisma`)
 `User ──< Subject ──< Milestone ──< Task ──< TimerSession`, and `Subject ──< Resource`.
