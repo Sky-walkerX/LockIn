@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
+import { z } from "zod"
 import prisma from "@/lib/prisma"
+import { Prisma } from "@/app/generated/prisma"
+
+const RegisterSchema = z.object({
+  name: z.string().trim().max(100).optional().nullable(),
+  email: z.string().email("Enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json()
-
-    if (!email || !password) {
-      return NextResponse.json({ message: "Email and password are required" }, { status: 400 })
+    const parsed = RegisterSchema.safeParse(await request.json())
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Invalid registration data"
+      return NextResponse.json({ message }, { status: 400 })
     }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    if (existingUser) {
-      return NextResponse.json({ message: "User with this email already exists" }, { status: 409 })
-    }
+    const { name, email, password } = parsed.data
 
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create the user in your database using your Prisma User model
+    // No pre-check for an existing user: the unique index on email is the
+    // race-free source of truth (P2002 = duplicate).
     const newUser = await prisma.user.create({
       data: {
         email,
@@ -40,6 +41,9 @@ export async function POST(request: Request) {
       { status: 201 },
     )
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json({ message: "User with this email already exists" }, { status: 409 })
+    }
     console.error("Registration error:", error)
     return NextResponse.json({ message: "Something went wrong during registration" }, { status: 500 })
   }

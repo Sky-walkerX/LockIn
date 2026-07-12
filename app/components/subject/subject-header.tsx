@@ -31,6 +31,17 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   const complete = total > 0 && done === total;
 
+  // Re-seed the draft fields every time the popover opens so an edit started
+  // after a background refetch shows current values, not mount-time ones.
+  const openEdit = (o: boolean) => {
+    if (o) {
+      setTitle(subject.title);
+      setDescription(subject.description ?? "");
+      setColor(subject.color ?? SUBJECT_PALETTE[0]);
+    }
+    setEditOpen(o);
+  };
+
   const saveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -60,7 +71,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
         </Link>
 
         <div className="flex items-center gap-1">
-          <Popover open={editOpen} onOpenChange={setEditOpen}>
+          <Popover open={editOpen} onOpenChange={openEdit}>
             <PopoverTrigger asChild>
               <button type="button" className="lk-iconbtn" title="Edit subject">
                 <Pencil size={15} />

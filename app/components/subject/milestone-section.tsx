@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
-import { useCreateMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
+import { useCreateMilestone, useReorderMilestones } from "@/hooks/useMilestones";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { MilestoneItem } from "./milestone-item";
 
@@ -18,7 +18,7 @@ export function MilestoneSection({
   milestones: MilestoneWithTasks[];
 }) {
   const create = useCreateMilestone();
-  const update = useUpdateMilestone();
+  const reorder = useReorderMilestones();
   const [title, setTitle] = useState("");
 
   // Read milestones through a ref so `move` stays referentially stable and
@@ -28,19 +28,18 @@ export function MilestoneSection({
     milestonesRef.current = milestones;
   });
 
-  // Reorder by swapping `order` with the adjacent milestone.
-  const { mutate: updateMilestone } = update;
+  // Swap with the adjacent milestone and persist the whole order atomically.
+  const { mutate: reorderMilestones } = reorder;
   const move = useCallback(
     (id: string, dir: -1 | 1) => {
-      const list = milestonesRef.current;
-      const index = list.findIndex((m) => m.id === id);
-      const a = list[index];
-      const b = list[index + dir];
-      if (!a || !b) return;
-      updateMilestone({ id: a.id, data: { order: b.order } });
-      updateMilestone({ id: b.id, data: { order: a.order } });
+      const ids = milestonesRef.current.map((m) => m.id);
+      const i = ids.indexOf(id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= ids.length) return;
+      [ids[i], ids[j]] = [ids[j], ids[i]];
+      reorderMilestones({ ids });
     },
-    [updateMilestone],
+    [reorderMilestones],
   );
 
   const addMilestone = (e: React.FormEvent) => {

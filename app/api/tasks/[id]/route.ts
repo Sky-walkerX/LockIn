@@ -72,6 +72,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           recurrence,
           subjectId: existing.subjectId,
           userId,
+          // Keep the completed task's list position (order defaults to 0 and
+          // would jump the new occurrence to the top).
+          order: existing.order,
           dueDate: nextDueDate(effectiveDue ?? new Date(), recurrence),
         },
       }),

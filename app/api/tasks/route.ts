@@ -27,8 +27,17 @@ export async function GET(request: NextRequest) {
   const milestoneId = sp.get("milestoneId");
 
   if (sp.get("today") === "true") {
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
+    // The client passes its local end-of-day as ?before= so "today" follows
+    // the user's timezone, not the server's; fall back to server-local.
+    const beforeParam = sp.get("before");
+    const clientBefore = beforeParam ? new Date(beforeParam) : null;
+    let endOfToday: Date;
+    if (clientBefore && !isNaN(clientBefore.getTime())) {
+      endOfToday = clientBefore;
+    } else {
+      endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+    }
 
     const tasks = await prisma.task.findMany({
       where: { userId, isCompleted: false, dueDate: { not: null, lte: endOfToday } },

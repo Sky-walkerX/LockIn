@@ -7,6 +7,7 @@ import {
   restoreSubjectCaches,
   addMilestoneToSubject,
   replaceMilestone,
+  reorderMilestones,
   tempId,
 } from "@/lib/subject-cache";
 
@@ -69,6 +70,22 @@ export function useUpdateMilestone() {
         ...s,
         milestones: s.milestones.map((m) => (m.id === id ? { ...m, ...data } : m)),
       }));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
+    onSettled: invalidate,
+  });
+}
+
+// Optimistic + atomic: re-sorts the cached list immediately and persists all
+// orders in one transaction.
+export function useReorderMilestones() {
+  const qc = useQueryClient();
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ ids }: { ids: string[] }) => api.post("/api/milestones/reorder", { ids }),
+    onMutate: async ({ ids }) => {
+      const prev = await patchSubjectCaches(qc, (s) => reorderMilestones(s, ids));
       return { prev };
     },
     onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
