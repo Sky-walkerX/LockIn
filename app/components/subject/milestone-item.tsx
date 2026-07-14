@@ -103,6 +103,9 @@ export const MilestoneItem = memo(function MilestoneItem({
             >
               {milestone.title}
             </span>
+            {milestone.notes.trim().length > 0 && !open && (
+              <FileText size={13} className="flex-none text-muted-foreground/60" aria-label="Has notes" />
+            )}
           </button>
         )}
 

@@ -105,6 +105,35 @@ function lockinTheme(dark: boolean) {
   return [theme, syntaxHighlighting(highlight)];
 }
 
+// Smart URL paste: pasting an image URL inserts `![…](url)` (alt pre-selected
+// for overtyping when text was selected); pasting any URL over selected text
+// wraps it as a `[text](url)` link. Plain URL pastes fall through untouched.
+const URL_RE = /^https?:\/\/\S+$/;
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i;
+
+const smartPaste = EditorView.domEventHandlers({
+  paste(event, view) {
+    const text = event.clipboardData?.getData("text/plain").trim() ?? "";
+    if (!URL_RE.test(text)) return false;
+    const isImage = IMAGE_EXT_RE.test(text.split(/[?#]/)[0]);
+    const { from, to } = view.state.selection.main;
+    const selected = view.state.sliceDoc(from, to);
+    if (!isImage && !selected) return false;
+
+    event.preventDefault();
+    const alt = selected || (isImage ? "image" : "");
+    const insert = isImage ? `![${alt}](${text})` : `[${alt}](${text})`;
+    const altFrom = from + (isImage ? 2 : 1);
+    view.dispatch({
+      changes: { from, to, insert },
+      selection: isImage
+        ? { anchor: altFrom, head: altFrom + alt.length }
+        : { anchor: from + insert.length },
+    });
+    return true;
+  },
+});
+
 export function NotesEditor({
   value,
   onSave,
@@ -139,6 +168,7 @@ export function NotesEditor({
       // the markdown keymap auto-continues lists/quotes on Enter.
       markdown({ base: markdownLanguage, codeLanguages: languages }),
       EditorView.lineWrapping,
+      smartPaste,
       Prec.high(
         keymap.of([
           {
