@@ -74,7 +74,8 @@ Key tokens: `--lk-bw` (border width), `--lk-shadow`, `--lk-font-{display,body,mo
 ### API routes (`app/api/*`)
 All follow one pattern: `const userId = await getUserId(request)` (from `lib/auth.ts`, reads the NextAuth JWT `sub`) → 401 if null → Zod-validate the body → Prisma scoped to the user.
 - **Ownership scoping:** `Subject`/`Task`/`Resource` carry `userId`, so writes use `updateMany`/`deleteMany` with `where: { id, userId }` (404 if `count === 0`). `Milestone` has no `userId` — it is scoped through its subject: `findFirst({ where: { id, subject: { userId } } })`.
-- **Routes:** `/api/subjects` (+`[id]`), `/api/milestones` (+`[id]`), `/api/resources` (+`[id]`), `/api/tasks` (+`[id]`, `/bulk`, `/[id]/timer`).
+- **Routes:** `/api/subjects` (+`[id]`), `/api/milestones` (+`[id]`), `/api/resources` (+`[id]`), `/api/tasks` (+`[id]`, `/bulk`, `/[id]/timer`), `/api/uploads`.
+- `POST /api/uploads` (multipart `file`) stores a pasted/dropped notes image in Supabase Storage (public `lockin-notes` bucket, auto-created via the Storage REST API with `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`; 501 if unset) and returns `{ url }`. Max 4MB; png/jpeg/gif/webp. The notes editor pastes/drops images through it (placeholder → `![image](url)` swap).
 - `GET /api/subjects` returns a progress DTO (`totalTasks`/`completedTasks`). `GET /api/subjects/[id]` returns the full subject (milestones→tasks, loose tasks, resources).
 - `GET /api/tasks` filters: `?subjectId`, `?milestoneId`, or `?today=true` (incomplete, due ≤ end of today, with subject info).
 - `POST /api/tasks/[id]/timer` with `{ action: "start" | "stop" }`; stop closes the open session, computes minutes, and increments `Task.timeSpent` in a transaction.
@@ -101,4 +102,4 @@ NextAuth v4, `jwt` strategy, in `lib/authOptions.ts`. Google OAuth + Credentials
 `@/*` maps to the repo root (`tsconfig.json`).
 
 ## Environment variables
-In `.env` (Prisma CLI) **and** `.env.local` (the app; overrides `.env`): `DATABASE_URL` (live; **`$`→`%24` encoded**, see Database), `AUTH_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (currently `http://localhost:3001`, because port 3000 is the user's other app "SkillSwap"), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. `GEMINI_API_KEY` unused (AI removed).
+In `.env` (Prisma CLI) **and** `.env.local` (the app; overrides `.env`): `DATABASE_URL` (live; **`$`→`%24` encoded**, see Database), `AUTH_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (currently `http://localhost:3001`, because port 3000 is the user's other app "SkillSwap"), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. `GEMINI_API_KEY` unused (AI removed). For notes-image uploads: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (in `.env.local`; uploads answer 501 without them).

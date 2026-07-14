@@ -108,11 +108,57 @@ function lockinTheme(dark: boolean) {
 // Smart URL paste: pasting an image URL inserts `![…](url)` (alt pre-selected
 // for overtyping when text was selected); pasting any URL over selected text
 // wraps it as a `[text](url)` link. Plain URL pastes fall through untouched.
+// Pasting/dropping an actual image (e.g. a screenshot) uploads it to
+// `POST /api/uploads` (Supabase Storage) behind a placeholder that swaps to
+// the real `![image](url)` when the upload lands.
 const URL_RE = /^https?:\/\/\S+$/;
 const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i;
+const UPLOAD_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+
+async function uploadImage(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("/api/uploads", { method: "POST", body: fd, credentials: "include" });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(body?.error ?? "Upload failed");
+  return body.url as string;
+}
+
+// Insert a placeholder at the selection, upload, then swap the placeholder for
+// image markdown (or a visible failure note) wherever it sits by then. If the
+// editor was closed or the placeholder deleted mid-upload, the swap is a no-op.
+function insertImageFile(view: EditorView, file: File) {
+  const token = Math.random().toString(36).slice(2, 8);
+  const placeholder = `![uploading-${token}…]()`;
+  const { from, to } = view.state.selection.main;
+  view.dispatch({
+    changes: { from, to, insert: placeholder },
+    selection: { anchor: from + placeholder.length },
+  });
+
+  const swap = (replacement: string) => {
+    if (!view.dom.isConnected) return;
+    const idx = view.state.doc.toString().indexOf(placeholder);
+    if (idx < 0) return;
+    view.dispatch({ changes: { from: idx, to: idx + placeholder.length, insert: replacement } });
+  };
+  uploadImage(file).then(
+    (url) => swap(`![image](${url})`),
+    (err: Error) => swap(`*(image upload failed: ${err.message})*`),
+  );
+}
 
 const smartPaste = EditorView.domEventHandlers({
   paste(event, view) {
+    const file = Array.from(event.clipboardData?.files ?? []).find((f) =>
+      UPLOAD_TYPES.has(f.type),
+    );
+    if (file) {
+      event.preventDefault();
+      insertImageFile(view, file);
+      return true;
+    }
+
     const text = event.clipboardData?.getData("text/plain").trim() ?? "";
     if (!URL_RE.test(text)) return false;
     const isImage = IMAGE_EXT_RE.test(text.split(/[?#]/)[0]);
@@ -130,6 +176,15 @@ const smartPaste = EditorView.domEventHandlers({
         ? { anchor: altFrom, head: altFrom + alt.length }
         : { anchor: from + insert.length },
     });
+    return true;
+  },
+  drop(event, view) {
+    const file = Array.from(event.dataTransfer?.files ?? []).find((f) => UPLOAD_TYPES.has(f.type));
+    if (!file) return false;
+    event.preventDefault();
+    const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+    if (pos != null) view.dispatch({ selection: { anchor: pos } });
+    insertImageFile(view, file);
     return true;
   },
 });
