@@ -9,7 +9,7 @@ This repo is mid-rebrand from an AI-wrapper todo app into **LockIn**, a **person
 **Product name:** **LockIn** (decided 2026-06-22; old identities were "PlanWise" / `todo` in package.json — package name not yet changed).
 
 **The product:** the central unit is a **Subject** (e.g. "Operating Systems", "GATE Prep"). Each subject holds:
-- **A plan** — an ordered list of **Milestones** (phases), each with markdown `notes`, individually checkable/reorderable. Each milestone holds a checklist of **Tasks**. One level of nesting only.
+- **A plan** — an ordered list of **Milestones** (phases), each with markdown `notes`, individually checkable/reorderable. Each milestone holds a checklist of **Tasks**; a task holds **Subtasks**, and a subtask holds one level of child items (self-nested subtasks — UI caps depth there). Every level has markdown notes.
 - **Resources** — saved URLs only (no file uploads in v1): web links, AI chat links (Claude/Gemini/ChatGPT), book/PDF references.
 
 A cross-subject **Today** view surfaces tasks due/overdue across all subjects.
@@ -63,18 +63,20 @@ Next.js **15.3.8** (App Router; a fresh `npm install` resolves the package.json 
 Key tokens: `--lk-bw` (border width), `--lk-shadow`, `--lk-font-{display,body,mono,code,prose}`, `--lk-hero-bg`; the shadcn semantic tokens (`--background`/`--foreground`/`--accent`=lime/…) are remapped to LockIn values so shadcn primitives stay on-theme. **⚠ The next/font variable classes must stay on `<html>` (layout.tsx), not `<body>`** — the `--lk-font-*` tokens are declared on `:root` and CSS custom properties substitute `var()` refs at computed-value time on the declaring element; on `<body>` every `--lk-font-*` computes to invalid and the whole app silently falls back to system fonts. Per-subject color: set `style={{ "--c": hex } as React.CSSProperties}` on a `.lk-subject` element (Focus auto-softens it). Helper classes: `.lk-card/.lk-hero/.lk-bar/.lk-pill/.lk-swatch/.lk-sec/.lk-statusbar/.lk-pct/.lk-display/.lk-mono`. Fonts loaded in `layout.tsx` via `next/font` (`--font-archivo/-hanken/-space-mono/-jetbrains`).
 
 ### Data model (`prisma/schema.prisma`)
-`User ──< Subject ──< Milestone ──< Task ──< TimerSession`, and `Subject ──< Resource`.
+`User ──< Subject ──< Milestone ──< Task ──< Subtask (self-nesting, 1 level)`, plus `Task ──< TimerSession` and `Subject ──< Resource`.
 - **Subject**: `title`, `description?`, `color?`, `isArchived`; has many milestones/resources/tasks.
 - **Milestone**: `title`, `notes` (markdown, default `""`), `order` (manual sort), `isCompleted`; has many tasks. Progress is derived (% of its tasks done), not stored.
-- **Task** (renamed from `Todo`): `subjectId` **required**, `milestoneId` **optional** (a task can sit directly on a subject). Has `priority`, `dueDate?`, `estimatedTime?`, `timeSpent?`, `completedAt?`.
+- **Task** (renamed from `Todo`): `subjectId` **required**, `milestoneId` **optional** (a task can sit directly on a subject). Has `description?` (markdown notes), `priority`, `dueDate?`, `estimatedTime?`, `timeSpent?`, `completedAt?`, `recurrence?` (DAILY/WEEKLY/MONTHLY — completing spawns the next instance), `order`.
+- **Subtask**: lightweight checklist item under a task — `title`, `notes` (markdown, default `""`), `isCompleted`, `completedAt?`, `order` (per sibling group). **Self-nesting** via `parentId?` (`"SubtaskChildren"` relation, Cascade): a top-level subtask can hold child subtasks; API + UI cap depth at one level (a child can't have children). No `userId` — scoped through `task.subject.userId`. Only top-level rows (`parentId: null`) appear in a task's `subtasks` include, with `children` nested inside.
 - **Resource**: `type` (`LINK`/`AI_CHAT`/`PDF`/`BOOK`), `url`, `title`, `note?`.
 - **TimerSession**: `taskId`, `startedAt`, `endedAt?`, `duration?` (minutes).
-- Enums: `Priority`, `ResourceType`. `onDelete`: cascade down the tree; deleting a milestone sets its tasks' `milestoneId` to null (SetNull).
+- Enums: `Priority`, `ResourceType`, `Recurrence`. `onDelete`: cascade down the tree (incl. subtask parent→children); deleting a milestone sets its tasks' `milestoneId` to null (SetNull).
+- Subtask progress (children of subtasks) does **not** roll up anywhere: milestone %/subject totals/analytics/Today all count Tasks only.
 
 ### API routes (`app/api/*`)
 All follow one pattern: `const userId = await getUserId(request)` (from `lib/auth.ts`, reads the NextAuth JWT `sub`) → 401 if null → Zod-validate the body → Prisma scoped to the user.
 - **Ownership scoping:** `Subject`/`Task`/`Resource` carry `userId`, so writes use `updateMany`/`deleteMany` with `where: { id, userId }` (404 if `count === 0`). `Milestone` has no `userId` — it is scoped through its subject: `findFirst({ where: { id, subject: { userId } } })`.
-- **Routes:** `/api/subjects` (+`[id]`), `/api/milestones` (+`[id]`), `/api/resources` (+`[id]`), `/api/tasks` (+`[id]`, `/bulk`, `/[id]/timer`), `/api/uploads`.
+- **Routes:** `/api/subjects` (+`[id]`), `/api/milestones` (+`[id]`), `/api/resources` (+`[id]`), `/api/tasks` (+`[id]`, `/bulk`, `/reorder`, `/[id]/timer`), `/api/subtasks` (+`[id]`, `/reorder`; POST takes optional `parentId` — 404 if not in the same task, 400 if the parent is itself a child), `/api/uploads`.
 - `POST /api/uploads` (multipart `file`) stores a pasted/dropped notes image in Supabase Storage (public `lockin-notes` bucket, auto-created via the Storage REST API with `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`; 501 if unset) and returns `{ url }`. Max 4MB; png/jpeg/gif/webp. The notes editor pastes/drops images through it (placeholder → `![image](url)` swap).
 - `GET /api/subjects` returns a progress DTO (`totalTasks`/`completedTasks`). `GET /api/subjects/[id]` returns the full subject (milestones→tasks, loose tasks, resources).
 - `GET /api/tasks` filters: `?subjectId`, `?milestoneId`, or `?today=true` (incomplete, due ≤ end of today, with subject info).

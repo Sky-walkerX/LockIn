@@ -57,9 +57,13 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   const subtasks = task.subtasks;
   const subDone = subtasks.filter((s) => s.isCompleted).length;
   const hasNotes = (task.description ?? "").trim().length > 0;
-  // Notes anywhere under this task (own or a subtask's) — drives the
-  // collapsed-row indicator so buried notes are still discoverable.
-  const hasNotesWithin = hasNotes || subtasks.some((s) => s.notes.trim().length > 0);
+  // Notes anywhere under this task (own, a subtask's, or a child item's) —
+  // drives the collapsed-row indicator so buried notes are still discoverable.
+  const hasNotesWithin =
+    hasNotes ||
+    subtasks.some(
+      (s) => s.notes.trim().length > 0 || s.children.some((c) => c.notes.trim().length > 0),
+    );
   // Optimistic row awaiting its server id — block edits/toggles/drags until then.
   const pending = isTempId(task.id);
 

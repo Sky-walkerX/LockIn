@@ -8,7 +8,10 @@ export type SubjectWithProgress = Subject & {
   completedTasks: number;
 };
 
-export type TaskWithSubtasks = Task & { subtasks: Subtask[] };
+// Subtasks nest one level: top-level subtasks carry their children inline.
+export type SubtaskWithChildren = Subtask & { children: Subtask[] };
+
+export type TaskWithSubtasks = Task & { subtasks: SubtaskWithChildren[] };
 
 export type MilestoneWithTasks = Milestone & { tasks: TaskWithSubtasks[] };
 

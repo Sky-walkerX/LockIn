@@ -177,7 +177,8 @@ exports.Prisma.SubtaskScalarFieldEnum = {
   completedAt: 'completedAt',
   order: 'order',
   createdAt: 'createdAt',
-  taskId: 'taskId'
+  taskId: 'taskId',
+  parentId: 'parentId'
 };
 
 exports.Prisma.ResourceScalarFieldEnum = {

@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useCreateSubtask } from "@/hooks/useSubtasks";
 
-export function AddSubtask({ taskId }: { taskId: string }) {
+// With `parentId`, adds a child under that (top-level) subtask instead of the
+// task's own list; the nested form drops the indent its parent already gives.
+export function AddSubtask({ taskId, parentId }: { taskId: string; parentId?: string }) {
   const [title, setTitle] = useState("");
   const create = useCreateSubtask();
 
@@ -14,16 +16,19 @@ export function AddSubtask({ taskId }: { taskId: string }) {
     if (!t) return;
     // Clear immediately (the row appears optimistically); restore on failure.
     setTitle("");
-    create.mutate({ taskId, title: t }, { onError: () => setTitle(t) });
+    create.mutate({ taskId, parentId, title: t }, { onError: () => setTitle(t) });
   };
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-1.5 py-1 pl-7 pr-1.5">
+    <form
+      onSubmit={submit}
+      className={`flex items-center gap-1.5 py-1 pr-1.5 ${parentId ? "pl-1" : "pl-7"}`}
+    >
       <Plus size={12} className="text-muted-foreground" />
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add a subtask…"
+        placeholder={parentId ? "Add an item…" : "Add a subtask…"}
         className="lk-mono flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground"
       />
       {title.trim() && (

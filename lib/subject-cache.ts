@@ -1,5 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { SubjectDetail, TaskWithSubtasks, MilestoneWithTasks } from "@/hooks/useSubjects";
+import type {
+  SubjectDetail,
+  SubtaskWithChildren,
+  TaskWithSubtasks,
+  MilestoneWithTasks,
+} from "@/hooks/useSubjects";
 import type { Milestone, Subtask, Task } from "@/app/generated/prisma";
 
 // Helpers for optimistically patching the ["subject", id] detail caches so
@@ -65,10 +70,17 @@ export function mapTasks(
   return milestones === s.milestones && tasks === s.tasks ? s : { ...s, milestones, tasks };
 }
 
-// Apply `fn` to every subtask in the subject.
+// Apply `fn` to every subtask in the subject — top-level rows and their
+// children (`fn` spreads, so a parent's `children` array survives it).
 export function mapSubtasks(s: SubjectDetail, fn: (st: Subtask) => Subtask): SubjectDetail {
+  const mapNode = (p: SubtaskWithChildren): SubtaskWithChildren => {
+    const children = mapList(p.children, fn);
+    const self = fn(p) as SubtaskWithChildren;
+    if (self === p && children === p.children) return p;
+    return { ...self, children };
+  };
   return mapTasks(s, (t) => {
-    const subtasks = mapList(t.subtasks, fn);
+    const subtasks = mapList(t.subtasks, mapNode);
     return subtasks === t.subtasks ? t : { ...t, subtasks };
   });
 }
@@ -90,14 +102,32 @@ export function replaceTask(s: SubjectDetail, tmpId: string, real: Task): Subjec
   return mapTasks(s, (t) => (t.id === tmpId ? { ...real, subtasks: t.subtasks } : t));
 }
 
-export function addSubtaskToTask(s: SubjectDetail, subtask: Subtask): SubjectDetail {
-  return mapTasks(s, (t) =>
-    t.id === subtask.taskId ? { ...t, subtasks: [...t.subtasks, subtask] } : t,
-  );
+// Append an optimistic subtask to its parent's children, or the task's
+// top-level list.
+export function addSubtaskToTask(s: SubjectDetail, subtask: SubtaskWithChildren): SubjectDetail {
+  return mapTasks(s, (t) => {
+    if (t.id !== subtask.taskId) return t;
+    if (subtask.parentId) {
+      const subtasks = mapList(t.subtasks, (p) =>
+        p.id === subtask.parentId ? { ...p, children: [...p.children, subtask] } : p,
+      );
+      return subtasks === t.subtasks ? t : { ...t, subtasks };
+    }
+    return { ...t, subtasks: [...t.subtasks, subtask] };
+  });
 }
 
+// Swap a temp subtask for the server one. The POST response carries no
+// `children`, so keep the temp row's (mirrors replaceTask).
 export function replaceSubtask(s: SubjectDetail, tmpId: string, real: Subtask): SubjectDetail {
-  return mapSubtasks(s, (st) => (st.id === tmpId ? real : st));
+  return mapSubtasks(s, (st) => {
+    if (st.id !== tmpId) return st;
+    const swapped: SubtaskWithChildren = {
+      ...real,
+      children: (st as SubtaskWithChildren).children ?? [],
+    };
+    return swapped;
+  });
 }
 
 export function addMilestoneToSubject(s: SubjectDetail, m: MilestoneWithTasks): SubjectDetail {
@@ -128,16 +158,22 @@ export function reorderTaskList(s: SubjectDetail, ids: string[]): SubjectDetail 
   return milestones === s.milestones && tasks === s.tasks ? s : { ...s, milestones, tasks };
 }
 
-// Reorder whichever task's subtask list exactly matches `ids`.
+// Reorder whichever subtask sibling group (a task's top-level list, or one
+// parent's children) exactly matches `ids`.
 export function reorderSubtaskList(s: SubjectDetail, ids: string[]): SubjectDetail {
   const idSet = new Set(ids);
-  const reorder = (arr: Subtask[]) => {
+  const reorder = <T extends { id: string }>(arr: T[]): T[] => {
     if (arr.length !== ids.length || !arr.every((st) => idSet.has(st.id))) return arr;
     const byId = new Map(arr.map((st) => [st.id, st]));
     return ids.map((id) => byId.get(id)!);
   };
   return mapTasks(s, (t) => {
-    const subtasks = reorder(t.subtasks);
+    const top = reorder(t.subtasks);
+    if (top !== t.subtasks) return { ...t, subtasks: top };
+    const subtasks = mapList(t.subtasks, (p) => {
+      const children = reorder(p.children);
+      return children === p.children ? p : { ...p, children };
+    });
     return subtasks === t.subtasks ? t : { ...t, subtasks };
   });
 }

@@ -6,17 +6,28 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, GripVertical, Pencil, Trash2, FileText } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
-import { useUpdateSubtask, useDeleteSubtask } from "@/hooks/useSubtasks";
+import { useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
 import type { Subtask } from "@/app/generated/prisma";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
 import { NotesEditor } from "./notes-editor-lazy";
+import { SortableList } from "./sortable-list";
+import { AddSubtask } from "./add-subtask";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // subtasks, so only rows whose subtask actually changed re-render.
-export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subtask }) {
+// Renders both levels: top-level rows carry `children` and nest one list of
+// child rows (`isChild`), which can't nest further — the depth cap lives here.
+export const SubtaskRow = memo(function SubtaskRow({
+  subtask,
+  isChild = false,
+}: {
+  subtask: Subtask & { children?: Subtask[] };
+  isChild?: boolean;
+}) {
   const update = useUpdateSubtask();
   const del = useDeleteSubtask();
+  const reorderChildren = useReorderSubtasks();
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: subtask.id,
@@ -27,7 +38,11 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
   const [titleVal, setTitleVal] = useState(subtask.title);
   const [editingNotes, setEditingNotes] = useState(false);
 
+  const children = subtask.children ?? [];
+  const childDone = children.filter((c) => c.isCompleted).length;
   const hasNotes = subtask.notes.trim().length > 0;
+  // Notes on this row or a child — keeps buried notes discoverable while collapsed.
+  const hasNotesWithin = hasNotes || children.some((c) => c.notes.trim().length > 0);
   // Optimistic row awaiting its server id — block edits/toggles/drags until then.
   const pending = isTempId(subtask.id);
 
@@ -97,15 +112,27 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
           >
             <ChevronRight
               size={12}
-              className={`flex-none text-muted-foreground/70 transition-transform ${open ? "rotate-90" : ""} ${hasNotes ? "" : "opacity-40"}`}
+              className={`flex-none text-muted-foreground/70 transition-transform ${open ? "rotate-90" : ""} ${hasNotes || children.length ? "" : "opacity-40"}`}
             />
             <span
               className={`truncate text-[13px] ${subtask.isCompleted ? "text-muted-foreground line-through" : ""}`}
             >
               {subtask.title}
             </span>
-            {hasNotes && !open && <FileText size={11} className="flex-none text-muted-foreground/60" />}
+            {hasNotesWithin && !open && (
+              <FileText
+                size={11}
+                className="flex-none text-muted-foreground/60"
+                aria-label={hasNotes ? "Has notes" : "An item has notes"}
+              />
+            )}
           </button>
+        )}
+
+        {children.length > 0 && (
+          <span className="lk-mono flex-none text-[9.5px] tabular-nums text-muted-foreground">
+            {childDone}/{children.length}
+          </span>
         )}
 
         <div className="flex items-center opacity-0 transition-opacity group-hover:opacity-100">
@@ -125,7 +152,7 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
       </div>
 
       {open && (
-        <div className="mb-1 ml-7 mr-1.5">
+        <div className="mb-1 ml-7 mr-1.5 flex flex-col gap-1.5">
           {editingNotes ? (
             <NotesEditor
               value={subtask.notes}
@@ -158,6 +185,21 @@ export const SubtaskRow = memo(function SubtaskRow({ subtask }: { subtask: Subta
             >
               <FileText size={12} /> Add notes
             </button>
+          )}
+
+          {/* Child items — top-level subtasks only (children can't nest further) */}
+          {!isChild && (
+            <div className="flex flex-col border-l border-border/60 pl-2">
+              <SortableList
+                ids={children.map((c) => c.id)}
+                onReorder={(ids) => reorderChildren.mutate({ ids })}
+              >
+                {children.map((c) => (
+                  <SubtaskRow key={c.id} subtask={c} isChild />
+                ))}
+              </SortableList>
+              <AddSubtask taskId={subtask.taskId} parentId={subtask.id} />
+            </div>
           )}
         </div>
       )}

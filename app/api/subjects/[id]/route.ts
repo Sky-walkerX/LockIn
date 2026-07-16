@@ -17,7 +17,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
 
-  const subtasks = { orderBy: { order: "asc" as const } } as const;
+  // Top-level subtasks only, with their children nested one level deep.
+  const subtasks = {
+    where: { parentId: null },
+    orderBy: { order: "asc" as const },
+    include: { children: { orderBy: { order: "asc" as const } } },
+  } as const;
   const taskInclude = {
     orderBy: [{ order: "asc" as const }, { createdAt: "asc" as const }],
     include: { subtasks },

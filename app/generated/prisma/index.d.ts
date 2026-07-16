@@ -1625,6 +1625,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type SubtaskCountOutputType
+   */
+
+  export type SubtaskCountOutputType = {
+    children: number
+  }
+
+  export type SubtaskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    children?: boolean | SubtaskCountOutputTypeCountChildrenArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * SubtaskCountOutputType without action
+   */
+  export type SubtaskCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SubtaskCountOutputType
+     */
+    select?: SubtaskCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * SubtaskCountOutputType without action
+   */
+  export type SubtaskCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SubtaskWhereInput
+  }
+
+
+  /**
    * Models
    */
 
@@ -6463,6 +6494,7 @@ export namespace Prisma {
     order: number | null
     createdAt: Date | null
     taskId: string | null
+    parentId: string | null
   }
 
   export type SubtaskMaxAggregateOutputType = {
@@ -6474,6 +6506,7 @@ export namespace Prisma {
     order: number | null
     createdAt: Date | null
     taskId: string | null
+    parentId: string | null
   }
 
   export type SubtaskCountAggregateOutputType = {
@@ -6485,6 +6518,7 @@ export namespace Prisma {
     order: number
     createdAt: number
     taskId: number
+    parentId: number
     _all: number
   }
 
@@ -6506,6 +6540,7 @@ export namespace Prisma {
     order?: true
     createdAt?: true
     taskId?: true
+    parentId?: true
   }
 
   export type SubtaskMaxAggregateInputType = {
@@ -6517,6 +6552,7 @@ export namespace Prisma {
     order?: true
     createdAt?: true
     taskId?: true
+    parentId?: true
   }
 
   export type SubtaskCountAggregateInputType = {
@@ -6528,6 +6564,7 @@ export namespace Prisma {
     order?: true
     createdAt?: true
     taskId?: true
+    parentId?: true
     _all?: true
   }
 
@@ -6626,6 +6663,7 @@ export namespace Prisma {
     order: number
     createdAt: Date
     taskId: string
+    parentId: string | null
     _count: SubtaskCountAggregateOutputType | null
     _avg: SubtaskAvgAggregateOutputType | null
     _sum: SubtaskSumAggregateOutputType | null
@@ -6656,7 +6694,11 @@ export namespace Prisma {
     order?: boolean
     createdAt?: boolean
     taskId?: boolean
+    parentId?: boolean
     task?: boolean | TaskDefaultArgs<ExtArgs>
+    parent?: boolean | Subtask$parentArgs<ExtArgs>
+    children?: boolean | Subtask$childrenArgs<ExtArgs>
+    _count?: boolean | SubtaskCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["subtask"]>
 
   export type SubtaskSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6668,7 +6710,9 @@ export namespace Prisma {
     order?: boolean
     createdAt?: boolean
     taskId?: boolean
+    parentId?: boolean
     task?: boolean | TaskDefaultArgs<ExtArgs>
+    parent?: boolean | Subtask$parentArgs<ExtArgs>
   }, ExtArgs["result"]["subtask"]>
 
   export type SubtaskSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6680,7 +6724,9 @@ export namespace Prisma {
     order?: boolean
     createdAt?: boolean
     taskId?: boolean
+    parentId?: boolean
     task?: boolean | TaskDefaultArgs<ExtArgs>
+    parent?: boolean | Subtask$parentArgs<ExtArgs>
   }, ExtArgs["result"]["subtask"]>
 
   export type SubtaskSelectScalar = {
@@ -6692,23 +6738,31 @@ export namespace Prisma {
     order?: boolean
     createdAt?: boolean
     taskId?: boolean
+    parentId?: boolean
   }
 
-  export type SubtaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "isCompleted" | "completedAt" | "order" | "createdAt" | "taskId", ExtArgs["result"]["subtask"]>
+  export type SubtaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "isCompleted" | "completedAt" | "order" | "createdAt" | "taskId" | "parentId", ExtArgs["result"]["subtask"]>
   export type SubtaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     task?: boolean | TaskDefaultArgs<ExtArgs>
+    parent?: boolean | Subtask$parentArgs<ExtArgs>
+    children?: boolean | Subtask$childrenArgs<ExtArgs>
+    _count?: boolean | SubtaskCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SubtaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     task?: boolean | TaskDefaultArgs<ExtArgs>
+    parent?: boolean | Subtask$parentArgs<ExtArgs>
   }
   export type SubtaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     task?: boolean | TaskDefaultArgs<ExtArgs>
+    parent?: boolean | Subtask$parentArgs<ExtArgs>
   }
 
   export type $SubtaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Subtask"
     objects: {
       task: Prisma.$TaskPayload<ExtArgs>
+      parent: Prisma.$SubtaskPayload<ExtArgs> | null
+      children: Prisma.$SubtaskPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6719,6 +6773,7 @@ export namespace Prisma {
       order: number
       createdAt: Date
       taskId: string
+      parentId: string | null
     }, ExtArgs["result"]["subtask"]>
     composites: {}
   }
@@ -7114,6 +7169,8 @@ export namespace Prisma {
   export interface Prisma__SubtaskClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     task<T extends TaskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TaskDefaultArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    parent<T extends Subtask$parentArgs<ExtArgs> = {}>(args?: Subset<T, Subtask$parentArgs<ExtArgs>>): Prisma__SubtaskClient<$Result.GetResult<Prisma.$SubtaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    children<T extends Subtask$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Subtask$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubtaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7151,6 +7208,7 @@ export namespace Prisma {
     readonly order: FieldRef<"Subtask", 'Int'>
     readonly createdAt: FieldRef<"Subtask", 'DateTime'>
     readonly taskId: FieldRef<"Subtask", 'String'>
+    readonly parentId: FieldRef<"Subtask", 'String'>
   }
     
 
@@ -7544,6 +7602,49 @@ export namespace Prisma {
      * Limit how many Subtasks to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Subtask.parent
+   */
+  export type Subtask$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Subtask
+     */
+    select?: SubtaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Subtask
+     */
+    omit?: SubtaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SubtaskInclude<ExtArgs> | null
+    where?: SubtaskWhereInput
+  }
+
+  /**
+   * Subtask.children
+   */
+  export type Subtask$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Subtask
+     */
+    select?: SubtaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Subtask
+     */
+    omit?: SubtaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SubtaskInclude<ExtArgs> | null
+    where?: SubtaskWhereInput
+    orderBy?: SubtaskOrderByWithRelationInput | SubtaskOrderByWithRelationInput[]
+    cursor?: SubtaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SubtaskScalarFieldEnum | SubtaskScalarFieldEnum[]
   }
 
   /**
@@ -9858,7 +9959,8 @@ export namespace Prisma {
     completedAt: 'completedAt',
     order: 'order',
     createdAt: 'createdAt',
-    taskId: 'taskId'
+    taskId: 'taskId',
+    parentId: 'parentId'
   };
 
   export type SubtaskScalarFieldEnum = (typeof SubtaskScalarFieldEnum)[keyof typeof SubtaskScalarFieldEnum]
@@ -10378,7 +10480,10 @@ export namespace Prisma {
     order?: IntFilter<"Subtask"> | number
     createdAt?: DateTimeFilter<"Subtask"> | Date | string
     taskId?: StringFilter<"Subtask"> | string
+    parentId?: StringNullableFilter<"Subtask"> | string | null
     task?: XOR<TaskScalarRelationFilter, TaskWhereInput>
+    parent?: XOR<SubtaskNullableScalarRelationFilter, SubtaskWhereInput> | null
+    children?: SubtaskListRelationFilter
   }
 
   export type SubtaskOrderByWithRelationInput = {
@@ -10390,7 +10495,10 @@ export namespace Prisma {
     order?: SortOrder
     createdAt?: SortOrder
     taskId?: SortOrder
+    parentId?: SortOrderInput | SortOrder
     task?: TaskOrderByWithRelationInput
+    parent?: SubtaskOrderByWithRelationInput
+    children?: SubtaskOrderByRelationAggregateInput
   }
 
   export type SubtaskWhereUniqueInput = Prisma.AtLeast<{
@@ -10405,7 +10513,10 @@ export namespace Prisma {
     order?: IntFilter<"Subtask"> | number
     createdAt?: DateTimeFilter<"Subtask"> | Date | string
     taskId?: StringFilter<"Subtask"> | string
+    parentId?: StringNullableFilter<"Subtask"> | string | null
     task?: XOR<TaskScalarRelationFilter, TaskWhereInput>
+    parent?: XOR<SubtaskNullableScalarRelationFilter, SubtaskWhereInput> | null
+    children?: SubtaskListRelationFilter
   }, "id">
 
   export type SubtaskOrderByWithAggregationInput = {
@@ -10417,6 +10528,7 @@ export namespace Prisma {
     order?: SortOrder
     createdAt?: SortOrder
     taskId?: SortOrder
+    parentId?: SortOrderInput | SortOrder
     _count?: SubtaskCountOrderByAggregateInput
     _avg?: SubtaskAvgOrderByAggregateInput
     _max?: SubtaskMaxOrderByAggregateInput
@@ -10436,6 +10548,7 @@ export namespace Prisma {
     order?: IntWithAggregatesFilter<"Subtask"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Subtask"> | Date | string
     taskId?: StringWithAggregatesFilter<"Subtask"> | string
+    parentId?: StringNullableWithAggregatesFilter<"Subtask"> | string | null
   }
 
   export type ResourceWhereInput = {
@@ -10956,6 +11069,8 @@ export namespace Prisma {
     order?: number
     createdAt?: Date | string
     task: TaskCreateNestedOneWithoutSubtasksInput
+    parent?: SubtaskCreateNestedOneWithoutChildrenInput
+    children?: SubtaskCreateNestedManyWithoutParentInput
   }
 
   export type SubtaskUncheckedCreateInput = {
@@ -10967,6 +11082,8 @@ export namespace Prisma {
     order?: number
     createdAt?: Date | string
     taskId: string
+    parentId?: string | null
+    children?: SubtaskUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type SubtaskUpdateInput = {
@@ -10978,6 +11095,8 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     task?: TaskUpdateOneRequiredWithoutSubtasksNestedInput
+    parent?: SubtaskUpdateOneWithoutChildrenNestedInput
+    children?: SubtaskUpdateManyWithoutParentNestedInput
   }
 
   export type SubtaskUncheckedUpdateInput = {
@@ -10989,6 +11108,8 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     taskId?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    children?: SubtaskUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type SubtaskCreateManyInput = {
@@ -11000,6 +11121,7 @@ export namespace Prisma {
     order?: number
     createdAt?: Date | string
     taskId: string
+    parentId?: string | null
   }
 
   export type SubtaskUpdateManyMutationInput = {
@@ -11021,6 +11143,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     taskId?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ResourceCreateInput = {
@@ -11629,6 +11752,11 @@ export namespace Prisma {
     isNot?: TaskWhereInput
   }
 
+  export type SubtaskNullableScalarRelationFilter = {
+    is?: SubtaskWhereInput | null
+    isNot?: SubtaskWhereInput | null
+  }
+
   export type SubtaskCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
@@ -11638,6 +11766,7 @@ export namespace Prisma {
     order?: SortOrder
     createdAt?: SortOrder
     taskId?: SortOrder
+    parentId?: SortOrder
   }
 
   export type SubtaskAvgOrderByAggregateInput = {
@@ -11653,6 +11782,7 @@ export namespace Prisma {
     order?: SortOrder
     createdAt?: SortOrder
     taskId?: SortOrder
+    parentId?: SortOrder
   }
 
   export type SubtaskMinOrderByAggregateInput = {
@@ -11664,6 +11794,7 @@ export namespace Prisma {
     order?: SortOrder
     createdAt?: SortOrder
     taskId?: SortOrder
+    parentId?: SortOrder
   }
 
   export type SubtaskSumOrderByAggregateInput = {
@@ -12255,12 +12386,70 @@ export namespace Prisma {
     connect?: TaskWhereUniqueInput
   }
 
+  export type SubtaskCreateNestedOneWithoutChildrenInput = {
+    create?: XOR<SubtaskCreateWithoutChildrenInput, SubtaskUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: SubtaskCreateOrConnectWithoutChildrenInput
+    connect?: SubtaskWhereUniqueInput
+  }
+
+  export type SubtaskCreateNestedManyWithoutParentInput = {
+    create?: XOR<SubtaskCreateWithoutParentInput, SubtaskUncheckedCreateWithoutParentInput> | SubtaskCreateWithoutParentInput[] | SubtaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: SubtaskCreateOrConnectWithoutParentInput | SubtaskCreateOrConnectWithoutParentInput[]
+    createMany?: SubtaskCreateManyParentInputEnvelope
+    connect?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+  }
+
+  export type SubtaskUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<SubtaskCreateWithoutParentInput, SubtaskUncheckedCreateWithoutParentInput> | SubtaskCreateWithoutParentInput[] | SubtaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: SubtaskCreateOrConnectWithoutParentInput | SubtaskCreateOrConnectWithoutParentInput[]
+    createMany?: SubtaskCreateManyParentInputEnvelope
+    connect?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+  }
+
   export type TaskUpdateOneRequiredWithoutSubtasksNestedInput = {
     create?: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
     connectOrCreate?: TaskCreateOrConnectWithoutSubtasksInput
     upsert?: TaskUpsertWithoutSubtasksInput
     connect?: TaskWhereUniqueInput
     update?: XOR<XOR<TaskUpdateToOneWithWhereWithoutSubtasksInput, TaskUpdateWithoutSubtasksInput>, TaskUncheckedUpdateWithoutSubtasksInput>
+  }
+
+  export type SubtaskUpdateOneWithoutChildrenNestedInput = {
+    create?: XOR<SubtaskCreateWithoutChildrenInput, SubtaskUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: SubtaskCreateOrConnectWithoutChildrenInput
+    upsert?: SubtaskUpsertWithoutChildrenInput
+    disconnect?: SubtaskWhereInput | boolean
+    delete?: SubtaskWhereInput | boolean
+    connect?: SubtaskWhereUniqueInput
+    update?: XOR<XOR<SubtaskUpdateToOneWithWhereWithoutChildrenInput, SubtaskUpdateWithoutChildrenInput>, SubtaskUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type SubtaskUpdateManyWithoutParentNestedInput = {
+    create?: XOR<SubtaskCreateWithoutParentInput, SubtaskUncheckedCreateWithoutParentInput> | SubtaskCreateWithoutParentInput[] | SubtaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: SubtaskCreateOrConnectWithoutParentInput | SubtaskCreateOrConnectWithoutParentInput[]
+    upsert?: SubtaskUpsertWithWhereUniqueWithoutParentInput | SubtaskUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: SubtaskCreateManyParentInputEnvelope
+    set?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    disconnect?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    delete?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    connect?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    update?: SubtaskUpdateWithWhereUniqueWithoutParentInput | SubtaskUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: SubtaskUpdateManyWithWhereWithoutParentInput | SubtaskUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: SubtaskScalarWhereInput | SubtaskScalarWhereInput[]
+  }
+
+  export type SubtaskUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<SubtaskCreateWithoutParentInput, SubtaskUncheckedCreateWithoutParentInput> | SubtaskCreateWithoutParentInput[] | SubtaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: SubtaskCreateOrConnectWithoutParentInput | SubtaskCreateOrConnectWithoutParentInput[]
+    upsert?: SubtaskUpsertWithWhereUniqueWithoutParentInput | SubtaskUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: SubtaskCreateManyParentInputEnvelope
+    set?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    disconnect?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    delete?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    connect?: SubtaskWhereUniqueInput | SubtaskWhereUniqueInput[]
+    update?: SubtaskUpdateWithWhereUniqueWithoutParentInput | SubtaskUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: SubtaskUpdateManyWithWhereWithoutParentInput | SubtaskUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: SubtaskScalarWhereInput | SubtaskScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutResourcesInput = {
@@ -13234,6 +13423,8 @@ export namespace Prisma {
     completedAt?: Date | string | null
     order?: number
     createdAt?: Date | string
+    parent?: SubtaskCreateNestedOneWithoutChildrenInput
+    children?: SubtaskCreateNestedManyWithoutParentInput
   }
 
   export type SubtaskUncheckedCreateWithoutTaskInput = {
@@ -13244,6 +13435,8 @@ export namespace Prisma {
     completedAt?: Date | string | null
     order?: number
     createdAt?: Date | string
+    parentId?: string | null
+    children?: SubtaskUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type SubtaskCreateOrConnectWithoutTaskInput = {
@@ -13411,6 +13604,7 @@ export namespace Prisma {
     order?: IntFilter<"Subtask"> | number
     createdAt?: DateTimeFilter<"Subtask"> | Date | string
     taskId?: StringFilter<"Subtask"> | string
+    parentId?: StringNullableFilter<"Subtask"> | string | null
   }
 
   export type TimerSessionUpsertWithWhereUniqueWithoutTaskInput = {
@@ -13483,6 +13677,69 @@ export namespace Prisma {
     create: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
   }
 
+  export type SubtaskCreateWithoutChildrenInput = {
+    id?: string
+    title: string
+    notes?: string
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    order?: number
+    createdAt?: Date | string
+    task: TaskCreateNestedOneWithoutSubtasksInput
+    parent?: SubtaskCreateNestedOneWithoutChildrenInput
+  }
+
+  export type SubtaskUncheckedCreateWithoutChildrenInput = {
+    id?: string
+    title: string
+    notes?: string
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    order?: number
+    createdAt?: Date | string
+    taskId: string
+    parentId?: string | null
+  }
+
+  export type SubtaskCreateOrConnectWithoutChildrenInput = {
+    where: SubtaskWhereUniqueInput
+    create: XOR<SubtaskCreateWithoutChildrenInput, SubtaskUncheckedCreateWithoutChildrenInput>
+  }
+
+  export type SubtaskCreateWithoutParentInput = {
+    id?: string
+    title: string
+    notes?: string
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    order?: number
+    createdAt?: Date | string
+    task: TaskCreateNestedOneWithoutSubtasksInput
+    children?: SubtaskCreateNestedManyWithoutParentInput
+  }
+
+  export type SubtaskUncheckedCreateWithoutParentInput = {
+    id?: string
+    title: string
+    notes?: string
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    order?: number
+    createdAt?: Date | string
+    taskId: string
+    children?: SubtaskUncheckedCreateNestedManyWithoutParentInput
+  }
+
+  export type SubtaskCreateOrConnectWithoutParentInput = {
+    where: SubtaskWhereUniqueInput
+    create: XOR<SubtaskCreateWithoutParentInput, SubtaskUncheckedCreateWithoutParentInput>
+  }
+
+  export type SubtaskCreateManyParentInputEnvelope = {
+    data: SubtaskCreateManyParentInput | SubtaskCreateManyParentInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TaskUpsertWithoutSubtasksInput = {
     update: XOR<TaskUpdateWithoutSubtasksInput, TaskUncheckedUpdateWithoutSubtasksInput>
     create: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
@@ -13530,6 +13787,57 @@ export namespace Prisma {
     subjectId?: StringFieldUpdateOperationsInput | string
     milestoneId?: NullableStringFieldUpdateOperationsInput | string | null
     timerSessions?: TimerSessionUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type SubtaskUpsertWithoutChildrenInput = {
+    update: XOR<SubtaskUpdateWithoutChildrenInput, SubtaskUncheckedUpdateWithoutChildrenInput>
+    create: XOR<SubtaskCreateWithoutChildrenInput, SubtaskUncheckedCreateWithoutChildrenInput>
+    where?: SubtaskWhereInput
+  }
+
+  export type SubtaskUpdateToOneWithWhereWithoutChildrenInput = {
+    where?: SubtaskWhereInput
+    data: XOR<SubtaskUpdateWithoutChildrenInput, SubtaskUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type SubtaskUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    task?: TaskUpdateOneRequiredWithoutSubtasksNestedInput
+    parent?: SubtaskUpdateOneWithoutChildrenNestedInput
+  }
+
+  export type SubtaskUncheckedUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    taskId?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type SubtaskUpsertWithWhereUniqueWithoutParentInput = {
+    where: SubtaskWhereUniqueInput
+    update: XOR<SubtaskUpdateWithoutParentInput, SubtaskUncheckedUpdateWithoutParentInput>
+    create: XOR<SubtaskCreateWithoutParentInput, SubtaskUncheckedCreateWithoutParentInput>
+  }
+
+  export type SubtaskUpdateWithWhereUniqueWithoutParentInput = {
+    where: SubtaskWhereUniqueInput
+    data: XOR<SubtaskUpdateWithoutParentInput, SubtaskUncheckedUpdateWithoutParentInput>
+  }
+
+  export type SubtaskUpdateManyWithWhereWithoutParentInput = {
+    where: SubtaskScalarWhereInput
+    data: XOR<SubtaskUpdateManyMutationInput, SubtaskUncheckedUpdateManyWithoutParentInput>
   }
 
   export type UserCreateWithoutResourcesInput = {
@@ -14152,6 +14460,7 @@ export namespace Prisma {
     completedAt?: Date | string | null
     order?: number
     createdAt?: Date | string
+    parentId?: string | null
   }
 
   export type TimerSessionCreateManyTaskInput = {
@@ -14169,6 +14478,8 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: SubtaskUpdateOneWithoutChildrenNestedInput
+    children?: SubtaskUpdateManyWithoutParentNestedInput
   }
 
   export type SubtaskUncheckedUpdateWithoutTaskInput = {
@@ -14179,6 +14490,8 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    children?: SubtaskUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type SubtaskUncheckedUpdateManyWithoutTaskInput = {
@@ -14189,6 +14502,7 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TimerSessionUpdateWithoutTaskInput = {
@@ -14210,6 +14524,52 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type SubtaskCreateManyParentInput = {
+    id?: string
+    title: string
+    notes?: string
+    isCompleted?: boolean
+    completedAt?: Date | string | null
+    order?: number
+    createdAt?: Date | string
+    taskId: string
+  }
+
+  export type SubtaskUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    task?: TaskUpdateOneRequiredWithoutSubtasksNestedInput
+    children?: SubtaskUpdateManyWithoutParentNestedInput
+  }
+
+  export type SubtaskUncheckedUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    taskId?: StringFieldUpdateOperationsInput | string
+    children?: SubtaskUncheckedUpdateManyWithoutParentNestedInput
+  }
+
+  export type SubtaskUncheckedUpdateManyWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    notes?: StringFieldUpdateOperationsInput | string
+    isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    taskId?: StringFieldUpdateOperationsInput | string
   }
 
 

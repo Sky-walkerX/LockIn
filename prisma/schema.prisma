@@ -111,11 +111,17 @@ model Subtask {
   notes       String    @default("") // markdown
   isCompleted Boolean   @default(false)
   completedAt DateTime?
-  order       Int       @default(0)  // manual ordering within its task
+  order       Int       @default(0)  // manual ordering within its sibling group (taskId + parentId)
   createdAt   DateTime  @default(now())
 
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId      String
+
+  // Self-nesting: a subtask may sit under another subtask of the same task.
+  // The UI caps depth at one level (children can't have children).
+  parent      Subtask?  @relation("SubtaskChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId    String?
+  children    Subtask[] @relation("SubtaskChildren")
 }
 
 model Resource {
