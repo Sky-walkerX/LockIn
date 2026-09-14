@@ -1,6 +1,6 @@
 "use client";
 
-import { Cpu, Loader2, RefreshCw } from "lucide-react";
+import { Cloud, Cpu, Loader2, RefreshCw } from "lucide-react";
 import type { useIndexing } from "@/hooks/useChat";
 
 /**
@@ -51,6 +51,7 @@ export function IndexStatus({
             <>
               {status.indexed} of {status.total} notes indexed
               {backend === "wasm" && <Cpu size={10} aria-label="Indexing on CPU" />}
+              {backend === "remote" && <Cloud size={10} aria-label="Indexing on the server" />}
             </>
           )}
         </span>
@@ -70,6 +71,13 @@ export function IndexStatus({
         <p className="text-[11.5px] leading-relaxed text-muted-foreground">
           No WebGPU here, so notes are embedded on the CPU. Same model and the same results, but the first index
           downloads 127 MB and runs slower — leave this open and it&apos;ll finish in the background.
+        </p>
+      )}
+
+      {variant === "settings" && backend === "remote" && (
+        <p className="text-[11.5px] leading-relaxed text-muted-foreground">
+          Notes are indexed on LockIn&apos;s own embedding service. Same model and the same results as your browser,
+          with no download and no WebGPU requirement.
         </p>
       )}
     </div>

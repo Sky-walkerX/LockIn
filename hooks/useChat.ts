@@ -303,15 +303,21 @@ export function useIndexing(settings: LlmSettings) {
   const [indexedThisRun, setIndexedThisRun] = useState(0);
   const runningRef = useRef(false);
 
-  // Which runtime will do the embedding. Probing costs a `requestAdapter`
-  // (cached) and a dynamic import; it does not load any weights.
+  // Which runtime will do the embedding. Probing costs at most one health
+  // check, a `requestAdapter` (cached), and a dynamic import — no weights are
+  // loaded here, remote or local. Order matches `getEmbedder`'s: remote
+  // first (no download, no WebGPU requirement), then WebGPU, then WASM.
   useEffect(() => {
     let cancelled = false;
-    import("@/lib/llm/webllm-transport")
-      .then(async ({ checkWebGPU }) => {
+    import("@/lib/llm/remote-embedder")
+      .then(async ({ checkRemote }) => {
+        if (await checkRemote()) return !cancelled && setBackend("remote");
+
+        const { checkWebGPU } = await import("@/lib/llm/webllm-transport");
         const { available } = await checkWebGPU();
         if (cancelled) return;
         if (available) return setBackend("webgpu");
+
         const { hasWasm } = await import("@/lib/llm/wasm-embedder");
         if (!cancelled) setBackend(hasWasm() ? "wasm" : null);
       })

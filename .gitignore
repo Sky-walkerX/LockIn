@@ -48,3 +48,10 @@ next-env.d.ts
 
 # Playwright MCP output (snapshots, console logs, screenshots)
 .playwright-mcp/
+
+# service/ (Python ingest service)
+service/.venv/
+service/models/
+service/__pycache__/
+service/**/__pycache__/
+service/.pytest_cache/
