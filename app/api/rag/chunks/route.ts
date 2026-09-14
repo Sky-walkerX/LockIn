@@ -12,7 +12,7 @@ import type { Prisma } from "@/app/generated/prisma";
 const MAX_BATCH = 100;
 
 const ChunkInputSchema = z.object({
-  source: z.enum(["SUBJECT", "MILESTONE", "TASK", "SUBTASK", "RESOURCE"]),
+  source: z.enum(["SUBJECT", "MILESTONE", "TASK", "SUBTASK", "RESOURCE", "RESOURCE_DOC"]),
   sourceId: z.string().min(1),
   ordinal: z.number().int().min(0),
   breadcrumb: z.string().min(1),

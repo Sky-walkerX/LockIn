@@ -96,6 +96,16 @@ export const Recurrence: {
 export type Recurrence = (typeof Recurrence)[keyof typeof Recurrence]
 
 
+export const IngestState: {
+  NONE: 'NONE',
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+};
+
+export type IngestState = (typeof IngestState)[keyof typeof IngestState]
+
+
 export const ChatRole: {
   USER: 'USER',
   ASSISTANT: 'ASSISTANT'
@@ -109,7 +119,8 @@ export const ChunkSource: {
   MILESTONE: 'MILESTONE',
   TASK: 'TASK',
   SUBTASK: 'SUBTASK',
-  RESOURCE: 'RESOURCE'
+  RESOURCE: 'RESOURCE',
+  RESOURCE_DOC: 'RESOURCE_DOC'
 };
 
 export type ChunkSource = (typeof ChunkSource)[keyof typeof ChunkSource]
@@ -127,6 +138,10 @@ export const ResourceType: typeof $Enums.ResourceType
 export type Recurrence = $Enums.Recurrence
 
 export const Recurrence: typeof $Enums.Recurrence
+
+export type IngestState = $Enums.IngestState
+
+export const IngestState: typeof $Enums.IngestState
 
 export type ChatRole = $Enums.ChatRole
 
@@ -8143,8 +8158,18 @@ export namespace Prisma {
 
   export type AggregateResource = {
     _count: ResourceCountAggregateOutputType | null
+    _avg: ResourceAvgAggregateOutputType | null
+    _sum: ResourceSumAggregateOutputType | null
     _min: ResourceMinAggregateOutputType | null
     _max: ResourceMaxAggregateOutputType | null
+  }
+
+  export type ResourceAvgAggregateOutputType = {
+    pageCount: number | null
+  }
+
+  export type ResourceSumAggregateOutputType = {
+    pageCount: number | null
   }
 
   export type ResourceMinAggregateOutputType = {
@@ -8155,6 +8180,10 @@ export namespace Prisma {
     note: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    extracted: string | null
+    pageCount: number | null
+    ingestState: $Enums.IngestState | null
+    ingestError: string | null
     userId: string | null
     subjectId: string | null
   }
@@ -8167,6 +8196,10 @@ export namespace Prisma {
     note: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    extracted: string | null
+    pageCount: number | null
+    ingestState: $Enums.IngestState | null
+    ingestError: string | null
     userId: string | null
     subjectId: string | null
   }
@@ -8179,11 +8212,23 @@ export namespace Prisma {
     note: number
     createdAt: number
     updatedAt: number
+    extracted: number
+    pageCount: number
+    ingestState: number
+    ingestError: number
     userId: number
     subjectId: number
     _all: number
   }
 
+
+  export type ResourceAvgAggregateInputType = {
+    pageCount?: true
+  }
+
+  export type ResourceSumAggregateInputType = {
+    pageCount?: true
+  }
 
   export type ResourceMinAggregateInputType = {
     id?: true
@@ -8193,6 +8238,10 @@ export namespace Prisma {
     note?: true
     createdAt?: true
     updatedAt?: true
+    extracted?: true
+    pageCount?: true
+    ingestState?: true
+    ingestError?: true
     userId?: true
     subjectId?: true
   }
@@ -8205,6 +8254,10 @@ export namespace Prisma {
     note?: true
     createdAt?: true
     updatedAt?: true
+    extracted?: true
+    pageCount?: true
+    ingestState?: true
+    ingestError?: true
     userId?: true
     subjectId?: true
   }
@@ -8217,6 +8270,10 @@ export namespace Prisma {
     note?: true
     createdAt?: true
     updatedAt?: true
+    extracted?: true
+    pageCount?: true
+    ingestState?: true
+    ingestError?: true
     userId?: true
     subjectId?: true
     _all?: true
@@ -8260,6 +8317,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ResourceAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ResourceSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ResourceMinAggregateInputType
@@ -8290,6 +8359,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ResourceCountAggregateInputType | true
+    _avg?: ResourceAvgAggregateInputType
+    _sum?: ResourceSumAggregateInputType
     _min?: ResourceMinAggregateInputType
     _max?: ResourceMaxAggregateInputType
   }
@@ -8302,9 +8373,15 @@ export namespace Prisma {
     note: string | null
     createdAt: Date
     updatedAt: Date
+    extracted: string | null
+    pageCount: number | null
+    ingestState: $Enums.IngestState
+    ingestError: string | null
     userId: string
     subjectId: string
     _count: ResourceCountAggregateOutputType | null
+    _avg: ResourceAvgAggregateOutputType | null
+    _sum: ResourceSumAggregateOutputType | null
     _min: ResourceMinAggregateOutputType | null
     _max: ResourceMaxAggregateOutputType | null
   }
@@ -8331,6 +8408,10 @@ export namespace Prisma {
     note?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    extracted?: boolean
+    pageCount?: boolean
+    ingestState?: boolean
+    ingestError?: boolean
     userId?: boolean
     subjectId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8345,6 +8426,10 @@ export namespace Prisma {
     note?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    extracted?: boolean
+    pageCount?: boolean
+    ingestState?: boolean
+    ingestError?: boolean
     userId?: boolean
     subjectId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8359,6 +8444,10 @@ export namespace Prisma {
     note?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    extracted?: boolean
+    pageCount?: boolean
+    ingestState?: boolean
+    ingestError?: boolean
     userId?: boolean
     subjectId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8373,11 +8462,15 @@ export namespace Prisma {
     note?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    extracted?: boolean
+    pageCount?: boolean
+    ingestState?: boolean
+    ingestError?: boolean
     userId?: boolean
     subjectId?: boolean
   }
 
-  export type ResourceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "url" | "title" | "note" | "createdAt" | "updatedAt" | "userId" | "subjectId", ExtArgs["result"]["resource"]>
+  export type ResourceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "url" | "title" | "note" | "createdAt" | "updatedAt" | "extracted" | "pageCount" | "ingestState" | "ingestError" | "userId" | "subjectId", ExtArgs["result"]["resource"]>
   export type ResourceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
@@ -8405,6 +8498,10 @@ export namespace Prisma {
       note: string | null
       createdAt: Date
       updatedAt: Date
+      extracted: string | null
+      pageCount: number | null
+      ingestState: $Enums.IngestState
+      ingestError: string | null
       userId: string
       subjectId: string
     }, ExtArgs["result"]["resource"]>
@@ -8839,6 +8936,10 @@ export namespace Prisma {
     readonly note: FieldRef<"Resource", 'String'>
     readonly createdAt: FieldRef<"Resource", 'DateTime'>
     readonly updatedAt: FieldRef<"Resource", 'DateTime'>
+    readonly extracted: FieldRef<"Resource", 'String'>
+    readonly pageCount: FieldRef<"Resource", 'Int'>
+    readonly ingestState: FieldRef<"Resource", 'IngestState'>
+    readonly ingestError: FieldRef<"Resource", 'String'>
     readonly userId: FieldRef<"Resource", 'String'>
     readonly subjectId: FieldRef<"Resource", 'String'>
   }
@@ -13870,6 +13971,10 @@ export namespace Prisma {
     note: 'note',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
+    extracted: 'extracted',
+    pageCount: 'pageCount',
+    ingestState: 'ingestState',
+    ingestError: 'ingestError',
     userId: 'userId',
     subjectId: 'subjectId'
   };
@@ -14050,6 +14155,20 @@ export namespace Prisma {
    * Reference to a field of type 'ResourceType[]'
    */
   export type ListEnumResourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResourceType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'IngestState'
+   */
+  export type EnumIngestStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IngestState'>
+    
+
+
+  /**
+   * Reference to a field of type 'IngestState[]'
+   */
+  export type ListEnumIngestStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IngestState[]'>
     
 
 
@@ -14543,6 +14662,10 @@ export namespace Prisma {
     note?: StringNullableFilter<"Resource"> | string | null
     createdAt?: DateTimeFilter<"Resource"> | Date | string
     updatedAt?: DateTimeFilter<"Resource"> | Date | string
+    extracted?: StringNullableFilter<"Resource"> | string | null
+    pageCount?: IntNullableFilter<"Resource"> | number | null
+    ingestState?: EnumIngestStateFilter<"Resource"> | $Enums.IngestState
+    ingestError?: StringNullableFilter<"Resource"> | string | null
     userId?: StringFilter<"Resource"> | string
     subjectId?: StringFilter<"Resource"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -14557,6 +14680,10 @@ export namespace Prisma {
     note?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    extracted?: SortOrderInput | SortOrder
+    pageCount?: SortOrderInput | SortOrder
+    ingestState?: SortOrder
+    ingestError?: SortOrderInput | SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -14574,6 +14701,10 @@ export namespace Prisma {
     note?: StringNullableFilter<"Resource"> | string | null
     createdAt?: DateTimeFilter<"Resource"> | Date | string
     updatedAt?: DateTimeFilter<"Resource"> | Date | string
+    extracted?: StringNullableFilter<"Resource"> | string | null
+    pageCount?: IntNullableFilter<"Resource"> | number | null
+    ingestState?: EnumIngestStateFilter<"Resource"> | $Enums.IngestState
+    ingestError?: StringNullableFilter<"Resource"> | string | null
     userId?: StringFilter<"Resource"> | string
     subjectId?: StringFilter<"Resource"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -14588,11 +14719,17 @@ export namespace Prisma {
     note?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    extracted?: SortOrderInput | SortOrder
+    pageCount?: SortOrderInput | SortOrder
+    ingestState?: SortOrder
+    ingestError?: SortOrderInput | SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
     _count?: ResourceCountOrderByAggregateInput
+    _avg?: ResourceAvgOrderByAggregateInput
     _max?: ResourceMaxOrderByAggregateInput
     _min?: ResourceMinOrderByAggregateInput
+    _sum?: ResourceSumOrderByAggregateInput
   }
 
   export type ResourceScalarWhereWithAggregatesInput = {
@@ -14606,6 +14743,10 @@ export namespace Prisma {
     note?: StringNullableWithAggregatesFilter<"Resource"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Resource"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Resource"> | Date | string
+    extracted?: StringNullableWithAggregatesFilter<"Resource"> | string | null
+    pageCount?: IntNullableWithAggregatesFilter<"Resource"> | number | null
+    ingestState?: EnumIngestStateWithAggregatesFilter<"Resource"> | $Enums.IngestState
+    ingestError?: StringNullableWithAggregatesFilter<"Resource"> | string | null
     userId?: StringWithAggregatesFilter<"Resource"> | string
     subjectId?: StringWithAggregatesFilter<"Resource"> | string
   }
@@ -15388,6 +15529,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     user: UserCreateNestedOneWithoutResourcesInput
     subject: SubjectCreateNestedOneWithoutResourcesInput
   }
@@ -15400,6 +15545,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     userId: string
     subjectId: string
   }
@@ -15412,6 +15561,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutResourcesNestedInput
     subject?: SubjectUpdateOneRequiredWithoutResourcesNestedInput
   }
@@ -15424,6 +15577,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string
   }
@@ -15436,6 +15593,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     userId: string
     subjectId: string
   }
@@ -15448,6 +15609,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ResourceUncheckedUpdateManyInput = {
@@ -15458,6 +15623,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     subjectId?: StringFieldUpdateOperationsInput | string
   }
@@ -16313,6 +16482,13 @@ export namespace Prisma {
     not?: NestedEnumResourceTypeFilter<$PrismaModel> | $Enums.ResourceType
   }
 
+  export type EnumIngestStateFilter<$PrismaModel = never> = {
+    equals?: $Enums.IngestState | EnumIngestStateFieldRefInput<$PrismaModel>
+    in?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumIngestStateFilter<$PrismaModel> | $Enums.IngestState
+  }
+
   export type ResourceCountOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
@@ -16321,8 +16497,16 @@ export namespace Prisma {
     note?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    extracted?: SortOrder
+    pageCount?: SortOrder
+    ingestState?: SortOrder
+    ingestError?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
+  }
+
+  export type ResourceAvgOrderByAggregateInput = {
+    pageCount?: SortOrder
   }
 
   export type ResourceMaxOrderByAggregateInput = {
@@ -16333,6 +16517,10 @@ export namespace Prisma {
     note?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    extracted?: SortOrder
+    pageCount?: SortOrder
+    ingestState?: SortOrder
+    ingestError?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
   }
@@ -16345,8 +16533,16 @@ export namespace Prisma {
     note?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    extracted?: SortOrder
+    pageCount?: SortOrder
+    ingestState?: SortOrder
+    ingestError?: SortOrder
     userId?: SortOrder
     subjectId?: SortOrder
+  }
+
+  export type ResourceSumOrderByAggregateInput = {
+    pageCount?: SortOrder
   }
 
   export type EnumResourceTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -16357,6 +16553,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumResourceTypeFilter<$PrismaModel>
     _max?: NestedEnumResourceTypeFilter<$PrismaModel>
+  }
+
+  export type EnumIngestStateWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.IngestState | EnumIngestStateFieldRefInput<$PrismaModel>
+    in?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumIngestStateWithAggregatesFilter<$PrismaModel> | $Enums.IngestState
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumIngestStateFilter<$PrismaModel>
+    _max?: NestedEnumIngestStateFilter<$PrismaModel>
   }
 
   export type TimerSessionCountOrderByAggregateInput = {
@@ -17331,6 +17537,10 @@ export namespace Prisma {
     set?: $Enums.ResourceType
   }
 
+  export type EnumIngestStateFieldUpdateOperationsInput = {
+    set?: $Enums.IngestState
+  }
+
   export type UserUpdateOneRequiredWithoutResourcesNestedInput = {
     create?: XOR<UserCreateWithoutResourcesInput, UserUncheckedCreateWithoutResourcesInput>
     connectOrCreate?: UserCreateOrConnectWithoutResourcesInput
@@ -17752,6 +17962,13 @@ export namespace Prisma {
     not?: NestedEnumResourceTypeFilter<$PrismaModel> | $Enums.ResourceType
   }
 
+  export type NestedEnumIngestStateFilter<$PrismaModel = never> = {
+    equals?: $Enums.IngestState | EnumIngestStateFieldRefInput<$PrismaModel>
+    in?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumIngestStateFilter<$PrismaModel> | $Enums.IngestState
+  }
+
   export type NestedEnumResourceTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ResourceType | EnumResourceTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ResourceType[] | ListEnumResourceTypeFieldRefInput<$PrismaModel>
@@ -17760,6 +17977,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumResourceTypeFilter<$PrismaModel>
     _max?: NestedEnumResourceTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumIngestStateWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.IngestState | EnumIngestStateFieldRefInput<$PrismaModel>
+    in?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IngestState[] | ListEnumIngestStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumIngestStateWithAggregatesFilter<$PrismaModel> | $Enums.IngestState
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumIngestStateFilter<$PrismaModel>
+    _max?: NestedEnumIngestStateFilter<$PrismaModel>
   }
 
   export type NestedEnumChatRoleFilter<$PrismaModel = never> = {
@@ -17892,6 +18119,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     subject: SubjectCreateNestedOneWithoutResourcesInput
   }
 
@@ -17903,6 +18134,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     subjectId: string
   }
 
@@ -18080,6 +18315,10 @@ export namespace Prisma {
     note?: StringNullableFilter<"Resource"> | string | null
     createdAt?: DateTimeFilter<"Resource"> | Date | string
     updatedAt?: DateTimeFilter<"Resource"> | Date | string
+    extracted?: StringNullableFilter<"Resource"> | string | null
+    pageCount?: IntNullableFilter<"Resource"> | number | null
+    ingestState?: EnumIngestStateFilter<"Resource"> | $Enums.IngestState
+    ingestError?: StringNullableFilter<"Resource"> | string | null
     userId?: StringFilter<"Resource"> | string
     subjectId?: StringFilter<"Resource"> | string
   }
@@ -18219,6 +18458,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     user: UserCreateNestedOneWithoutResourcesInput
   }
 
@@ -18230,6 +18473,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     userId: string
   }
 
@@ -19830,6 +20077,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     subjectId: string
   }
 
@@ -19960,6 +20211,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     subject?: SubjectUpdateOneRequiredWithoutResourcesNestedInput
   }
 
@@ -19971,6 +20226,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     subjectId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -19982,6 +20241,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     subjectId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -20077,6 +20340,10 @@ export namespace Prisma {
     note?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    extracted?: string | null
+    pageCount?: number | null
+    ingestState?: $Enums.IngestState
+    ingestError?: string | null
     userId: string
   }
 
@@ -20161,6 +20428,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutResourcesNestedInput
   }
 
@@ -20172,6 +20443,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -20183,6 +20458,10 @@ export namespace Prisma {
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extracted?: NullableStringFieldUpdateOperationsInput | string | null
+    pageCount?: NullableIntFieldUpdateOperationsInput | number | null
+    ingestState?: EnumIngestStateFieldUpdateOperationsInput | $Enums.IngestState
+    ingestError?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 

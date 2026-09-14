@@ -48,3 +48,22 @@ export function useDeleteResource() {
     onSuccess: invalidate,
   });
 }
+
+/**
+ * Extracts a resource's URL into indexable markdown via the ingest service.
+ * `useCreateResource`'s `invalidate` refetches the resource list, which is
+ * what picks up the new `ingestState` — there's no separate polling here
+ * because the request itself doesn't return until extraction finishes or
+ * fails (see the route's doc comment for why this is synchronous).
+ */
+export function useIngestResource() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.post<{ ingestState: string; pageCount: number | null; chars: number }>(
+        `/api/resources/${id}/ingest`,
+        {},
+      ),
+    onSuccess: invalidate,
+  });
+}

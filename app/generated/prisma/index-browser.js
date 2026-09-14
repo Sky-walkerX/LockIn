@@ -190,6 +190,10 @@ exports.Prisma.ResourceScalarFieldEnum = {
   note: 'note',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  extracted: 'extracted',
+  pageCount: 'pageCount',
+  ingestState: 'ingestState',
+  ingestError: 'ingestError',
   userId: 'userId',
   subjectId: 'subjectId'
 };
@@ -271,6 +275,13 @@ exports.ResourceType = exports.$Enums.ResourceType = {
   BOOK: 'BOOK'
 };
 
+exports.IngestState = exports.$Enums.IngestState = {
+  NONE: 'NONE',
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+};
+
 exports.ChatRole = exports.$Enums.ChatRole = {
   USER: 'USER',
   ASSISTANT: 'ASSISTANT'
@@ -281,7 +292,8 @@ exports.ChunkSource = exports.$Enums.ChunkSource = {
   MILESTONE: 'MILESTONE',
   TASK: 'TASK',
   SUBTASK: 'SUBTASK',
-  RESOURCE: 'RESOURCE'
+  RESOURCE: 'RESOURCE',
+  RESOURCE_DOC: 'RESOURCE_DOC'
 };
 
 exports.Prisma.ModelName = {

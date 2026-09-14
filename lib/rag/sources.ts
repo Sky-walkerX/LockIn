@@ -75,7 +75,7 @@ export async function listLiveSources(userId: string): Promise<LiveSource[]> {
           subtasks: { select: { id: true, title: true, notes: true } },
         },
       },
-      resources: { select: { id: true, title: true, note: true } },
+      resources: { select: { id: true, title: true, note: true, extracted: true } },
     },
   });
 
@@ -128,6 +128,19 @@ export async function listLiveSources(userId: string): Promise<LiveSource[]> {
           subjectTitle: subject.title,
           resourceTitle: resource.title,
           text: resource.note,
+        });
+      }
+      // The extracted document is a separate source from the note above (see
+      // the schema comment on `Resource.extracted`): same resourceId, but a
+      // different `source` value, so they hash and re-index independently.
+      if (resource.extracted) {
+        push({
+          source: "RESOURCE_DOC",
+          sourceId: resource.id,
+          subjectId: subject.id,
+          subjectTitle: subject.title,
+          resourceTitle: resource.title,
+          text: resource.extracted,
         });
       }
     }
