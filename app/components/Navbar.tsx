@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isChromeless } from "@/lib/chrome";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Sparkles, Terminal, LogOut, Plus, MessageSquare } from "lucide-react";
 import { useQuickAdd } from "./quick-add";
 import { useChatPanel } from "./chat/chat-provider";
-
-const HIDE_ON = ["/login", "/signup", "/forgot-password"];
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -20,7 +19,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  if (HIDE_ON.some((p) => pathname?.startsWith(p))) return null;
+  if (isChromeless(pathname)) return null;
 
   const isFocus = resolvedTheme === "dark";
 

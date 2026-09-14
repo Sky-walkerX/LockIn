@@ -30,6 +30,16 @@ enum Recurrence {
   MONTHLY
 }
 
+// What a share link points at. Subtasks and their nested "items" are both
+// Subtask rows, so one value covers both: sharing a parent exposes its items,
+// sharing an item exposes just that item.
+enum ShareType {
+  SUBJECT
+  MILESTONE
+  TASK
+  SUBTASK
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -43,6 +53,34 @@ model User {
   resources     Resource[]
   conversations Conversation[]
   noteChunks    NoteChunk[]
+  shares        Share[]
+}
+
+// A public, login-free view of one record and everything beneath it. Holding
+// the token is the whole authorization story: `/share/<token>` renders read-only
+// and no session is consulted.
+model Share {
+  id        String    @id @default(uuid())
+  // Unguessable and URL-safe: 16 random bytes, base64url. The only secret.
+  token     String    @unique
+  type      ShareType
+  createdAt DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // Polymorphic parent, like NoteChunk.sourceId: four source tables would need
+  // four nullable columns to express as foreign keys. The cost is that deleting
+  // a shared record leaves its Share behind, so the public loader re-resolves
+  // the entity on every request and 404s when it has gone.
+  entityId String
+
+  // At most one live token per record, so re-sharing something already shared
+  // hands back the existing URL instead of minting a second link to the same
+  // content. Revoking deletes the row outright, so sharing again afterwards
+  // mints a fresh token and the revoked URL stays dead for good.
+  @@unique([type, entityId])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Subject {

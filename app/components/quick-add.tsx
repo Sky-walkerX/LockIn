@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { usePathname } from "next/navigation";
+import { isChromeless } from "@/lib/chrome";
 import { addDays, format } from "date-fns";
 import { Check, Repeat, X } from "lucide-react";
 import {
@@ -26,15 +27,13 @@ import { useCreateTask } from "@/hooks/useTasks";
 import { useCreateResource } from "@/hooks/useResources";
 import type { Priority, Recurrence, ResourceType } from "@/app/generated/prisma";
 
-const HIDE_ON = ["/login", "/signup", "/forgot-password"];
-
 // ── Context ────────────────────────────────────────────────────────────────
 const QuickAddContext = createContext<{ open: () => void }>({ open: () => {} });
 export const useQuickAdd = () => useContext(QuickAddContext);
 
 export function QuickAddProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hidden = HIDE_ON.some((p) => pathname?.startsWith(p));
+  const hidden = isChromeless(pathname);
   const [isOpen, setIsOpen] = useState(false);
 
   const open = useCallback(() => {

@@ -13,6 +13,7 @@ import { NotesEditor } from "./notes-editor-lazy";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
+import { ShareButton } from "@/app/components/share/share-button";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // milestones, so only cards whose milestone (or tasks) changed re-render.
@@ -144,6 +145,7 @@ export const MilestoneItem = memo(function MilestoneItem({
           <button type="button" onClick={startEditingTitle} className="lk-iconbtn" title="Rename">
             <Pencil size={13} />
           </button>
+          <ShareButton target={{ type: "MILESTONE", entityId: milestone.id }} />
           <button
             type="button"
             onClick={() => onMove(milestone.id, -1)}

@@ -10,6 +10,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateSubject, useDeleteSubject } from "@/hooks/useSubjects";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { SUBJECT_PALETTE } from "@/app/components/home/new-subject";
+import { ShareButton } from "@/app/components/share/share-button";
 
 const FALLBACK = "#8b8f9e";
 
@@ -109,6 +110,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
               </form>
             </PopoverContent>
           </Popover>
+
+          <ShareButton target={{ type: "SUBJECT", entityId: subject.id }} size={15} />
 
           <button
             type="button"

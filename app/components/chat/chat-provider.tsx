@@ -2,12 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { isChromeless } from "@/lib/chrome";
 import { ChatPanel } from "./chat-panel";
 import { ChatRail } from "./chat-rail";
 
-// Mirrors the quick-add provider: the panel is global, so the hotkey and the
-// hidden-route list live with the provider rather than in any one page.
-const HIDE_ON = ["/login", "/signup", "/forgot-password"];
+// Mirrors the quick-add provider: the panel is global, so the hotkey lives with
+// the provider rather than in any one page. Which routes render no chrome at all
+// is shared with the navbar and quick-add — see `lib/chrome.ts`.
 const OPEN_KEY = "lockin.chat.open";
 
 const ChatContext = createContext<{ open: () => void }>({ open: () => {} });
@@ -15,7 +16,7 @@ export const useChatPanel = () => useContext(ChatContext);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hidden = HIDE_ON.some((p) => pathname?.startsWith(p));
+  const hidden = isChromeless(pathname);
 
   const [isOpen, setIsOpen] = useState(false);
   // Collapsing hides the panel rather than unmounting it, so a thread — and any

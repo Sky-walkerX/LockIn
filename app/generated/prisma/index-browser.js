@@ -130,6 +130,15 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ShareScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  type: 'type',
+  createdAt: 'createdAt',
+  userId: 'userId',
+  entityId: 'entityId'
+};
+
 exports.Prisma.SubjectScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -256,6 +265,13 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.ShareType = exports.$Enums.ShareType = {
+  SUBJECT: 'SUBJECT',
+  MILESTONE: 'MILESTONE',
+  TASK: 'TASK',
+  SUBTASK: 'SUBTASK'
+};
+
 exports.Priority = exports.$Enums.Priority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
@@ -298,6 +314,7 @@ exports.ChunkSource = exports.$Enums.ChunkSource = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Share: 'Share',
   Subject: 'Subject',
   Milestone: 'Milestone',
   Task: 'Task',
