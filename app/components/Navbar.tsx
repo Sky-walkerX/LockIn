@@ -6,8 +6,9 @@ import { isChromeless } from "@/lib/chrome";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Sparkles, Terminal, LogOut, Plus, MessageSquare } from "lucide-react";
+import { Sparkles, Terminal, LogOut, Plus, MessageSquare, Search } from "lucide-react";
 import { useQuickAdd } from "./quick-add";
+import { useSearchPalette } from "./search";
 import { useChatPanel } from "./chat/chat-provider";
 
 export default function Navbar() {
@@ -15,6 +16,7 @@ export default function Navbar() {
   const { data: session } = useSession();
   const { resolvedTheme, setTheme } = useTheme();
   const { open: openQuickAdd } = useQuickAdd();
+  const { open: openSearch } = useSearchPalette();
   const { open: openChat } = useChatPanel();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -51,6 +53,17 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        {session?.user && (
+          <button
+            type="button"
+            onClick={openSearch}
+            title="Search notes (⌘P)"
+            className="lk-mono flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[11px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Search size={13} />
+            <span className="hidden md:inline">⌘P</span>
+          </button>
+        )}
         {session?.user && (
           <button
             type="button"
