@@ -32,6 +32,13 @@ export async function ownsEntity(
   }
 }
 
+// Each Prisma call through the transaction pooler costs four round trips
+// (BEGIN, DEALLOCATE ALL, the statement, COMMIT). The `query` strategy also
+// sent one statement per relation level; `join` reads a whole tree in one, so
+// a load is two calls: the share row, then the tree. Measured on a subtask
+// share: 12 statements per page view down to 8, TTFB ~0.7s to ~0.4s.
+const JOIN = { relationLoadStrategy: "join" } as const;
+
 // Subtasks nest one level in the UI, but the shape is recursive; include two
 // levels so a shared task shows its subtasks and their items.
 const subtaskInclude = {
@@ -113,6 +120,7 @@ export async function loadShare(token: string): Promise<SharedPayload | null> {
 
   if (share.type === "SUBJECT") {
     const subject = await prisma.subject.findUnique({
+      ...JOIN,
       where: { id: share.entityId },
       include: {
         milestones: { orderBy: { order: "asc" }, include: { tasks: taskInclude } },
@@ -156,6 +164,7 @@ export async function loadShare(token: string): Promise<SharedPayload | null> {
 
   if (share.type === "MILESTONE") {
     const milestone = await prisma.milestone.findUnique({
+      ...JOIN,
       where: { id: share.entityId },
       include: { subject: true, tasks: taskInclude },
     });
@@ -182,6 +191,7 @@ export async function loadShare(token: string): Promise<SharedPayload | null> {
 
   if (share.type === "TASK") {
     const task = await prisma.task.findUnique({
+      ...JOIN,
       where: { id: share.entityId },
       include: { subject: true, milestone: true, subtasks: subtaskInclude },
     });
@@ -199,6 +209,7 @@ export async function loadShare(token: string): Promise<SharedPayload | null> {
   // SUBTASK — covers both a top-level subtask and a nested item. `children` is
   // empty for an item, which is exactly right: it has none.
   const subtask = await prisma.subtask.findUnique({
+    ...JOIN,
     where: { id: share.entityId },
     include: {
       children: { orderBy: { order: "asc" } },

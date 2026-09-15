@@ -1,6 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../app/generated/prisma"
+  // Loads an `include` tree in one LATERAL JOIN statement instead of one
+  // statement per relation. Every call through the transaction pooler already
+  // costs BEGIN + DEALLOCATE ALL + COMMIT on top, so a subject tree dropped
+  // from 10 round trips to 4.
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
