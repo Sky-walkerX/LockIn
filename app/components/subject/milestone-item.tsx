@@ -194,7 +194,7 @@ export const MilestoneItem = memo(function MilestoneItem({
               />
             </div>
           ) : milestone.notes.trim() ? (
-            <div className="group/notes relative mb-3 rounded-md bg-muted/40 p-3">
+            <div className="lk-notes group/notes relative mb-3 rounded-md bg-muted/40 p-3">
               <Markdown>{milestone.notes}</Markdown>
               <button
                 type="button"

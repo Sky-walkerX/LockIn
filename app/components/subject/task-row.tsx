@@ -289,7 +289,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
               }}
             />
           ) : hasNotes ? (
-            <div className="group/n relative rounded-md bg-muted/40 p-2.5">
+            <div className="lk-notes group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{task.description ?? ""}</Markdown>
               <button
                 type="button"

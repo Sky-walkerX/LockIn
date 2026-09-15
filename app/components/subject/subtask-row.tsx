@@ -194,7 +194,7 @@ export const SubtaskRow = memo(function SubtaskRow({
               }}
             />
           ) : hasNotes ? (
-            <div className="group/n relative rounded-md bg-muted/40 p-2.5">
+            <div className="lk-notes group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{subtask.notes}</Markdown>
               <button
                 type="button"

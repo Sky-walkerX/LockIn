@@ -404,6 +404,26 @@
     font-size: 13.5px; line-height: 1.65;
   }
   .dark .lk-prose pre { border-width: 1px; }
+  /* Copy button on code blocks (markdown.tsx). The wrapper takes the block's
+     margins so the button can pin to its corner outside the scrolling <pre>. */
+  .lk-prose .lk-code { position: relative; margin: 0.7em 0; }
+  .lk-prose > .lk-code:first-child { margin-top: 0; }
+  .lk-prose > .lk-code:last-child { margin-bottom: 0; }
+  .lk-prose .lk-code > pre { margin: 0; }
+  .lk-prose .lk-copy {
+    position: absolute; top: 6px; right: 6px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    opacity: 0;
+    transition: opacity 0.1s ease, color 0.1s ease;
+  }
+  .lk-prose .lk-code:hover .lk-copy,
+  .lk-prose .lk-copy:focus-visible,
+  .lk-prose .lk-copy[data-copied] { opacity: 1; }
+  @media (hover: none) { .lk-prose .lk-copy { opacity: 1; } }
+  /* A note that opens with a code block would put the button under the note's
+     own edit pencil, so it moves over to sit beside it. */
+  .lk-notes > .lk-prose > .lk-code:first-child .lk-copy { right: 30px; }
   .lk-prose img {
     display: block;
     max-width: 100%; height: auto;
