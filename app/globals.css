@@ -424,6 +424,14 @@
   /* A note that opens with a code block would put the button under the note's
      own edit pencil, so it moves over to sit beside it. */
   .lk-notes > .lk-prose > .lk-code:first-child .lk-copy { right: 30px; }
+
+  /* The row a search result opened (reveal.tsx): one fading wash of the
+     subject color, so the eye lands on it once the scroll stops. */
+  @keyframes lk-found {
+    from { background: color-mix(in oklab, var(--c, var(--accent)) 32%, transparent); }
+    to { background: transparent; }
+  }
+  .lk-found { animation: lk-found 2s ease-out; }
   .lk-prose img {
     display: block;
     max-width: 100%; height: auto;

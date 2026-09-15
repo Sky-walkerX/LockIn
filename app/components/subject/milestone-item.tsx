@@ -13,6 +13,7 @@ import { NotesEditor } from "./notes-editor-lazy";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
+import { useReveal } from "./reveal";
 import { ShareButton } from "@/app/components/share/share-button";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
@@ -33,6 +34,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   const reorderTasks = useReorderTasks();
 
   const [open, setOpen] = useState(true);
+  const reveal = useReveal(milestone.id, setOpen);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleVal, setTitleVal] = useState(milestone.title);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -86,7 +88,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   return (
     <div className={`lk-card overflow-hidden ${pending ? "pointer-events-none opacity-60" : ""}`}>
       {/* Header */}
-      <div className="flex items-center gap-2 p-3">
+      <div ref={reveal.ref} className={`flex items-center gap-2 p-3 ${reveal.found ? "lk-found" : ""}`}>
         <Checkbox checked={milestone.isCompleted} onCheckedChange={toggleDone} className="lk-check" />
 
         {editingTitle ? (
