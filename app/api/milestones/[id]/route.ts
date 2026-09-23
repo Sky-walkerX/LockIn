@@ -15,6 +15,7 @@ const UpdateMilestoneSchema = z.object({
   // null stops revising the topic; a date (re)starts it.
   reviewDueAt: z.string().datetime().nullable().optional(),
   reviewInterval: z.number().int().positive().nullable().optional(),
+  weight: z.number().positive().max(10_000).optional(),
 });
 
 // See the tasks route: an enum column needs its placeholder cast, or Postgres

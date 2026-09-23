@@ -150,6 +150,8 @@ exports.Prisma.SubjectScalarFieldEnum = {
   description: 'description',
   color: 'color',
   isArchived: 'isArchived',
+  targetDate: 'targetDate',
+  startDate: 'startDate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   userId: 'userId'
@@ -162,6 +164,7 @@ exports.Prisma.MilestoneScalarFieldEnum = {
   order: 'order',
   isCompleted: 'isCompleted',
   completedAt: 'completedAt',
+  weight: 'weight',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   confidence: 'confidence',

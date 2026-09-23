@@ -33,6 +33,9 @@ export function MilestoneSection({
 
   // The chips only earn their space once something has been rated.
   const anyRated = milestones.some((m) => m.confidence);
+  // Shares only mean something once weights differ from the default of 1.
+  const weighted = milestones.some((m) => m.weight !== 1);
+  const totalWeight = milestones.reduce((s, m) => s + Math.max(0, m.weight), 0);
   const active = anyRated ? filter : "ALL";
   const shown =
     active === "ALL"
@@ -104,6 +107,7 @@ export function MilestoneSection({
             <MilestoneItem
               key={m.id}
               milestone={m}
+              share={weighted && totalWeight > 0 ? m.weight / totalWeight : null}
               // Moving swaps with the neighbour in the full list, which a
               // filter may be hiding, so reordering waits until it's cleared.
               isFirst={active !== "ALL" || i === 0}

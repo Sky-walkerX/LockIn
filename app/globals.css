@@ -221,6 +221,9 @@
     overflow: hidden;
   }
   .lk-bar > i { display: block; height: 100%; background: var(--c-eff, var(--accent)); }
+  /* Exam pace: where coverage should be by now. */
+  .lk-bar { position: relative; }
+  .lk-bar > .lk-pace-mark { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--foreground); }
   .dark .lk-bar { height: 5px; border: none; border-radius: 2px; }
   .dark .lk-bar > i { border-radius: 2px; }
 
