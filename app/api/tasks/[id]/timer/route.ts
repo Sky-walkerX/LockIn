@@ -38,10 +38,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const endedAt = new Date();
   const duration = Math.max(0, Math.round((endedAt.getTime() - open.startedAt.getTime()) / 60000));
 
-  const [session, updatedTask] = await prisma.$transaction([
+  // `timeSpent` starts out NULL, and Prisma's `{ increment }` is plain
+  // `"timeSpent" + n`, which stays NULL: no task ever totalled its focus time.
+  // COALESCE starts the count at zero.
+  const [session] = await prisma.$transaction([
     prisma.timerSession.update({ where: { id: open.id }, data: { endedAt, duration } }),
-    prisma.task.update({ where: { id }, data: { timeSpent: { increment: duration } } }),
+    prisma.$executeRaw`UPDATE "Task" SET "timeSpent" = COALESCE("timeSpent", 0) + ${duration} WHERE "id" = ${id}`,
   ]);
 
-  return NextResponse.json({ session, task: updatedTask });
+  return NextResponse.json({ session, task: { ...task, timeSpent: (task.timeSpent ?? 0) + duration } });
 }
