@@ -18,6 +18,7 @@ import {
 import { useQuickAdd } from "./quick-add";
 import { useSearchPalette } from "./search";
 import { useChatPanel } from "./chat/chat-provider";
+import { FocusPill } from "./focus/focus-pill";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -61,6 +62,7 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        {session?.user && <FocusPill />}
         {session?.user && (
           <button
             type="button"

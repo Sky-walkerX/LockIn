@@ -3,9 +3,14 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
 
-const TimerSchema = z.object({ action: z.enum(["start", "stop"]) });
+const TimerSchema = z.object({
+  action: z.enum(["start", "stop"]),
+  // When the session really ended, if not now: a Pomodoro that ran out while
+  // the tab was closed should log its 25 minutes, not the hours until reopening.
+  endedAt: z.string().datetime().optional(),
+});
 
-// POST /api/tasks/[id]/timer  { action: "start" | "stop" }
+// POST /api/tasks/[id]/timer  { action: "start" | "stop", endedAt? }
 // start -> opens a TimerSession; stop -> closes the open session, records its
 // duration (minutes), and rolls it up into Task.timeSpent.
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -35,7 +40,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   });
   if (!open) return NextResponse.json({ error: "No active timer session" }, { status: 400 });
 
-  const endedAt = new Date();
+  // Clamped into the session: never before it started, never in the future.
+  const now = new Date();
+  const claimed = parsed.data.endedAt ? new Date(parsed.data.endedAt) : now;
+  const endedAt = new Date(Math.min(now.getTime(), Math.max(open.startedAt.getTime(), claimed.getTime())));
   const duration = Math.max(0, Math.round((endedAt.getTime() - open.startedAt.getTime()) / 60000));
 
   // `timeSpent` starts out NULL, and Prisma's `{ increment }` is plain

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { LogOut, Monitor, Sparkles, Terminal } from "lucide-react";
+import { FocusSettings } from "@/app/components/focus/focus-settings";
 
 const THEMES = [
   { value: "light", label: "Creative", hint: "light, bold", icon: Sparkles },
@@ -72,6 +73,13 @@ export default function SettingsPage() {
                 </button>
               );
             })}
+          </div>
+        </section>
+
+        <section>
+          <div className="lk-sec mb-3">focus timer</div>
+          <div className="lk-card p-4">
+            <FocusSettings />
           </div>
         </section>
       </div>

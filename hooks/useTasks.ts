@@ -186,8 +186,8 @@ export function useDeleteTask() {
 export function useTaskTimer() {
   const invalidate = useInvalidateTasks();
   return useMutation({
-    mutationFn: ({ id, action }: { id: string; action: "start" | "stop" }) =>
-      api.post(`/api/tasks/${id}/timer`, { action }),
+    mutationFn: ({ id, action, endedAt }: { id: string; action: "start" | "stop"; endedAt?: string }) =>
+      api.post(`/api/tasks/${id}/timer`, { action, endedAt }),
     onSuccess: () => invalidate(),
   });
 }
