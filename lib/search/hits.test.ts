@@ -10,6 +10,7 @@ const row = (partial: Partial<SearchRow> & Pick<SearchRow, "kind" | "id" | "titl
   milestoneTitle: null,
   taskTitle: null,
   parentTitle: null,
+  readable: null,
   ...partial,
 });
 
@@ -17,6 +18,13 @@ const hit = (title: string, snippet: string | null = null): SearchHit =>
   toHit(row({ kind: "task", id: title, title, notes: snippet ?? "" }), ["sieve"]);
 
 describe("toHit", () => {
+  it("opens a resource in the reader when it has something to read", () => {
+    const readable = toHit(row({ kind: "resource", id: "r1", title: "OSTEP", readable: true }), []);
+    expect(readable.href).toBe("/subjects/s1?read=r1");
+    expect(readable.path).toEqual(["Competitive Programming"]);
+    expect(toHit(row({ kind: "resource", id: "r2", title: "Link", readable: false }), []).href).toBe("/subjects/s1");
+  });
+
   it("builds the breadcrumb from the ancestors the row has", () => {
     const nested = toHit(
       row({

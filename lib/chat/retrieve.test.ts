@@ -34,6 +34,7 @@ function chunk(over: Partial<ScorableChunk> & { embedding: number[] }): Scorable
   return {
     subjectId: "s1",
     subjectTitle: "Operating Systems",
+    subjectColor: null,
     source: "MILESTONE",
     sourceId: "m1",
     ordinal: 0,

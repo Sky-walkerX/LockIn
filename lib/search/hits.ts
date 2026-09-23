@@ -1,6 +1,6 @@
 import { makeSnippet } from "./text";
 
-export type HitKind = "subject" | "milestone" | "task" | "subtask";
+export type HitKind = "subject" | "milestone" | "task" | "subtask" | "resource";
 
 /** One row of the search query: the matched record plus its ancestors' titles. */
 export type SearchRow = {
@@ -16,6 +16,8 @@ export type SearchRow = {
   taskTitle: string | null;
   // Set only for a nested item: the subtask it sits under.
   parentTitle: string | null;
+  // Resources only: whether the reader has anything to show (extracted text, or a PDF).
+  readable: boolean | null;
 };
 
 /** What the search palette renders. Notes stay server-side; only the snippet ships. */
@@ -32,6 +34,15 @@ export type SearchHit = {
 
 const MAX_HITS = 20;
 
+function hrefFor(row: SearchRow): string {
+  const page = `/subjects/${row.subjectId}`;
+  if (row.kind === "subject") return page;
+  // A resource opens in the reader when there's something to read there.
+  if (row.kind === "resource") return row.readable ? `${page}?read=${row.id}` : page;
+  // The subject page reads `open` to expand the rows down to this one.
+  return `${page}?open=${row.kind}:${row.id}`;
+}
+
 export function toHit(row: SearchRow, terms: string[]): SearchHit {
   const isSubject = row.kind === "subject";
   return {
@@ -46,8 +57,7 @@ export function toHit(row: SearchRow, terms: string[]): SearchHit {
       : [row.subjectTitle, row.milestoneTitle, row.taskTitle, row.parentTitle].filter(
           (p): p is string => !!p,
         ),
-    // The subject page reads `open` to expand the rows down to this one.
-    href: isSubject ? `/subjects/${row.subjectId}` : `/subjects/${row.subjectId}?open=${row.kind}:${row.id}`,
+    href: hrefFor(row),
   };
 }
 

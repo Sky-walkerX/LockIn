@@ -242,6 +242,7 @@ export function diffFreshness(live: LiveSource[], stored: StoredChunkMeta[], cur
 export type ScorableChunk = {
   subjectId: string;
   subjectTitle: string;
+  subjectColor: string | null;
   source: ChunkSourceType;
   sourceId: string;
   ordinal: number;
@@ -264,7 +265,7 @@ export async function listScorableChunks(
     },
     select: {
       subjectId: true,
-      subject: { select: { title: true } },
+      subject: { select: { title: true, color: true } },
       source: true,
       sourceId: true,
       ordinal: true,
@@ -277,6 +278,7 @@ export async function listScorableChunks(
   return rows.map((r) => ({
     subjectId: r.subjectId,
     subjectTitle: r.subject.title,
+    subjectColor: r.subject.color,
     source: r.source,
     sourceId: r.sourceId,
     ordinal: r.ordinal,
