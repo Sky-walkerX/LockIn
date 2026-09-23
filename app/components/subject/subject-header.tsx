@@ -11,6 +11,7 @@ import { useUpdateSubject, useDeleteSubject } from "@/hooks/useSubjects";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { SUBJECT_PALETTE } from "@/app/components/home/new-subject";
 import { ShareButton } from "@/app/components/share/share-button";
+import { ExportMenu } from "@/app/components/export/export-menu";
 import { isReviewDue } from "@/app/components/review/revision";
 import { PACE_META, PaceBar, countdown } from "@/app/components/pace/pace";
 import { computeCoverage, subjectPace } from "@/lib/pace/pace";
@@ -164,6 +165,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
           </Popover>
 
           <ShareButton target={{ type: "SUBJECT", entityId: subject.id }} size={15} />
+          <ExportMenu subjectId={subject.id} />
 
           <button
             type="button"
