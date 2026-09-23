@@ -7,6 +7,7 @@ import React from "react";
 import { QuickAddProvider } from "./quick-add";
 import { SearchProvider } from "./search";
 import { ChatProvider } from "./chat/chat-provider";
+import { FocusProvider } from "./focus/focus-provider";
 
 // Data stays fresh for 30s so navigation doesn't refetch the heavy subject
 // detail payload; mutations invalidate explicitly, so correctness holds.
@@ -26,7 +27,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SessionProvider>
         <SearchProvider>
           <QuickAddProvider>
-            <ChatProvider>{children}</ChatProvider>
+            <FocusProvider>
+              <ChatProvider>{children}</ChatProvider>
+            </FocusProvider>
           </QuickAddProvider>
         </SearchProvider>
       </SessionProvider>
