@@ -59,6 +59,8 @@ export function useUpdateSubject() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["subjects"] });
       qc.invalidateQueries({ queryKey: ["subject", vars.id] });
+      // Archiving hides a subject's topics from the revision list.
+      if (vars.data.isArchived !== undefined) qc.invalidateQueries({ queryKey: ["reviews"] });
     },
   });
 }
@@ -67,6 +69,9 @@ export function useDeleteSubject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/subjects/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["subjects"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["subjects"] });
+      qc.invalidateQueries({ queryKey: ["reviews"] });
+    },
   });
 }

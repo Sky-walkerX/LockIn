@@ -15,6 +15,7 @@ import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
 import { useReveal } from "./reveal";
 import { ShareButton } from "@/app/components/share/share-button";
+import { ConfidenceMenu, ReviewStatus } from "@/app/components/review/revision";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // milestones, so only cards whose milestone (or tasks) changed re-render.
@@ -88,7 +89,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   return (
     <div className={`lk-card overflow-hidden ${pending ? "pointer-events-none opacity-60" : ""}`}>
       {/* Header */}
-      <div ref={reveal.ref} className={`flex items-center gap-2 p-3 ${reveal.found ? "lk-found" : ""}`}>
+      <div ref={reveal.ref} className={`group flex items-center gap-2 p-3 ${reveal.found ? "lk-found" : ""}`}>
         <Checkbox checked={milestone.isCompleted} onCheckedChange={toggleDone} className="lk-check" />
 
         {editingTitle ? (
@@ -133,6 +134,9 @@ export const MilestoneItem = memo(function MilestoneItem({
             )}
           </button>
         )}
+
+        <ConfidenceMenu milestone={milestone} />
+        <ReviewStatus milestone={milestone} />
 
         <span className="lk-mono hidden text-[10px] uppercase tracking-wide text-muted-foreground sm:inline">
           {done}/{total}

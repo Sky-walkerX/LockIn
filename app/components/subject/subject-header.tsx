@@ -11,6 +11,7 @@ import { useUpdateSubject, useDeleteSubject } from "@/hooks/useSubjects";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { SUBJECT_PALETTE } from "@/app/components/home/new-subject";
 import { ShareButton } from "@/app/components/share/share-button";
+import { isReviewDue } from "@/app/components/review/revision";
 
 const FALLBACK = "#8b8f9e";
 
@@ -31,6 +32,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
   const done = allTasks.filter((t) => t.isCompleted).length;
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   const complete = total > 0 && done === total;
+  const weak = subject.milestones.filter((m) => m.confidence === "WEAK").length;
+  const toRevise = subject.milestones.filter((m) => m.isCompleted && isReviewDue(m.reviewDueAt)).length;
 
   // Re-seed the draft fields every time the popover opens so an edit started
   // after a background refetch shows current values, not mount-time ones.
@@ -167,6 +170,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
           </div>
           <div className="lk-mono mt-2 text-[10.5px] uppercase tracking-wide text-muted-foreground">
             {done}/{total} tasks · {subject.milestones.length} milestones · {subject.resources.length} resources
+            {weak > 0 && <span style={{ color: "var(--destructive)" }}> · {weak} weak</span>}
+            {toRevise > 0 && <span> · {toRevise} to revise</span>}
             {complete && <span className="text-ok"> · done</span>}
           </div>
         </div>

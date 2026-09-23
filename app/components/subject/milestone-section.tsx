@@ -5,6 +5,15 @@ import { Plus } from "lucide-react";
 import { useCreateMilestone, useReorderMilestones } from "@/hooks/useMilestones";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { MilestoneItem } from "./milestone-item";
+import { CONFIDENCE_META } from "@/app/components/review/revision";
+import type { Confidence } from "@/app/generated/prisma";
+
+type Filter = "ALL" | Confidence | "UNRATED";
+const FILTERS: { value: Filter; label: string }[] = [
+  { value: "ALL", label: "all" },
+  ...(Object.keys(CONFIDENCE_META) as Confidence[]).map((c) => ({ value: c, label: CONFIDENCE_META[c].label })),
+  { value: "UNRATED", label: "unrated" },
+];
 
 const FALLBACK = "#8b8f9e";
 
@@ -20,6 +29,15 @@ export function MilestoneSection({
   const create = useCreateMilestone();
   const reorder = useReorderMilestones();
   const [title, setTitle] = useState("");
+  const [filter, setFilter] = useState<Filter>("ALL");
+
+  // The chips only earn their space once something has been rated.
+  const anyRated = milestones.some((m) => m.confidence);
+  const active = anyRated ? filter : "ALL";
+  const shown =
+    active === "ALL"
+      ? milestones
+      : milestones.filter((m) => (active === "UNRATED" ? !m.confidence : m.confidence === active));
 
   // Read milestones through a ref so `move` stays referentially stable and
   // memoized MilestoneItems don't re-render on every list change.
@@ -53,20 +71,43 @@ export function MilestoneSection({
 
   return (
     <section className="lk-subject" style={{ "--c": color ?? FALLBACK } as React.CSSProperties}>
-      <div className="lk-sec mb-3">plan · {milestones.length} milestones</div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="lk-sec">plan · {milestones.length} milestones</div>
+        {anyRated && (
+          <div className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label="Filter by confidence">
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                role="radio"
+                aria-checked={active === f.value}
+                onClick={() => setFilter(f.value)}
+                className={`lk-tag transition-colors ${active === f.value ? "text-foreground" : "hover:text-foreground"}`}
+                style={active === f.value ? { borderColor: "var(--foreground)" } : undefined}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {milestones.length === 0 ? (
         <p className="mb-3 text-sm text-muted-foreground">
           No milestones yet. Break the subject into phases below.
         </p>
+      ) : shown.length === 0 ? (
+        <p className="mb-3 text-sm text-muted-foreground">No milestones match this filter.</p>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {milestones.map((m, i) => (
+          {shown.map((m, i) => (
             <MilestoneItem
               key={m.id}
               milestone={m}
-              isFirst={i === 0}
-              isLast={i === milestones.length - 1}
+              // Moving swaps with the neighbour in the full list, which a
+              // filter may be hiding, so reordering waits until it's cleared.
+              isFirst={active !== "ALL" || i === 0}
+              isLast={active !== "ALL" || i === shown.length - 1}
               onMove={move}
             />
           ))}

@@ -35,6 +35,13 @@ enum Recurrence {
   MONTHLY
 }
 
+// How well a topic has stuck. Null on the milestone means not rated yet.
+enum Confidence {
+  WEAK
+  OK
+  STRONG
+}
+
 // What a share link points at. Subtasks and their nested "items" are both
 // Subtask rows, so one value covers both: sharing a parent exposes its items,
 // sharing an item exposes just that item.
@@ -112,13 +119,23 @@ model Subject {
 }
 
 model Milestone {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
-  notes       String   @default("") // markdown
-  order       Int      @default(0) // manual ordering within a subject
-  isCompleted Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  notes       String    @default("") // markdown
+  order       Int       @default(0) // manual ordering within a subject
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Revision (lib/review/schedule.ts). Completing a milestone schedules its
+  // first review; each rating moves reviewDueAt out by a stretching interval.
+  // A null reviewDueAt means the topic isn't being revised.
+  confidence     Confidence?
+  reviewDueAt    DateTime?
+  reviewInterval Int? // days
+  reviewCount    Int         @default(0)
+  lastReviewedAt DateTime?
 
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId String
@@ -126,6 +143,7 @@ model Milestone {
   tasks Task[]
 
   @@index([subjectId, order])
+  @@index([reviewDueAt])
 }
 
 model Task {
