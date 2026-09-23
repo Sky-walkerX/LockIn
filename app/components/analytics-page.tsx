@@ -44,7 +44,7 @@ export default function AnalyticsPage() {
         <StatCard icon={CheckCircle2} label="Completed" value={stats.totalCompleted} sub="all time" />
         <StatCard icon={CalendarCheck} label="Today" value={stats.completedToday} sub="tasks done" />
         <StatCard icon={Flame} label="Streak" value={`${stats.currentStreak}d`} sub="current run" />
-        <StatCard icon={Trophy} label="Best streak" value={`${stats.longestStreak}d`} sub="last 30 days" />
+        <StatCard icon={Trophy} label="Best streak" value={`${stats.longestStreak}d`} sub="all time" />
         <StatCard icon={Clock} label="Focus time" value={fmtMinutes(stats.totalFocusMinutes)} sub="logged" />
         <StatCard icon={ListTodo} label="Active" value={stats.activeTasks} sub="open tasks" />
       </div>
