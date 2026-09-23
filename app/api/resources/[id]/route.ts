@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const { count } = await prisma.resource.updateMany({ where: { id, userId }, data: parsed.data });
   if (count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const resource = await prisma.resource.findUnique({ where: { id } });
+  const resource = await prisma.resource.findUnique({ where: { id }, omit: { extracted: true } });
   return NextResponse.json(resource);
 }
 

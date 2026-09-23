@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Resource, ResourceType } from "@/app/generated/prisma";
+
+// What the API sends: the extracted document text stays on the server.
+export type ResourceRow = Omit<Resource, "extracted">;
 import { api } from "@/lib/fetcher";
 
 export function useResources(subjectId?: string) {
   const suffix = subjectId ? `?subjectId=${subjectId}` : "";
   return useQuery({
     queryKey: ["resources", subjectId ?? "all"],
-    queryFn: () => api.get<Resource[]>(`/api/resources${suffix}`),
+    queryFn: () => api.get<ResourceRow[]>(`/api/resources${suffix}`),
   });
 }
 
@@ -22,7 +25,7 @@ export function useCreateResource() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (input: { subjectId: string; type: ResourceType; url: string; title: string; note?: string }) =>
-      api.post<Resource>("/api/resources", input),
+      api.post<ResourceRow>("/api/resources", input),
     onSuccess: invalidate,
   });
 }
@@ -36,7 +39,7 @@ export function useUpdateResource() {
     }: {
       id: string;
       data: Partial<{ type: ResourceType; url: string; title: string; note: string | null }>;
-    }) => api.put<Resource>(`/api/resources/${id}`, data),
+    }) => api.put<ResourceRow>(`/api/resources/${id}`, data),
     onSuccess: invalidate,
   });
 }

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         include: { tasks: taskInclude },
       },
       tasks: { where: { milestoneId: null }, ...taskInclude },
-      resources: { orderBy: { createdAt: "desc" } },
+      resources: { orderBy: { createdAt: "desc" }, omit: { extracted: true } },
     },
   });
 

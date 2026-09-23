@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
   const resources = await prisma.resource.findMany({
     where: { userId, ...(subjectId ? { subjectId } : {}) },
     orderBy: { createdAt: "desc" },
+    // The extracted document can run to megabytes; the reader fetches it on its own.
+    omit: { extracted: true },
   });
   return NextResponse.json(resources);
 }

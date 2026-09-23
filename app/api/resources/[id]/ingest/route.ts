@@ -71,6 +71,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       ingestState: "READY",
       ingestError: null,
     },
+    select: { ingestState: true, pageCount: true },
   });
 
   return NextResponse.json({
