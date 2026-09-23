@@ -15,12 +15,14 @@ import { codeText } from "@/lib/notes/code-text";
 // unless the image is itself wrapped in a markdown link, which wins.
 // Code blocks get a copy button; the text comes from the rendered tree, so it
 // is exactly what the block shows.
-export function Markdown({ children }: { children: string }) {
+// `highlight={false}` skips syntax highlighting: language detection runs on
+// every fenced block and gets slow over a whole extracted book.
+export function Markdown({ children, highlight = true }: { children: string; highlight?: boolean }) {
   return (
     <div className="lk-prose">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeHighlight, { detect: true }]]}
+        rehypePlugins={highlight ? [[rehypeHighlight, { detect: true }]] : []}
         components={{
           a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
           // The button sits beside the <pre>, not in it, so it stays in the

@@ -14,6 +14,7 @@ import { AddTask } from "@/app/components/subject/add-task";
 import { SortableList } from "@/app/components/subject/sortable-list";
 import { RevealProvider } from "@/app/components/subject/reveal";
 import { parseOpen, revealPath, type RevealTarget } from "@/lib/search/path";
+import { ResourceReader } from "@/app/components/reader/resource-reader";
 
 const FALLBACK = "#8b8f9e";
 
@@ -47,6 +48,12 @@ export default function SubjectPage() {
     const path = pathKey ? pathKey.split(",") : [];
     return { path, target: path[path.length - 1] ?? null, nonce, done };
   }, [pathKey, nonce, done]);
+
+  // The reader stays in the URL while open (?read=<resourceId>, optionally
+  // &q=<passage>), so a search hit can link straight into it and Back closes it.
+  const readId = searchParams.get("read");
+  const passage = searchParams.get("q");
+  const closeReader = useCallback(() => router.replace(`/subjects/${id}`, { scroll: false }), [router, id]);
 
   if (status === "loading" || isLoading) {
     return (
@@ -111,6 +118,8 @@ export default function SubjectPage() {
         </div>
       </div>
       </RevealProvider>
+
+      {readId && <ResourceReader resourceId={readId} subject={subject} passage={passage} onClose={closeReader} />}
 
       <div className="lk-statusbar mt-10">
         <span className="seg mode">LOCKIN</span>

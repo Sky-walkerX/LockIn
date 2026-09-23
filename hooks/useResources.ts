@@ -60,6 +60,7 @@ export function useDeleteResource() {
  * fails (see the route's doc comment for why this is synchronous).
  */
 export function useIngestResource() {
+  const qc = useQueryClient();
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (id: string) =>
@@ -67,6 +68,23 @@ export function useIngestResource() {
         `/api/resources/${id}/ingest`,
         {},
       ),
-    onSuccess: invalidate,
+    onSuccess: (_data, id) => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["resource-content", id] });
+    },
+  });
+}
+
+export type ResourceContent = Pick<
+  Resource,
+  "id" | "subjectId" | "type" | "title" | "url" | "extracted" | "pageCount" | "ingestState" | "ingestError"
+>;
+
+// The one read that carries the extracted text, fetched only when the reader opens.
+export function useResourceContent(id: string | null) {
+  return useQuery({
+    queryKey: ["resource-content", id],
+    enabled: !!id,
+    queryFn: () => api.get<ResourceContent>(`/api/resources/${id}/content`),
   });
 }
