@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { Link2, MessageSquare, FileText, BookOpen, Trash2, ExternalLink, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { useDeleteResource, useIngestResource, type ResourceRow } from "@/hooks/useResources";
 import type { ResourceType } from "@/app/generated/prisma";
@@ -35,21 +36,41 @@ export function ResourceItem({ resource }: { resource: ResourceRow }) {
   const del = useDeleteResource();
   const ingest = useIngestResource();
   const Icon = ICON[resource.type];
+  const router = useRouter();
+  const pathname = usePathname();
+  // Readable in the app once text is extracted; a PDF always is, in its original form.
+  const readable = resource.ingestState === "READY" || resource.type === "PDF";
 
   return (
     <div className="group flex items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/60">
       <Icon size={16} className="mt-0.5 flex-none text-muted-foreground" />
 
       <div className="min-w-0 flex-1">
-        <a
-          href={resource.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-sm font-medium hover:underline"
-        >
-          <span className="truncate">{resource.title}</span>
-          <ExternalLink size={11} className="flex-none text-muted-foreground" />
-        </a>
+        <div className="flex items-center gap-1.5">
+          {readable ? (
+            <button
+              type="button"
+              onClick={() => router.push(`${pathname}?read=${resource.id}`, { scroll: false })}
+              className="truncate text-left text-sm font-medium hover:underline"
+              title="Read in LockIn"
+            >
+              {resource.title}
+            </button>
+          ) : (
+            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="truncate text-sm font-medium hover:underline">
+              {resource.title}
+            </a>
+          )}
+          <a
+            href={resource.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-none text-muted-foreground hover:text-foreground"
+            title="Open original in a new tab"
+          >
+            <ExternalLink size={11} />
+          </a>
+        </div>
         <div className="lk-mono mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
           <span className="lk-tag">{LABEL[resource.type]}</span>
           <span className="truncate">{host(resource.url)}</span>
