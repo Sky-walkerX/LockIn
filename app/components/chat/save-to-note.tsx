@@ -2,25 +2,15 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { BookmarkPlus, Check, Loader2 } from "lucide-react";
 import { api } from "@/lib/fetcher";
 import { useSubject } from "@/hooks/useSubjects";
+import { appendNote } from "@/lib/notes/append";
 
 type Target =
   | { kind: "milestone"; id: string; label: string }
   | { kind: "task"; id: string; label: string }
   | { kind: "subtask"; id: string; label: string };
-
-/** Appended rather than replaced — a note is the user's, and a chat answer is
- *  an addition to it, never a substitution for what they already wrote. */
-function appended(existing: string, answer: string): string {
-  // Local date, not UTC: a note stamped "yesterday" because the user is east
-  // of Greenwich at 2am is wrong in the only timezone that matters to them.
-  const stamp = format(new Date(), "yyyy-MM-dd");
-  const block = `---\n*from chat · ${stamp}*\n\n${answer.trim()}`;
-  return existing.trim() ? `${existing.trim()}\n\n${block}` : block;
-}
 
 /**
  * Files an assistant reply into one of the current subject's notes.
@@ -69,7 +59,7 @@ export function SaveToNote({ subjectId, answer }: { subjectId: string; answer: s
   const save = async (target: Target) => {
     setSaving(target.id);
     try {
-      const body = appended(existingNote(target), answer);
+      const body = appendNote(existingNote(target), answer, "from chat");
       if (target.kind === "milestone") {
         await api.put(`/api/milestones/${target.id}`, { notes: body });
       } else if (target.kind === "task") {
