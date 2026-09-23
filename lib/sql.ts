@@ -23,6 +23,11 @@
  * an implicit `text` -> enum conversion in an UPDATE (error 42804), so an
  * uncast enum write fails outright. Type names are interpolated as identifiers
  * too, and sanitised the same way.
+ *
+ * Date values are pinned to UTC. Every DateTime column is `timestamp without
+ * time zone` holding UTC, but a bound JS Date arrives as timestamptz, and
+ * assigning that to a plain timestamp converts it into the session's time
+ * zone — harmless on a UTC database, hours off on any other.
  */
 export function setClause(
   data: Record<string, unknown>,
@@ -35,8 +40,10 @@ export function setClause(
   return {
     clause: cols
       .map((c, i) => {
+        const n = startIndex + i;
+        if (data[c] instanceof Date) return `"${ident(c)}" = ($${n}::timestamptz AT TIME ZONE 'UTC')`;
         const cast = casts?.[c];
-        return `"${ident(c)}" = $${startIndex + i}${cast ? `::"${ident(cast)}"` : ""}`;
+        return `"${ident(c)}" = $${n}${cast ? `::"${ident(cast)}"` : ""}`;
       })
       .join(", "),
     values: cols.map((c) => data[c]),
