@@ -30,6 +30,11 @@ export type Embedder = {
  * otherwise — it only decides whether the WebGPU engine also has to hold chat
  * weights, and is ignored entirely on the CPU path.
  */
+// The local backend getEmbedder last handed out in this tab, if any. Lets
+// peekEmbedder skip importing (and so downloading the JS for) a runtime that
+// was never started.
+let localStarted: "webgpu" | "wasm" | null = null;
+
 export async function getEmbedder(
   chatModel: string | null,
   onProgress?: (report: EmbedProgress) => void,
@@ -47,6 +52,7 @@ export async function getEmbedder(
   const { available } = await webgpu.checkWebGPU();
 
   if (available) {
+    localStarted = "webgpu";
     return {
       backend: "webgpu",
       embedQuery: (text) => webgpu.embedQuery(chatModel, text, (r) => onProgress?.({ progress: r.progress })),
@@ -58,9 +64,49 @@ export async function getEmbedder(
   const wasm = await import("./wasm-embedder");
   if (!wasm.hasWasm()) return null;
 
+  localStarted = "wasm";
   return {
     backend: "wasm",
     embedQuery: (text) => wasm.wasmEmbedQuery(text, onProgress),
     embedPassages: (texts) => wasm.wasmEmbedPassages(texts, onProgress),
   };
+}
+
+/**
+ * An embedder only if using it costs nothing up front: the remote service, or
+ * a local model this tab has already loaded. Never starts a download — the
+ * search palette asks on every keystroke, and a 127 MB surprise is not a
+ * search result. Null means "ask the user before calling getEmbedder".
+ */
+export async function peekEmbedder(chatModel: string | null): Promise<Embedder | null> {
+  const remote = await import("./remote-embedder");
+  if (await remote.checkRemote()) {
+    return {
+      backend: "remote",
+      embedQuery: (text) => remote.remoteEmbedQuery(text),
+      embedPassages: (texts) => remote.remoteEmbedPassages(texts),
+    };
+  }
+
+  if (localStarted === "webgpu") {
+    const webgpu = await import("./webllm-transport");
+    if (!webgpu.isEngineReady(chatModel)) return null;
+    return {
+      backend: "webgpu",
+      embedQuery: (text) => webgpu.embedQuery(chatModel, text),
+      embedPassages: (texts) => webgpu.embedPassages(chatModel, texts),
+    };
+  }
+
+  if (localStarted === "wasm") {
+    const wasm = await import("./wasm-embedder");
+    if (!wasm.isWasmLoaded()) return null;
+    return {
+      backend: "wasm",
+      embedQuery: (text) => wasm.wasmEmbedQuery(text),
+      embedPassages: (texts) => wasm.wasmEmbedPassages(texts),
+    };
+  }
+
+  return null;
 }

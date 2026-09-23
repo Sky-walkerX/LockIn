@@ -103,6 +103,11 @@ export async function wasmEmbedQuery(
   return checkVector(result.tolist()[0]);
 }
 
+/** Whether the CPU model is already loaded (or loading) in this tab. */
+export function isWasmLoaded(): boolean {
+  return extractorPromise !== null;
+}
+
 /** Whether the CPU path can run at all. WebAssembly is the only requirement,
  *  which every browser this app supports has had for years. */
 export function hasWasm(): boolean {

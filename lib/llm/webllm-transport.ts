@@ -174,6 +174,12 @@ function getEngine(models: string[], onProgress?: (report: Progress) => void): P
   return enginePromise;
 }
 
+/** Whether an engine for this job is already loaded or loading, so using it
+ *  costs no download and no new worker. */
+export function isEngineReady(chatModel: string | null): boolean {
+  return enginePromise !== null && loadedKey === engineKey(engineModels(chatModel));
+}
+
 /** Warms the engine ahead of first use, e.g. from the settings sheet, so
  *  download progress has somewhere to report to before the user asks anything. */
 export function preloadEngine(chatModel: string, onProgress?: (report: Progress) => void): Promise<void> {
