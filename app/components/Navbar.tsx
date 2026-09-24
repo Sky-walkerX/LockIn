@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useQuickAdd } from "./quick-add";
-import { useSearchPalette } from "./search";
+import { useCommandPalette } from "./command/command-palette";
 import { useChatPanel } from "./chat/chat-provider";
 import { FocusPill } from "./focus/focus-pill";
 
@@ -25,7 +25,7 @@ export default function Navbar() {
   const { data: session } = useSession();
   const { resolvedTheme, setTheme } = useTheme();
   const { open: openQuickAdd } = useQuickAdd();
-  const { open: openSearch } = useSearchPalette();
+  const { open: openPalette } = useCommandPalette();
   const { open: openChat } = useChatPanel();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -66,29 +66,29 @@ export default function Navbar() {
         {session?.user && (
           <button
             type="button"
-            onClick={openSearch}
-            title="Search notes (⌘P)"
+            onClick={openPalette}
+            title="Search and commands (⌘K)"
             className="lk-mono flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[11px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
           >
             <Search size={13} />
-            <span className="hidden md:inline">⌘P</span>
-          </button>
-        )}
-        {session?.user && (
-          <button
-            type="button"
-            onClick={openQuickAdd}
-            title="Quick add (⌘K)"
-            className="lk-mono flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[11px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Plus size={13} />
             <span className="hidden md:inline">⌘K</span>
           </button>
         )}
         {session?.user && (
           <button
             type="button"
-            onClick={openChat}
+            onClick={() => openQuickAdd()}
+            title="New task or resource"
+            className="lk-mono flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[11px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Plus size={13} />
+            <span className="hidden md:inline">New</span>
+          </button>
+        )}
+        {session?.user && (
+          <button
+            type="button"
+            onClick={() => openChat()}
             title="Ask your model (⌘J)"
             // The rail carries this wherever it fits; below `sm` there is no
             // rail, so the navbar keeps the only way in.

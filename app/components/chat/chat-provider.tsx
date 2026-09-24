@@ -11,7 +11,9 @@ import { ChatRail } from "./chat-rail";
 // is shared with the navbar and quick-add — see `lib/chrome.ts`.
 const OPEN_KEY = "lockin.chat.open";
 
-const ChatContext = createContext<{ open: () => void }>({ open: () => {} });
+// `prompt` opens the panel with a draft already typed (the palette's "Ask").
+type OpenChat = (opts?: { prompt?: string }) => void;
+const ChatContext = createContext<{ open: OpenChat }>({ open: () => {} });
 export const useChatPanel = () => useContext(ChatContext);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
@@ -31,8 +33,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const openRef = useRef(isOpen);
   openRef.current = isOpen;
 
-  const open = useCallback(() => {
+  const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
+
+  const open = useCallback<OpenChat>((opts) => {
     if (hidden) return;
+    const prompt = opts?.prompt;
+    if (prompt) setSeed((s) => ({ text: prompt, n: (s?.n ?? 0) + 1 }));
     setMounted(true);
     setIsOpen(true);
     setUnseen(false);
@@ -92,6 +98,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                   isOpen={isOpen}
                   onClose={() => setIsOpen(false)}
                   onStreamingChange={onStreamingChange}
+                  seed={seed}
                 />
               </div>
             )}

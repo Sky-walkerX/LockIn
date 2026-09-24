@@ -52,6 +52,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   const [priority, setPriority] = useState<Priority>(task.priority);
   const [due, setDue] = useState(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
   const [recurrence, setRecurrence] = useState<"NONE" | Recurrence>(task.recurrence ?? "NONE");
+  const [estimate, setEstimate] = useState(task.estimatedTime ? String(task.estimatedTime) : "");
   const [editingNotes, setEditingNotes] = useState(false);
   // Saving closes the editor immediately (the cache is patched optimistically),
   // so a failed save has nowhere to put the text — park it here and reopen.
@@ -85,6 +86,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
       setPriority(task.priority);
       setDue(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
       setRecurrence(task.recurrence ?? "NONE");
+      setEstimate(task.estimatedTime ? String(task.estimatedTime) : "");
     }
     setEditOpen(o);
   };
@@ -119,6 +121,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
           priority,
           dueDate: due ? new Date(`${due}T00:00:00`).toISOString() : null,
           recurrence: recurrence === "NONE" ? null : recurrence,
+          estimatedTime: Number(estimate) > 0 ? Math.round(Number(estimate)) : null,
         },
       },
       { onSuccess: () => setEditOpen(false) },
@@ -187,6 +190,12 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
           </span>
         )}
 
+        {task.estimatedTime ? (
+          <span className="lk-mono flex-none text-[9px] uppercase tracking-wide text-muted-foreground" title="Estimated time">
+            est {task.estimatedTime >= 60 ? `${+(task.estimatedTime / 60).toFixed(1)}h` : `${task.estimatedTime}m`}
+          </span>
+        ) : null}
+
         {task.recurrence && (
           <span
             className="lk-mono inline-flex flex-none items-center gap-0.5 text-[9px] uppercase tracking-wide text-muted-foreground"
@@ -238,17 +247,28 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
                     className="flex-1"
                   />
                 </div>
-                <Select value={recurrence} onValueChange={(v) => setRecurrence(v as "NONE" | Recurrence)}>
-                  <SelectTrigger size="sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="NONE">No repeat</SelectItem>
-                    <SelectItem value="DAILY">Repeat daily</SelectItem>
-                    <SelectItem value="WEEKLY">Repeat weekly</SelectItem>
-                    <SelectItem value="MONTHLY">Repeat monthly</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select value={recurrence} onValueChange={(v) => setRecurrence(v as "NONE" | Recurrence)}>
+                    <SelectTrigger size="sm" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NONE">No repeat</SelectItem>
+                      <SelectItem value="DAILY">Repeat daily</SelectItem>
+                      <SelectItem value="WEEKLY">Repeat weekly</SelectItem>
+                      <SelectItem value="MONTHLY">Repeat monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={estimate}
+                    onChange={(e) => setEstimate(e.target.value)}
+                    placeholder="Est. min"
+                    aria-label="Estimate in minutes"
+                    className="w-24"
+                  />
+                </div>
                 <button
                   type="submit"
                   disabled={update.isPending || !title.trim()}

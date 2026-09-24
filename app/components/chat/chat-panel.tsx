@@ -30,10 +30,13 @@ export function ChatPanel({
   isOpen,
   onClose,
   onStreamingChange,
+  seed,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onStreamingChange: (streaming: boolean) => void;
+  /** A draft to start from; a new `n` replaces whatever is typed. */
+  seed?: { text: string; n: number } | null;
 }) {
   const pathname = usePathname();
   const homeSubjectId = subjectIdFromPath(pathname);
@@ -62,6 +65,13 @@ export function ChatPanel({
   useEffect(() => {
     if (isOpen && view === "chat") textareaRef.current?.focus();
   }, [isOpen, view]);
+
+  useEffect(() => {
+    if (!seed) return;
+    setDraft(seed.text);
+    setView("chat");
+    textareaRef.current?.focus();
+  }, [seed]);
 
   useEffect(() => {
     onStreamingChange(isStreaming);

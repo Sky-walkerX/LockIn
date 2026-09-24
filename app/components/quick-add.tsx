@@ -28,42 +28,39 @@ import { useCreateResource } from "@/hooks/useResources";
 import type { Priority, Recurrence, ResourceType } from "@/app/generated/prisma";
 
 // ── Context ────────────────────────────────────────────────────────────────
-const QuickAddContext = createContext<{ open: () => void }>({ open: () => {} });
+type Mode = "task" | "resource";
+
+// ⌘K belongs to the command palette now; this form opens from the navbar's +
+// and from the palette's "New task…" / "New resource…" actions.
+const QuickAddContext = createContext<{ open: (mode?: Mode) => void }>({ open: () => {} });
 export const useQuickAdd = () => useContext(QuickAddContext);
 
 export function QuickAddProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hidden = isChromeless(pathname);
   const [isOpen, setIsOpen] = useState(false);
+  const [initialMode, setInitialMode] = useState<Mode>("task");
 
-  const open = useCallback(() => {
-    if (!hidden) setIsOpen(true);
-  }, [hidden]);
-
-  // Global ⌘K / Ctrl+K toggle.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        if (!hidden) setIsOpen((v) => !v);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [hidden]);
+  const open = useCallback(
+    (mode: Mode = "task") => {
+      if (hidden) return;
+      setInitialMode(mode);
+      setIsOpen(true);
+    },
+    [hidden],
+  );
 
   return (
     <QuickAddContext.Provider value={{ open }}>
       {children}
-      {isOpen && !hidden && <QuickAddPanel onClose={() => setIsOpen(false)} />}
+      {isOpen && !hidden && <QuickAddPanel initialMode={initialMode} onClose={() => setIsOpen(false)} />}
     </QuickAddContext.Provider>
   );
 }
 
 // ── Panel ──────────────────────────────────────────────────────────────────
-type Mode = "task" | "resource";
 
-function QuickAddPanel({ onClose }: { onClose: () => void }) {
+function QuickAddPanel({ initialMode, onClose }: { initialMode: Mode; onClose: () => void }) {
   const pathname = usePathname();
   const { data: subjects } = useSubjects();
   const activeSubjects = useMemo(() => (subjects ?? []).filter((s) => !s.isArchived), [subjects]);
@@ -77,7 +74,7 @@ function QuickAddPanel({ onClose }: { onClose: () => void }) {
     if (fallback) setSubjectId(fallback);
   }, [subjectId, routeSubjectId, activeSubjects]);
 
-  const [mode, setMode] = useState<Mode>("task");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [added, setAdded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

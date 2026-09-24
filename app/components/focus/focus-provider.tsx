@@ -43,6 +43,8 @@ type FocusContext = {
   selectTask: (taskId: string) => void;
   setMode: (mode: FocusMode) => void;
   start: () => void;
+  /** Pick a task and start focusing on it in one step (the palette's action). */
+  startOn: (taskId: string) => void;
   stop: () => void;
   skipBreak: () => void;
   setPrefs: (prefs: FocusPrefs) => void;
@@ -172,6 +174,15 @@ export function FocusProvider({ children }: { children: React.ReactNode }) {
     setRun({ ...run, startedAt: Date.now() });
   }, [run, running, timer, setRun]);
 
+  const startOn = useCallback(
+    (taskId: string) => {
+      if (running) return;
+      timer({ id: taskId, action: "start" });
+      setRun({ ...IDLE_RUN, mode: run.mode, taskId, startedAt: Date.now() });
+    },
+    [run.mode, running, timer, setRun],
+  );
+
   const stop = useCallback(() => {
     if (running && (run.mode === "stopwatch" || run.phase === "focus")) {
       timer({ id: run.taskId, action: "stop" });
@@ -219,13 +230,14 @@ export function FocusProvider({ children }: { children: React.ReactNode }) {
       selectTask,
       setMode,
       start,
+      startOn,
       stop,
       skipBreak,
       setPrefs,
       saveRecap,
       dismissRecap,
     }),
-    [run, prefs, running, clock, progress, recapTaskId, selectTask, setMode, start, stop, skipBreak, setPrefs, saveRecap, dismissRecap],
+    [run, prefs, running, clock, progress, recapTaskId, selectTask, setMode, start, startOn, stop, skipBreak, setPrefs, saveRecap, dismissRecap],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

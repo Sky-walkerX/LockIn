@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
 import { QuickAddProvider } from "./quick-add";
-import { SearchProvider } from "./search";
+import { CommandPaletteProvider } from "./command/command-palette";
 import { ChatProvider } from "./chat/chat-provider";
 import { FocusProvider } from "./focus/focus-provider";
 
@@ -25,13 +25,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        <SearchProvider>
-          <QuickAddProvider>
-            <FocusProvider>
-              <ChatProvider>{children}</ChatProvider>
-            </FocusProvider>
-          </QuickAddProvider>
-        </SearchProvider>
+        {/* The palette sits innermost: its actions open the others. */}
+        <QuickAddProvider>
+          <FocusProvider>
+            <ChatProvider>
+              <CommandPaletteProvider>{children}</CommandPaletteProvider>
+            </ChatProvider>
+          </FocusProvider>
+        </QuickAddProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

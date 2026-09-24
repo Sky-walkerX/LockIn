@@ -29,7 +29,7 @@ export type CreateTaskInput = {
 };
 
 export type UpdateTaskInput = Partial<
-  Omit<CreateTaskInput, "subjectId"> & { isCompleted: boolean; timeSpent: number }
+  Omit<CreateTaskInput, "subjectId" | "estimatedTime"> & { isCompleted: boolean; timeSpent: number; estimatedTime: number | null }
 >;
 
 // Tasks scoped to a subject or milestone.
