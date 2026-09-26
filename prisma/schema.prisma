@@ -96,13 +96,18 @@ model Share {
 }
 
 model Subject {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
   color       String? // optional accent color for the subject card
-  isArchived  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isArchived  Boolean @default(false)
+
+  // Exam mode (lib/pace/pace.ts): coverage is measured against the time from
+  // startDate (or createdAt) to targetDate.
+  targetDate DateTime?
+  startDate  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -125,6 +130,8 @@ model Milestone {
   order       Int       @default(0) // manual ordering within a subject
   isCompleted Boolean   @default(false)
   completedAt DateTime?
+  // Relative share of the syllabus, e.g. the topic's % of exam marks.
+  weight      Float     @default(1)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

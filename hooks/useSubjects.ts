@@ -7,6 +7,7 @@ export type SubjectWithProgress = Subject & {
   _count: { milestones: number; tasks: number; resources: number };
   totalTasks: number;
   completedTasks: number;
+  coverage: number; // 0–1, weighted by milestone (lib/pace/pace.ts)
 };
 
 // Subtasks nest one level: top-level subtasks carry their children inline.
@@ -54,7 +55,14 @@ export function useUpdateSubject() {
       data,
     }: {
       id: string;
-      data: Partial<{ title: string; description: string | null; color: string | null; isArchived: boolean }>;
+      data: Partial<{
+        title: string;
+        description: string | null;
+        color: string | null;
+        isArchived: boolean;
+        targetDate: string | null; // ISO
+        startDate: string | null; // ISO
+      }>;
     }) => api.put<Subject>(`/api/subjects/${id}`, data),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["subjects"] });

@@ -8,7 +8,11 @@ const UpdateSubjectSchema = z.object({
   description: z.string().nullable().optional(),
   color: z.string().nullable().optional(),
   isArchived: z.boolean().optional(),
+  targetDate: z.string().datetime().nullable().optional(),
+  startDate: z.string().datetime().nullable().optional(),
 });
+
+const toDate = (v: string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
 
 // GET /api/subjects/[id] - full subject: milestones (with their tasks),
 // loose tasks (no milestone), and resources.
@@ -55,7 +59,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { count } = await prisma.subject.updateMany({ where: { id, userId }, data: parsed.data });
+  const { targetDate, startDate, ...rest } = parsed.data;
+  const { count } = await prisma.subject.updateMany({
+    where: { id, userId },
+    data: { ...rest, targetDate: toDate(targetDate), startDate: toDate(startDate) },
+  });
   if (count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const subject = await prisma.subject.findUnique({ where: { id } });

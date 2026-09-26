@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useState } from "react";
-import { ChevronDown, ChevronUp, ChevronRight, Pencil, Trash2, FileText } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronRight, Pencil, Trash2, FileText, Scale } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
 import { useUpdateMilestone, useDeleteMilestone } from "@/hooks/useMilestones";
@@ -21,11 +22,14 @@ import { ConfidenceMenu, ReviewStatus } from "@/app/components/review/revision";
 // milestones, so only cards whose milestone (or tasks) changed re-render.
 export const MilestoneItem = memo(function MilestoneItem({
   milestone,
+  share,
   isFirst,
   isLast,
   onMove,
 }: {
   milestone: MilestoneWithTasks;
+  /** Share of the subject's syllabus by weight; null while weights are all default. */
+  share: number | null;
   isFirst: boolean;
   isLast: boolean;
   onMove: (id: string, dir: -1 | 1) => void;
@@ -42,6 +46,8 @@ export const MilestoneItem = memo(function MilestoneItem({
   // Saving closes the editor immediately (the cache is patched optimistically),
   // so a failed save has nowhere to put the text — park it here and reopen.
   const [failedNotes, setFailedNotes] = useState<string | null>(null);
+  const [weightOpen, setWeightOpen] = useState(false);
+  const [weightVal, setWeightVal] = useState(String(milestone.weight));
 
   const total = milestone.tasks.length;
   const done = milestone.tasks.filter((t) => t.isCompleted).length;
@@ -77,6 +83,19 @@ export const MilestoneItem = memo(function MilestoneItem({
         },
       },
     );
+  };
+
+  const openWeight = (o: boolean) => {
+    if (o) setWeightVal(String(milestone.weight));
+    setWeightOpen(o);
+  };
+
+  const saveWeight = (e: React.FormEvent) => {
+    e.preventDefault();
+    const w = Number(weightVal);
+    if (!(w > 0)) return;
+    if (w !== milestone.weight) update.mutate({ id: milestone.id, data: { weight: w } });
+    setWeightOpen(false);
   };
 
   const saveTitle = () => {
@@ -135,6 +154,11 @@ export const MilestoneItem = memo(function MilestoneItem({
           </button>
         )}
 
+        {share !== null && (
+          <span className="lk-tag flex-none" title={`Weight ${milestone.weight}: share of the syllabus`}>
+            {Math.round(share * 100)}%
+          </span>
+        )}
         <ConfidenceMenu milestone={milestone} />
         <ReviewStatus milestone={milestone} />
 
@@ -151,6 +175,32 @@ export const MilestoneItem = memo(function MilestoneItem({
           <button type="button" onClick={startEditingTitle} className="lk-iconbtn" title="Rename">
             <Pencil size={13} />
           </button>
+          <Popover open={weightOpen} onOpenChange={openWeight}>
+            <PopoverTrigger asChild>
+              <button type="button" className="lk-iconbtn" title="Weight in the syllabus">
+                <Scale size={13} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-60">
+              <form onSubmit={saveWeight} className="flex flex-col gap-2">
+                <div className="lk-sec">Weight</div>
+                <p className="text-xs text-muted-foreground">
+                  How much of the syllabus this covers, relative to the others. Its % of exam marks works well.
+                </p>
+                <Input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={weightVal}
+                  onChange={(e) => setWeightVal(e.target.value)}
+                  autoFocus
+                />
+                <button type="submit" disabled={!(Number(weightVal) > 0)} className="lk-btn px-3 py-2 text-[10.5px] disabled:opacity-50">
+                  Save
+                </button>
+              </form>
+            </PopoverContent>
+          </Popover>
           <ShareButton target={{ type: "MILESTONE", entityId: milestone.id }} />
           <button
             type="button"

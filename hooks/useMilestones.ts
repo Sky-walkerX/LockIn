@@ -42,6 +42,7 @@ export function useCreateMilestone() {
         reviewInterval: null,
         reviewCount: 0,
         lastReviewedAt: null,
+        weight: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
         subjectId: input.subjectId,
@@ -68,6 +69,7 @@ export type MilestoneUpdate = Partial<{
   confidence: Confidence | null;
   reviewDueAt: string | null; // ISO; null stops revising
   reviewInterval: number | null;
+  weight: number;
 }>;
 
 // The optimistic patch plus the server's returned row cover every field here,

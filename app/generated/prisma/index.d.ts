@@ -4488,6 +4488,8 @@ export namespace Prisma {
     description: string | null
     color: string | null
     isArchived: boolean | null
+    targetDate: Date | null
+    startDate: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: string | null
@@ -4499,6 +4501,8 @@ export namespace Prisma {
     description: string | null
     color: string | null
     isArchived: boolean | null
+    targetDate: Date | null
+    startDate: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: string | null
@@ -4510,6 +4514,8 @@ export namespace Prisma {
     description: number
     color: number
     isArchived: number
+    targetDate: number
+    startDate: number
     createdAt: number
     updatedAt: number
     userId: number
@@ -4523,6 +4529,8 @@ export namespace Prisma {
     description?: true
     color?: true
     isArchived?: true
+    targetDate?: true
+    startDate?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -4534,6 +4542,8 @@ export namespace Prisma {
     description?: true
     color?: true
     isArchived?: true
+    targetDate?: true
+    startDate?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -4545,6 +4555,8 @@ export namespace Prisma {
     description?: true
     color?: true
     isArchived?: true
+    targetDate?: true
+    startDate?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -4629,6 +4641,8 @@ export namespace Prisma {
     description: string | null
     color: string | null
     isArchived: boolean
+    targetDate: Date | null
+    startDate: Date | null
     createdAt: Date
     updatedAt: Date
     userId: string
@@ -4657,6 +4671,8 @@ export namespace Prisma {
     description?: boolean
     color?: boolean
     isArchived?: boolean
+    targetDate?: boolean
+    startDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -4675,6 +4691,8 @@ export namespace Prisma {
     description?: boolean
     color?: boolean
     isArchived?: boolean
+    targetDate?: boolean
+    startDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -4687,6 +4705,8 @@ export namespace Prisma {
     description?: boolean
     color?: boolean
     isArchived?: boolean
+    targetDate?: boolean
+    startDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -4699,12 +4719,14 @@ export namespace Prisma {
     description?: boolean
     color?: boolean
     isArchived?: boolean
+    targetDate?: boolean
+    startDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
   }
 
-  export type SubjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "color" | "isArchived" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["subject"]>
+  export type SubjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "color" | "isArchived" | "targetDate" | "startDate" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["subject"]>
   export type SubjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     milestones?: boolean | Subject$milestonesArgs<ExtArgs>
@@ -4737,6 +4759,8 @@ export namespace Prisma {
       description: string | null
       color: string | null
       isArchived: boolean
+      targetDate: Date | null
+      startDate: Date | null
       createdAt: Date
       updatedAt: Date
       userId: string
@@ -5174,6 +5198,8 @@ export namespace Prisma {
     readonly description: FieldRef<"Subject", 'String'>
     readonly color: FieldRef<"Subject", 'String'>
     readonly isArchived: FieldRef<"Subject", 'Boolean'>
+    readonly targetDate: FieldRef<"Subject", 'DateTime'>
+    readonly startDate: FieldRef<"Subject", 'DateTime'>
     readonly createdAt: FieldRef<"Subject", 'DateTime'>
     readonly updatedAt: FieldRef<"Subject", 'DateTime'>
     readonly userId: FieldRef<"Subject", 'String'>
@@ -5734,12 +5760,14 @@ export namespace Prisma {
 
   export type MilestoneAvgAggregateOutputType = {
     order: number | null
+    weight: number | null
     reviewInterval: number | null
     reviewCount: number | null
   }
 
   export type MilestoneSumAggregateOutputType = {
     order: number | null
+    weight: number | null
     reviewInterval: number | null
     reviewCount: number | null
   }
@@ -5751,6 +5779,7 @@ export namespace Prisma {
     order: number | null
     isCompleted: boolean | null
     completedAt: Date | null
+    weight: number | null
     createdAt: Date | null
     updatedAt: Date | null
     confidence: $Enums.Confidence | null
@@ -5768,6 +5797,7 @@ export namespace Prisma {
     order: number | null
     isCompleted: boolean | null
     completedAt: Date | null
+    weight: number | null
     createdAt: Date | null
     updatedAt: Date | null
     confidence: $Enums.Confidence | null
@@ -5785,6 +5815,7 @@ export namespace Prisma {
     order: number
     isCompleted: number
     completedAt: number
+    weight: number
     createdAt: number
     updatedAt: number
     confidence: number
@@ -5799,12 +5830,14 @@ export namespace Prisma {
 
   export type MilestoneAvgAggregateInputType = {
     order?: true
+    weight?: true
     reviewInterval?: true
     reviewCount?: true
   }
 
   export type MilestoneSumAggregateInputType = {
     order?: true
+    weight?: true
     reviewInterval?: true
     reviewCount?: true
   }
@@ -5816,6 +5849,7 @@ export namespace Prisma {
     order?: true
     isCompleted?: true
     completedAt?: true
+    weight?: true
     createdAt?: true
     updatedAt?: true
     confidence?: true
@@ -5833,6 +5867,7 @@ export namespace Prisma {
     order?: true
     isCompleted?: true
     completedAt?: true
+    weight?: true
     createdAt?: true
     updatedAt?: true
     confidence?: true
@@ -5850,6 +5885,7 @@ export namespace Prisma {
     order?: true
     isCompleted?: true
     completedAt?: true
+    weight?: true
     createdAt?: true
     updatedAt?: true
     confidence?: true
@@ -5954,6 +5990,7 @@ export namespace Prisma {
     order: number
     isCompleted: boolean
     completedAt: Date | null
+    weight: number
     createdAt: Date
     updatedAt: Date
     confidence: $Enums.Confidence | null
@@ -5990,6 +6027,7 @@ export namespace Prisma {
     order?: boolean
     isCompleted?: boolean
     completedAt?: boolean
+    weight?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confidence?: boolean
@@ -6010,6 +6048,7 @@ export namespace Prisma {
     order?: boolean
     isCompleted?: boolean
     completedAt?: boolean
+    weight?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confidence?: boolean
@@ -6028,6 +6067,7 @@ export namespace Prisma {
     order?: boolean
     isCompleted?: boolean
     completedAt?: boolean
+    weight?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confidence?: boolean
@@ -6046,6 +6086,7 @@ export namespace Prisma {
     order?: boolean
     isCompleted?: boolean
     completedAt?: boolean
+    weight?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confidence?: boolean
@@ -6056,7 +6097,7 @@ export namespace Prisma {
     subjectId?: boolean
   }
 
-  export type MilestoneOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "order" | "isCompleted" | "completedAt" | "createdAt" | "updatedAt" | "confidence" | "reviewDueAt" | "reviewInterval" | "reviewCount" | "lastReviewedAt" | "subjectId", ExtArgs["result"]["milestone"]>
+  export type MilestoneOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "order" | "isCompleted" | "completedAt" | "weight" | "createdAt" | "updatedAt" | "confidence" | "reviewDueAt" | "reviewInterval" | "reviewCount" | "lastReviewedAt" | "subjectId", ExtArgs["result"]["milestone"]>
   export type MilestoneInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
     tasks?: boolean | Milestone$tasksArgs<ExtArgs>
@@ -6082,6 +6123,7 @@ export namespace Prisma {
       order: number
       isCompleted: boolean
       completedAt: Date | null
+      weight: number
       createdAt: Date
       updatedAt: Date
       confidence: $Enums.Confidence | null
@@ -6521,6 +6563,7 @@ export namespace Prisma {
     readonly order: FieldRef<"Milestone", 'Int'>
     readonly isCompleted: FieldRef<"Milestone", 'Boolean'>
     readonly completedAt: FieldRef<"Milestone", 'DateTime'>
+    readonly weight: FieldRef<"Milestone", 'Float'>
     readonly createdAt: FieldRef<"Milestone", 'DateTime'>
     readonly updatedAt: FieldRef<"Milestone", 'DateTime'>
     readonly confidence: FieldRef<"Milestone", 'Confidence'>
@@ -15336,6 +15379,8 @@ export namespace Prisma {
     description: 'description',
     color: 'color',
     isArchived: 'isArchived',
+    targetDate: 'targetDate',
+    startDate: 'startDate',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     userId: 'userId'
@@ -15351,6 +15396,7 @@ export namespace Prisma {
     order: 'order',
     isCompleted: 'isCompleted',
     completedAt: 'completedAt',
+    weight: 'weight',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     confidence: 'confidence',
@@ -15568,6 +15614,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Confidence'
    */
   export type EnumConfidenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Confidence'>
@@ -15662,20 +15722,6 @@ export namespace Prisma {
    * Reference to a field of type 'ChunkSource[]'
    */
   export type ListEnumChunkSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChunkSource[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
   /**
    * Deep Input Types
@@ -15827,6 +15873,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"Subject"> | string | null
     color?: StringNullableFilter<"Subject"> | string | null
     isArchived?: BoolFilter<"Subject"> | boolean
+    targetDate?: DateTimeNullableFilter<"Subject"> | Date | string | null
+    startDate?: DateTimeNullableFilter<"Subject"> | Date | string | null
     createdAt?: DateTimeFilter<"Subject"> | Date | string
     updatedAt?: DateTimeFilter<"Subject"> | Date | string
     userId?: StringFilter<"Subject"> | string
@@ -15844,6 +15892,8 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     color?: SortOrderInput | SortOrder
     isArchived?: SortOrder
+    targetDate?: SortOrderInput | SortOrder
+    startDate?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -15864,6 +15914,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"Subject"> | string | null
     color?: StringNullableFilter<"Subject"> | string | null
     isArchived?: BoolFilter<"Subject"> | boolean
+    targetDate?: DateTimeNullableFilter<"Subject"> | Date | string | null
+    startDate?: DateTimeNullableFilter<"Subject"> | Date | string | null
     createdAt?: DateTimeFilter<"Subject"> | Date | string
     updatedAt?: DateTimeFilter<"Subject"> | Date | string
     userId?: StringFilter<"Subject"> | string
@@ -15881,6 +15933,8 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     color?: SortOrderInput | SortOrder
     isArchived?: SortOrder
+    targetDate?: SortOrderInput | SortOrder
+    startDate?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -15898,6 +15952,8 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"Subject"> | string | null
     color?: StringNullableWithAggregatesFilter<"Subject"> | string | null
     isArchived?: BoolWithAggregatesFilter<"Subject"> | boolean
+    targetDate?: DateTimeNullableWithAggregatesFilter<"Subject"> | Date | string | null
+    startDate?: DateTimeNullableWithAggregatesFilter<"Subject"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Subject"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Subject"> | Date | string
     userId?: StringWithAggregatesFilter<"Subject"> | string
@@ -15913,6 +15969,7 @@ export namespace Prisma {
     order?: IntFilter<"Milestone"> | number
     isCompleted?: BoolFilter<"Milestone"> | boolean
     completedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
+    weight?: FloatFilter<"Milestone"> | number
     createdAt?: DateTimeFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeFilter<"Milestone"> | Date | string
     confidence?: EnumConfidenceNullableFilter<"Milestone"> | $Enums.Confidence | null
@@ -15932,6 +15989,7 @@ export namespace Prisma {
     order?: SortOrder
     isCompleted?: SortOrder
     completedAt?: SortOrderInput | SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confidence?: SortOrderInput | SortOrder
@@ -15954,6 +16012,7 @@ export namespace Prisma {
     order?: IntFilter<"Milestone"> | number
     isCompleted?: BoolFilter<"Milestone"> | boolean
     completedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
+    weight?: FloatFilter<"Milestone"> | number
     createdAt?: DateTimeFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeFilter<"Milestone"> | Date | string
     confidence?: EnumConfidenceNullableFilter<"Milestone"> | $Enums.Confidence | null
@@ -15973,6 +16032,7 @@ export namespace Prisma {
     order?: SortOrder
     isCompleted?: SortOrder
     completedAt?: SortOrderInput | SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confidence?: SortOrderInput | SortOrder
@@ -15998,6 +16058,7 @@ export namespace Prisma {
     order?: IntWithAggregatesFilter<"Milestone"> | number
     isCompleted?: BoolWithAggregatesFilter<"Milestone"> | boolean
     completedAt?: DateTimeNullableWithAggregatesFilter<"Milestone"> | Date | string | null
+    weight?: FloatWithAggregatesFilter<"Milestone"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Milestone"> | Date | string
     confidence?: EnumConfidenceNullableWithAggregatesFilter<"Milestone"> | $Enums.Confidence | null
@@ -16759,6 +16820,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubjectsInput
@@ -16775,6 +16838,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -16791,6 +16856,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
@@ -16807,6 +16874,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -16823,6 +16892,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -16834,6 +16905,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -16844,6 +16917,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -16856,6 +16931,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -16874,6 +16950,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -16892,6 +16969,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -16910,6 +16988,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -16928,6 +17007,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -16945,6 +17025,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -16961,6 +17042,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -17846,6 +17928,17 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type MilestoneListRelationFilter = {
     every?: MilestoneWhereInput
     some?: MilestoneWhereInput
@@ -17862,6 +17955,8 @@ export namespace Prisma {
     description?: SortOrder
     color?: SortOrder
     isArchived?: SortOrder
+    targetDate?: SortOrder
+    startDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -17873,6 +17968,8 @@ export namespace Prisma {
     description?: SortOrder
     color?: SortOrder
     isArchived?: SortOrder
+    targetDate?: SortOrder
+    startDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -17884,6 +17981,8 @@ export namespace Prisma {
     description?: SortOrder
     color?: SortOrder
     isArchived?: SortOrder
+    targetDate?: SortOrder
+    startDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -17897,6 +17996,20 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -17908,15 +18021,15 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type EnumConfidenceNullableFilter<$PrismaModel = never> = {
@@ -17949,6 +18062,7 @@ export namespace Prisma {
     order?: SortOrder
     isCompleted?: SortOrder
     completedAt?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confidence?: SortOrder
@@ -17961,6 +18075,7 @@ export namespace Prisma {
 
   export type MilestoneAvgOrderByAggregateInput = {
     order?: SortOrder
+    weight?: SortOrder
     reviewInterval?: SortOrder
     reviewCount?: SortOrder
   }
@@ -17972,6 +18087,7 @@ export namespace Prisma {
     order?: SortOrder
     isCompleted?: SortOrder
     completedAt?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confidence?: SortOrder
@@ -17989,6 +18105,7 @@ export namespace Prisma {
     order?: SortOrder
     isCompleted?: SortOrder
     completedAt?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confidence?: SortOrder
@@ -18001,6 +18118,7 @@ export namespace Prisma {
 
   export type MilestoneSumOrderByAggregateInput = {
     order?: SortOrder
+    weight?: SortOrder
     reviewInterval?: SortOrder
     reviewCount?: SortOrder
   }
@@ -18021,18 +18139,20 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type EnumConfidenceNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -18914,6 +19034,10 @@ export namespace Prisma {
     set?: boolean
   }
 
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type UserUpdateOneRequiredWithoutSubjectsNestedInput = {
     create?: XOR<UserCreateWithoutSubjectsInput, UserUncheckedCreateWithoutSubjectsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSubjectsInput
@@ -19090,8 +19214,12 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type NullableEnumConfidenceFieldUpdateOperationsInput = {
@@ -19680,14 +19808,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -19697,6 +19817,39 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumConfidenceNullableFilter<$PrismaModel = never> = {
@@ -19722,7 +19875,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type NestedFloatFilter<$PrismaModel = never> = {
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
     notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -19730,21 +19883,12 @@ export namespace Prisma {
     lte?: number | FloatFieldRefInput<$PrismaModel>
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type NestedEnumConfidenceNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -19892,6 +20036,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     milestones?: MilestoneCreateNestedManyWithoutSubjectInput
@@ -19907,6 +20053,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     milestones?: MilestoneUncheckedCreateNestedManyWithoutSubjectInput
@@ -20135,6 +20283,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"Subject"> | string | null
     color?: StringNullableFilter<"Subject"> | string | null
     isArchived?: BoolFilter<"Subject"> | boolean
+    targetDate?: DateTimeNullableFilter<"Subject"> | Date | string | null
+    startDate?: DateTimeNullableFilter<"Subject"> | Date | string | null
     createdAt?: DateTimeFilter<"Subject"> | Date | string
     updatedAt?: DateTimeFilter<"Subject"> | Date | string
     userId?: StringFilter<"Subject"> | string
@@ -20416,6 +20566,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -20433,6 +20584,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -20676,6 +20828,7 @@ export namespace Prisma {
     order?: IntFilter<"Milestone"> | number
     isCompleted?: BoolFilter<"Milestone"> | boolean
     completedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
+    weight?: FloatFilter<"Milestone"> | number
     createdAt?: DateTimeFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeFilter<"Milestone"> | Date | string
     confidence?: EnumConfidenceNullableFilter<"Milestone"> | $Enums.Confidence | null
@@ -20756,6 +20909,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubjectsInput
@@ -20771,6 +20926,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -20850,6 +21007,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
@@ -20865,6 +21024,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -20929,6 +21090,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubjectsInput
@@ -20944,6 +21107,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -20965,6 +21130,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -20982,6 +21148,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -21111,6 +21278,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
@@ -21126,6 +21295,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -21153,6 +21324,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -21170,6 +21342,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -21483,6 +21656,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubjectsInput
@@ -21498,6 +21673,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -21568,6 +21745,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
@@ -21583,6 +21762,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -21723,6 +21904,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubjectsInput
@@ -21738,6 +21921,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -21836,6 +22021,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
@@ -21851,6 +22038,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -21984,6 +22173,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubjectsInput
@@ -21999,6 +22190,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -22069,6 +22262,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubjectsNestedInput
@@ -22084,6 +22279,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -22099,6 +22296,8 @@ export namespace Prisma {
     description?: string | null
     color?: string | null
     isArchived?: boolean
+    targetDate?: Date | string | null
+    startDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22173,6 +22372,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     milestones?: MilestoneUpdateManyWithoutSubjectNestedInput
@@ -22188,6 +22389,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     milestones?: MilestoneUncheckedUpdateManyWithoutSubjectNestedInput
@@ -22203,6 +22406,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: NullableStringFieldUpdateOperationsInput | string | null
     isArchived?: BoolFieldUpdateOperationsInput | boolean
+    targetDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22412,6 +22617,7 @@ export namespace Prisma {
     order?: number
     isCompleted?: boolean
     completedAt?: Date | string | null
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     confidence?: $Enums.Confidence | null
@@ -22484,6 +22690,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -22501,6 +22708,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
@@ -22518,6 +22726,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    weight?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
