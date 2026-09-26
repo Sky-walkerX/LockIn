@@ -18,7 +18,7 @@ export type Chunk = {
   content: string;
 };
 
-export type ChunkSourceType = "SUBJECT" | "MILESTONE" | "TASK" | "SUBTASK" | "RESOURCE";
+export type ChunkSourceType = "SUBJECT" | "MILESTONE" | "TASK" | "SUBTASK" | "RESOURCE" | "RESOURCE_DOC";
 
 export type ChunkInput = {
   source: ChunkSourceType;

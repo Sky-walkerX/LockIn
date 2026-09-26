@@ -130,6 +130,20 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.RelationLoadStrategy = {
+  query: 'query',
+  join: 'join'
+};
+
+exports.Prisma.ShareScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  type: 'type',
+  createdAt: 'createdAt',
+  userId: 'userId',
+  entityId: 'entityId'
+};
+
 exports.Prisma.SubjectScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -190,6 +204,10 @@ exports.Prisma.ResourceScalarFieldEnum = {
   note: 'note',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  extracted: 'extracted',
+  pageCount: 'pageCount',
+  ingestState: 'ingestState',
+  ingestError: 'ingestError',
   userId: 'userId',
   subjectId: 'subjectId'
 };
@@ -252,6 +270,13 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.ShareType = exports.$Enums.ShareType = {
+  SUBJECT: 'SUBJECT',
+  MILESTONE: 'MILESTONE',
+  TASK: 'TASK',
+  SUBTASK: 'SUBTASK'
+};
+
 exports.Priority = exports.$Enums.Priority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
@@ -271,6 +296,13 @@ exports.ResourceType = exports.$Enums.ResourceType = {
   BOOK: 'BOOK'
 };
 
+exports.IngestState = exports.$Enums.IngestState = {
+  NONE: 'NONE',
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+};
+
 exports.ChatRole = exports.$Enums.ChatRole = {
   USER: 'USER',
   ASSISTANT: 'ASSISTANT'
@@ -281,11 +313,13 @@ exports.ChunkSource = exports.$Enums.ChunkSource = {
   MILESTONE: 'MILESTONE',
   TASK: 'TASK',
   SUBTASK: 'SUBTASK',
-  RESOURCE: 'RESOURCE'
+  RESOURCE: 'RESOURCE',
+  RESOURCE_DOC: 'RESOURCE_DOC'
 };
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Share: 'Share',
   Subject: 'Subject',
   Milestone: 'Milestone',
   Task: 'Task',

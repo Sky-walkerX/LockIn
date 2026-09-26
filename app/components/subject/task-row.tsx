@@ -25,6 +25,8 @@ import { NotesEditor } from "./notes-editor-lazy";
 import { SortableList } from "./sortable-list";
 import { SubtaskRow } from "./subtask-row";
 import { AddSubtask } from "./add-subtask";
+import { useReveal } from "./reveal";
+import { ShareButton } from "@/app/components/share/share-button";
 
 const PRIORITY_COLOR: Record<Priority, string> = {
   HIGH: "var(--destructive)",
@@ -44,6 +46,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   });
 
   const [open, setOpen] = useState(false);
+  const reveal = useReveal(task.id, setOpen);
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [priority, setPriority] = useState<Priority>(task.priority);
@@ -130,8 +133,9 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
     >
       {/* Header row — depth 1 of the plan tree (gutter + rail come from .lk-trow) */}
       <div
+        ref={reveal.ref}
         data-depth="1"
-        className="lk-trow group flex items-center gap-1.5 rounded-r-md py-1.5 pr-1 transition-colors"
+        className={`lk-trow group flex items-center gap-1.5 rounded-r-md py-1.5 pr-1 transition-colors ${reveal.found ? "lk-found" : ""}`}
       >
         <button
           type="button"
@@ -256,6 +260,8 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
             </PopoverContent>
           </Popover>
 
+          <ShareButton target={{ type: "TASK", entityId: task.id }} />
+
           <button
             type="button"
             onClick={() => del.mutate(task.id)}
@@ -286,7 +292,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
               }}
             />
           ) : hasNotes ? (
-            <div className="group/n relative rounded-md bg-muted/40 p-2.5">
+            <div className="lk-notes group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{task.description ?? ""}</Markdown>
               <button
                 type="button"

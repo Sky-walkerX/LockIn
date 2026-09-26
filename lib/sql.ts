@@ -16,16 +16,28 @@
  * Column names are interpolated as identifiers, so callers must pass keys from
  * a validated allowlist — every caller spreads a parsed Zod object. Values are
  * always parameterised, never interpolated.
+ *
+ * `casts` names the Postgres type to cast a column's placeholder to, e.g.
+ * `{ priority: "Priority" }` for `"priority" = $1::"Priority"`. Enum columns
+ * need this: the driver binds every JS string as `text`, and Postgres refuses
+ * an implicit `text` -> enum conversion in an UPDATE (error 42804), so an
+ * uncast enum write fails outright. Type names are interpolated as identifiers
+ * too, and sanitised the same way.
  */
 export function setClause(
   data: Record<string, unknown>,
+  casts?: Record<string, string>,
   startIndex = 1,
 ): { clause: string; values: unknown[] } | null {
   const cols = Object.keys(data).filter((k) => data[k] !== undefined);
   if (cols.length === 0) return null;
+  const ident = (s: string) => s.replace(/[^A-Za-z0-9_]/g, "");
   return {
     clause: cols
-      .map((c, i) => `"${c.replace(/[^A-Za-z0-9_]/g, "")}" = $${startIndex + i}`)
+      .map((c, i) => {
+        const cast = casts?.[c];
+        return `"${ident(c)}" = $${startIndex + i}${cast ? `::"${ident(cast)}"` : ""}`;
+      })
       .join(", "),
     values: cols.map((c) => data[c]),
   };

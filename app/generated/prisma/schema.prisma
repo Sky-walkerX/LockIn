@@ -1,6 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../app/generated/prisma"
+  // Loads an `include` tree in one LATERAL JOIN statement instead of one
+  // statement per relation. Every call through the transaction pooler already
+  // costs BEGIN + DEALLOCATE ALL + COMMIT on top, so a subject tree dropped
+  // from 10 round trips to 4.
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -30,6 +35,16 @@ enum Recurrence {
   MONTHLY
 }
 
+// What a share link points at. Subtasks and their nested "items" are both
+// Subtask rows, so one value covers both: sharing a parent exposes its items,
+// sharing an item exposes just that item.
+enum ShareType {
+  SUBJECT
+  MILESTONE
+  TASK
+  SUBTASK
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -43,6 +58,34 @@ model User {
   resources     Resource[]
   conversations Conversation[]
   noteChunks    NoteChunk[]
+  shares        Share[]
+}
+
+// A public, login-free view of one record and everything beneath it. Holding
+// the token is the whole authorization story: `/share/<token>` renders read-only
+// and no session is consulted.
+model Share {
+  id        String    @id @default(uuid())
+  // Unguessable and URL-safe: 16 random bytes, base64url. The only secret.
+  token     String    @unique
+  type      ShareType
+  createdAt DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // Polymorphic parent, like NoteChunk.sourceId: four source tables would need
+  // four nullable columns to express as foreign keys. The cost is that deleting
+  // a shared record leaves its Share behind, so the public loader re-resolves
+  // the entity on every request and 404s when it has gone.
+  entityId String
+
+  // At most one live token per record, so re-sharing something already shared
+  // hands back the existing URL instead of minting a second link to the same
+  // content. Revoking deletes the row outright, so sharing again afterwards
+  // mints a fresh token and the revoked URL stays dead for good.
+  @@unique([type, entityId])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Subject {
@@ -145,6 +188,13 @@ model Subtask {
   @@index([parentId, order])
 }
 
+enum IngestState {
+  NONE // never extracted — the default for every resource, forever, if nobody asks
+  PENDING
+  READY
+  FAILED
+}
+
 model Resource {
   id        String       @id @default(uuid())
   type      ResourceType
@@ -153,6 +203,16 @@ model Resource {
   note      String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+
+  // Machine-extracted markdown from the ingest service (PDF text, or the
+  // article body of a LINK). Deliberately separate from `note`, which is
+  // user-authored: `note` is a few sentences that change with a keystroke,
+  // `extracted` can be an entire textbook. Sharing one content hash between
+  // them would mean editing a one-line annotation re-embeds every page.
+  extracted   String?
+  pageCount   Int?
+  ingestState IngestState @default(NONE)
+  ingestError String?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -231,6 +291,10 @@ enum ChunkSource {
   TASK
   SUBTASK
   RESOURCE
+  // A resource's *extracted document* (Resource.extracted), not its `note`.
+  // Kept distinct from RESOURCE so a two-line annotation and an 800-chunk
+  // textbook never share one content hash — see the comment on `extracted`.
+  RESOURCE_DOC
 }
 
 // One embedded passage of a user's own notes. Rows are derived data: they can

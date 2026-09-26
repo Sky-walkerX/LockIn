@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useSubject } from "@/hooks/useSubjects";
@@ -11,14 +12,41 @@ import { ResourceSection } from "@/app/components/subject/resource-section";
 import { TaskRow } from "@/app/components/subject/task-row";
 import { AddTask } from "@/app/components/subject/add-task";
 import { SortableList } from "@/app/components/subject/sortable-list";
+import { RevealProvider } from "@/app/components/subject/reveal";
+import { parseOpen, revealPath, type RevealTarget } from "@/lib/search/path";
 
 const FALLBACK = "#8b8f9e";
 
 export default function SubjectPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { status } = useSession({ required: true });
   const { data: subject, isLoading, isError } = useSubject(id);
   const reorderTasks = useReorderTasks();
+
+  // A search result links here with ?open=<kind>:<id>. The request moves into
+  // state and the param leaves the URL: rows deeper in the tree mount only once
+  // their parent has opened, a few renders later, so the request has to outlive
+  // the URL, and opening the same result again must count as a new request.
+  const openParam = searchParams.get("open");
+  const [request, setRequest] = useState<{ target: RevealTarget; nonce: number } | null>(null);
+  useEffect(() => {
+    const target = parseOpen(openParam);
+    if (!target) return;
+    setRequest((r) => ({ target, nonce: (r?.nonce ?? 0) + 1 }));
+    router.replace(`/subjects/${id}`, { scroll: false });
+  }, [openParam, id, router]);
+
+  // Keyed by the path's ids, not the subject object, so the optimistic cache
+  // patches that replace `subject` on every edit don't re-render every row.
+  const pathKey = subject && request ? (revealPath(subject, request.target) ?? []).join(",") : "";
+  const nonce = request?.nonce ?? 0;
+  const done = useCallback(() => setRequest(null), []);
+  const reveal = useMemo(() => {
+    const path = pathKey ? pathKey.split(",") : [];
+    return { path, target: path[path.length - 1] ?? null, nonce, done };
+  }, [pathKey, nonce, done]);
 
   if (status === "loading" || isLoading) {
     return (
@@ -51,6 +79,7 @@ export default function SubjectPage() {
     >
       <SubjectHeader subject={subject} />
 
+      <RevealProvider value={reveal}>
       <div className="mt-7 grid grid-cols-1 gap-7 lg:grid-cols-3 xl:grid-cols-4">
         {/* Plan + loose tasks */}
         <div className="flex flex-col gap-7 lg:col-span-2 xl:col-span-3">
@@ -81,6 +110,7 @@ export default function SubjectPage() {
           <ResourceSection subjectId={subject.id} resources={subject.resources} />
         </div>
       </div>
+      </RevealProvider>
 
       <div className="lk-statusbar mt-10">
         <span className="seg mode">LOCKIN</span>

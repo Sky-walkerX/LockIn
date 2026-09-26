@@ -1,0 +1,37 @@
+[project]
+name = "lockin-ingest"
+version = "0.1.0"
+description = "Embedding and document-parsing companion service for LockIn"
+requires-python = ">=3.12"
+
+# No torch, deliberately. sentence-transformers would pull ~2 GB of CUDA-less
+# PyTorch for a 33M-parameter model that onnxruntime runs faster on CPU, and on
+# Cloud Run the image size is paid back on every cold start.
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "onnxruntime>=1.20",
+    "tokenizers>=0.21",
+    "numpy>=2.1",
+    "httpx>=0.28",
+    "pydantic>=2.10",
+    "pymupdf4llm>=0.0.17",
+    "trafilatura>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "huggingface-hub>=0.27",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

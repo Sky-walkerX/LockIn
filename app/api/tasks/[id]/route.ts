@@ -18,6 +18,12 @@ const UpdateTaskSchema = z.object({
   recurrence: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
 });
 
+// Task's two enum columns. The raw UPDATE below binds their values as `text`,
+// which Postgres will not implicitly coerce to an enum — without the cast, any
+// save carrying a priority or recurrence fails with error 42804. The edit form
+// sends `priority` on every save, so this covers plain renames too.
+const ENUM_CASTS = { priority: "Priority", recurrence: "Recurrence" };
+
 // Next due date for a recurring task: advance from `base` by one interval, then
 // keep rolling forward until it lands in the future — so finishing a task never
 // spawns one that's already overdue.
@@ -55,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   // needing the pre-update row. Every other edit (notes, title, priority, …)
   // skips this read and updates in a single round trip below.
   if (isCompleted !== true) {
-    const set = setClause(data as Record<string, unknown>);
+    const set = setClause(data as Record<string, unknown>, ENUM_CASTS);
     if (!set) return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
 
     // One round trip: ownership rides along in the WHERE, RETURNING hands back

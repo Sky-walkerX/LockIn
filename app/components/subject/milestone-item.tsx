@@ -13,6 +13,8 @@ import { NotesEditor } from "./notes-editor-lazy";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
+import { useReveal } from "./reveal";
+import { ShareButton } from "@/app/components/share/share-button";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // milestones, so only cards whose milestone (or tasks) changed re-render.
@@ -32,6 +34,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   const reorderTasks = useReorderTasks();
 
   const [open, setOpen] = useState(true);
+  const reveal = useReveal(milestone.id, setOpen);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleVal, setTitleVal] = useState(milestone.title);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -85,7 +88,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   return (
     <div className={`lk-card overflow-hidden ${pending ? "pointer-events-none opacity-60" : ""}`}>
       {/* Header */}
-      <div className="flex items-center gap-2 p-3">
+      <div ref={reveal.ref} className={`flex items-center gap-2 p-3 ${reveal.found ? "lk-found" : ""}`}>
         <Checkbox checked={milestone.isCompleted} onCheckedChange={toggleDone} className="lk-check" />
 
         {editingTitle ? (
@@ -144,6 +147,7 @@ export const MilestoneItem = memo(function MilestoneItem({
           <button type="button" onClick={startEditingTitle} className="lk-iconbtn" title="Rename">
             <Pencil size={13} />
           </button>
+          <ShareButton target={{ type: "MILESTONE", entityId: milestone.id }} />
           <button
             type="button"
             onClick={() => onMove(milestone.id, -1)}
@@ -192,7 +196,7 @@ export const MilestoneItem = memo(function MilestoneItem({
               />
             </div>
           ) : milestone.notes.trim() ? (
-            <div className="group/notes relative mb-3 rounded-md bg-muted/40 p-3">
+            <div className="lk-notes group/notes relative mb-3 rounded-md bg-muted/40 p-3">
               <Markdown>{milestone.notes}</Markdown>
               <button
                 type="button"

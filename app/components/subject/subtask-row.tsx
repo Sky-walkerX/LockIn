@@ -13,6 +13,8 @@ import { Markdown } from "./markdown";
 import { NotesEditor } from "./notes-editor-lazy";
 import { SortableList } from "./sortable-list";
 import { AddSubtask } from "./add-subtask";
+import { useReveal } from "./reveal";
+import { ShareButton } from "@/app/components/share/share-button";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // subtasks, so only rows whose subtask actually changed re-render.
@@ -34,6 +36,7 @@ export const SubtaskRow = memo(function SubtaskRow({
   });
 
   const [open, setOpen] = useState(false);
+  const reveal = useReveal(subtask.id, setOpen);
   const [renaming, setRenaming] = useState(false);
   const [titleVal, setTitleVal] = useState(subtask.title);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -94,8 +97,9 @@ export const SubtaskRow = memo(function SubtaskRow({
       className={`rounded-md ${isDragging ? "relative z-10 bg-muted/70 shadow-sm" : ""} ${pending ? "pointer-events-none opacity-60" : ""}`}
     >
       <div
+        ref={reveal.ref}
         data-depth={depth}
-        className="lk-trow group flex items-center gap-1.5 rounded-r-md py-1 pr-1.5"
+        className={`lk-trow group flex items-center gap-1.5 rounded-r-md py-1 pr-1.5 ${reveal.found ? "lk-found" : ""}`}
       >
         <button
           type="button"
@@ -166,6 +170,7 @@ export const SubtaskRow = memo(function SubtaskRow({
           <button type="button" onClick={startRenaming} className="lk-iconbtn" title="Rename subtask">
             <Pencil size={12} />
           </button>
+          <ShareButton target={{ type: "SUBTASK", entityId: subtask.id }} size={12} />
           <button
             type="button"
             onClick={() => del.mutate(subtask.id)}
@@ -192,7 +197,7 @@ export const SubtaskRow = memo(function SubtaskRow({
               }}
             />
           ) : hasNotes ? (
-            <div className="group/n relative rounded-md bg-muted/40 p-2.5">
+            <div className="lk-notes group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{subtask.notes}</Markdown>
               <button
                 type="button"

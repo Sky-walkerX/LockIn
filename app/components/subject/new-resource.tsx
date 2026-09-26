@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useRef, useState } from "react";
+import { Plus, Upload } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -13,7 +13,25 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { useCreateResource } from "@/hooks/useResources";
+import { api } from "@/lib/fetcher";
 import type { ResourceType } from "@/app/generated/prisma";
+
+/**
+ * Uploads a local PDF straight to Supabase Storage via a signed URL, then
+ * returns the public URL to store on the resource. `/api/resources/upload-url`
+ * never sees the file body — see that route's doc comment for why a signed
+ * URL exists at all (Vercel's 4.5MB request-body cap, which a 30-page PDF
+ * blows past immediately).
+ */
+async function uploadPdf(file: File): Promise<string> {
+  const { uploadUrl, publicUrl } = await api.post<{ uploadUrl: string; publicUrl: string }>(
+    "/api/resources/upload-url",
+    { contentType: file.type, size: file.size },
+  );
+  const put = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+  if (!put.ok) throw new Error(`Upload failed (${put.status})`);
+  return publicUrl;
+}
 
 export function NewResource({ subjectId }: { subjectId: string }) {
   const [open, setOpen] = useState(false);
@@ -21,6 +39,9 @@ export function NewResource({ subjectId }: { subjectId: string }) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const create = useCreateResource();
 
   const reset = () => {
@@ -28,6 +49,22 @@ export function NewResource({ subjectId }: { subjectId: string }) {
     setUrl("");
     setTitle("");
     setNote("");
+    setUploadError(null);
+  };
+
+  const pickFile = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const publicUrl = await uploadPdf(file);
+      setUrl(publicUrl);
+      if (!title.trim()) setTitle(file.name.replace(/\.pdf$/i, ""));
+    } catch {
+      setUploadError("Upload failed. You can paste a link instead.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const submit = (e: React.FormEvent) => {
@@ -71,6 +108,26 @@ export function NewResource({ subjectId }: { subjectId: string }) {
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://…"
           />
+          {type === "PDF" && (
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInput}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => void pickFile(e.target.files?.[0])}
+              />
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                disabled={uploading}
+                className="lk-btn flex items-center gap-1.5 px-2 py-1 text-[10px] disabled:opacity-50"
+              >
+                <Upload size={11} /> {uploading ? "Uploading…" : "or upload a PDF"}
+              </button>
+              {uploadError && <span className="text-[10px] text-destructive">{uploadError}</span>}
+            </div>
+          )}
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
           <Textarea
             value={note}
@@ -80,7 +137,7 @@ export function NewResource({ subjectId }: { subjectId: string }) {
           />
           <button
             type="submit"
-            disabled={create.isPending || !url.trim() || !title.trim()}
+            disabled={create.isPending || uploading || !url.trim() || !title.trim()}
             className="lk-btn px-3 py-2 text-[10.5px] disabled:opacity-50"
           >
             {create.isPending ? "Saving…" : "Save resource"}
