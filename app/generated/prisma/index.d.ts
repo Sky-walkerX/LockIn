@@ -101,6 +101,15 @@ export const Recurrence: {
 export type Recurrence = (typeof Recurrence)[keyof typeof Recurrence]
 
 
+export const Confidence: {
+  WEAK: 'WEAK',
+  OK: 'OK',
+  STRONG: 'STRONG'
+};
+
+export type Confidence = (typeof Confidence)[keyof typeof Confidence]
+
+
 export const ShareType: {
   SUBJECT: 'SUBJECT',
   MILESTONE: 'MILESTONE',
@@ -153,6 +162,10 @@ export const ResourceType: typeof $Enums.ResourceType
 export type Recurrence = $Enums.Recurrence
 
 export const Recurrence: typeof $Enums.Recurrence
+
+export type Confidence = $Enums.Confidence
+
+export const Confidence: typeof $Enums.Confidence
 
 export type ShareType = $Enums.ShareType
 
@@ -5721,10 +5734,14 @@ export namespace Prisma {
 
   export type MilestoneAvgAggregateOutputType = {
     order: number | null
+    reviewInterval: number | null
+    reviewCount: number | null
   }
 
   export type MilestoneSumAggregateOutputType = {
     order: number | null
+    reviewInterval: number | null
+    reviewCount: number | null
   }
 
   export type MilestoneMinAggregateOutputType = {
@@ -5733,8 +5750,14 @@ export namespace Prisma {
     notes: string | null
     order: number | null
     isCompleted: boolean | null
+    completedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    confidence: $Enums.Confidence | null
+    reviewDueAt: Date | null
+    reviewInterval: number | null
+    reviewCount: number | null
+    lastReviewedAt: Date | null
     subjectId: string | null
   }
 
@@ -5744,8 +5767,14 @@ export namespace Prisma {
     notes: string | null
     order: number | null
     isCompleted: boolean | null
+    completedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    confidence: $Enums.Confidence | null
+    reviewDueAt: Date | null
+    reviewInterval: number | null
+    reviewCount: number | null
+    lastReviewedAt: Date | null
     subjectId: string | null
   }
 
@@ -5755,8 +5784,14 @@ export namespace Prisma {
     notes: number
     order: number
     isCompleted: number
+    completedAt: number
     createdAt: number
     updatedAt: number
+    confidence: number
+    reviewDueAt: number
+    reviewInterval: number
+    reviewCount: number
+    lastReviewedAt: number
     subjectId: number
     _all: number
   }
@@ -5764,10 +5799,14 @@ export namespace Prisma {
 
   export type MilestoneAvgAggregateInputType = {
     order?: true
+    reviewInterval?: true
+    reviewCount?: true
   }
 
   export type MilestoneSumAggregateInputType = {
     order?: true
+    reviewInterval?: true
+    reviewCount?: true
   }
 
   export type MilestoneMinAggregateInputType = {
@@ -5776,8 +5815,14 @@ export namespace Prisma {
     notes?: true
     order?: true
     isCompleted?: true
+    completedAt?: true
     createdAt?: true
     updatedAt?: true
+    confidence?: true
+    reviewDueAt?: true
+    reviewInterval?: true
+    reviewCount?: true
+    lastReviewedAt?: true
     subjectId?: true
   }
 
@@ -5787,8 +5832,14 @@ export namespace Prisma {
     notes?: true
     order?: true
     isCompleted?: true
+    completedAt?: true
     createdAt?: true
     updatedAt?: true
+    confidence?: true
+    reviewDueAt?: true
+    reviewInterval?: true
+    reviewCount?: true
+    lastReviewedAt?: true
     subjectId?: true
   }
 
@@ -5798,8 +5849,14 @@ export namespace Prisma {
     notes?: true
     order?: true
     isCompleted?: true
+    completedAt?: true
     createdAt?: true
     updatedAt?: true
+    confidence?: true
+    reviewDueAt?: true
+    reviewInterval?: true
+    reviewCount?: true
+    lastReviewedAt?: true
     subjectId?: true
     _all?: true
   }
@@ -5896,8 +5953,14 @@ export namespace Prisma {
     notes: string
     order: number
     isCompleted: boolean
+    completedAt: Date | null
     createdAt: Date
     updatedAt: Date
+    confidence: $Enums.Confidence | null
+    reviewDueAt: Date | null
+    reviewInterval: number | null
+    reviewCount: number
+    lastReviewedAt: Date | null
     subjectId: string
     _count: MilestoneCountAggregateOutputType | null
     _avg: MilestoneAvgAggregateOutputType | null
@@ -5926,8 +5989,14 @@ export namespace Prisma {
     notes?: boolean
     order?: boolean
     isCompleted?: boolean
+    completedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    confidence?: boolean
+    reviewDueAt?: boolean
+    reviewInterval?: boolean
+    reviewCount?: boolean
+    lastReviewedAt?: boolean
     subjectId?: boolean
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
     tasks?: boolean | Milestone$tasksArgs<ExtArgs>
@@ -5940,8 +6009,14 @@ export namespace Prisma {
     notes?: boolean
     order?: boolean
     isCompleted?: boolean
+    completedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    confidence?: boolean
+    reviewDueAt?: boolean
+    reviewInterval?: boolean
+    reviewCount?: boolean
+    lastReviewedAt?: boolean
     subjectId?: boolean
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["milestone"]>
@@ -5952,8 +6027,14 @@ export namespace Prisma {
     notes?: boolean
     order?: boolean
     isCompleted?: boolean
+    completedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    confidence?: boolean
+    reviewDueAt?: boolean
+    reviewInterval?: boolean
+    reviewCount?: boolean
+    lastReviewedAt?: boolean
     subjectId?: boolean
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["milestone"]>
@@ -5964,12 +6045,18 @@ export namespace Prisma {
     notes?: boolean
     order?: boolean
     isCompleted?: boolean
+    completedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    confidence?: boolean
+    reviewDueAt?: boolean
+    reviewInterval?: boolean
+    reviewCount?: boolean
+    lastReviewedAt?: boolean
     subjectId?: boolean
   }
 
-  export type MilestoneOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "order" | "isCompleted" | "createdAt" | "updatedAt" | "subjectId", ExtArgs["result"]["milestone"]>
+  export type MilestoneOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "notes" | "order" | "isCompleted" | "completedAt" | "createdAt" | "updatedAt" | "confidence" | "reviewDueAt" | "reviewInterval" | "reviewCount" | "lastReviewedAt" | "subjectId", ExtArgs["result"]["milestone"]>
   export type MilestoneInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     subject?: boolean | SubjectDefaultArgs<ExtArgs>
     tasks?: boolean | Milestone$tasksArgs<ExtArgs>
@@ -5994,8 +6081,14 @@ export namespace Prisma {
       notes: string
       order: number
       isCompleted: boolean
+      completedAt: Date | null
       createdAt: Date
       updatedAt: Date
+      confidence: $Enums.Confidence | null
+      reviewDueAt: Date | null
+      reviewInterval: number | null
+      reviewCount: number
+      lastReviewedAt: Date | null
       subjectId: string
     }, ExtArgs["result"]["milestone"]>
     composites: {}
@@ -6427,8 +6520,14 @@ export namespace Prisma {
     readonly notes: FieldRef<"Milestone", 'String'>
     readonly order: FieldRef<"Milestone", 'Int'>
     readonly isCompleted: FieldRef<"Milestone", 'Boolean'>
+    readonly completedAt: FieldRef<"Milestone", 'DateTime'>
     readonly createdAt: FieldRef<"Milestone", 'DateTime'>
     readonly updatedAt: FieldRef<"Milestone", 'DateTime'>
+    readonly confidence: FieldRef<"Milestone", 'Confidence'>
+    readonly reviewDueAt: FieldRef<"Milestone", 'DateTime'>
+    readonly reviewInterval: FieldRef<"Milestone", 'Int'>
+    readonly reviewCount: FieldRef<"Milestone", 'Int'>
+    readonly lastReviewedAt: FieldRef<"Milestone", 'DateTime'>
     readonly subjectId: FieldRef<"Milestone", 'String'>
   }
     
@@ -15251,8 +15350,14 @@ export namespace Prisma {
     notes: 'notes',
     order: 'order',
     isCompleted: 'isCompleted',
+    completedAt: 'completedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
+    confidence: 'confidence',
+    reviewDueAt: 'reviewDueAt',
+    reviewInterval: 'reviewInterval',
+    reviewCount: 'reviewCount',
+    lastReviewedAt: 'lastReviewedAt',
     subjectId: 'subjectId'
   };
 
@@ -15459,6 +15564,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Confidence'
+   */
+  export type EnumConfidenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Confidence'>
+    
+
+
+  /**
+   * Reference to a field of type 'Confidence[]'
+   */
+  export type ListEnumConfidenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Confidence[]'>
     
 
 
@@ -15793,8 +15912,14 @@ export namespace Prisma {
     notes?: StringFilter<"Milestone"> | string
     order?: IntFilter<"Milestone"> | number
     isCompleted?: BoolFilter<"Milestone"> | boolean
+    completedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
     createdAt?: DateTimeFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeFilter<"Milestone"> | Date | string
+    confidence?: EnumConfidenceNullableFilter<"Milestone"> | $Enums.Confidence | null
+    reviewDueAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
+    reviewInterval?: IntNullableFilter<"Milestone"> | number | null
+    reviewCount?: IntFilter<"Milestone"> | number
+    lastReviewedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
     subjectId?: StringFilter<"Milestone"> | string
     subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
     tasks?: TaskListRelationFilter
@@ -15806,8 +15931,14 @@ export namespace Prisma {
     notes?: SortOrder
     order?: SortOrder
     isCompleted?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    confidence?: SortOrderInput | SortOrder
+    reviewDueAt?: SortOrderInput | SortOrder
+    reviewInterval?: SortOrderInput | SortOrder
+    reviewCount?: SortOrder
+    lastReviewedAt?: SortOrderInput | SortOrder
     subjectId?: SortOrder
     subject?: SubjectOrderByWithRelationInput
     tasks?: TaskOrderByRelationAggregateInput
@@ -15822,8 +15953,14 @@ export namespace Prisma {
     notes?: StringFilter<"Milestone"> | string
     order?: IntFilter<"Milestone"> | number
     isCompleted?: BoolFilter<"Milestone"> | boolean
+    completedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
     createdAt?: DateTimeFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeFilter<"Milestone"> | Date | string
+    confidence?: EnumConfidenceNullableFilter<"Milestone"> | $Enums.Confidence | null
+    reviewDueAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
+    reviewInterval?: IntNullableFilter<"Milestone"> | number | null
+    reviewCount?: IntFilter<"Milestone"> | number
+    lastReviewedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
     subjectId?: StringFilter<"Milestone"> | string
     subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
     tasks?: TaskListRelationFilter
@@ -15835,8 +15972,14 @@ export namespace Prisma {
     notes?: SortOrder
     order?: SortOrder
     isCompleted?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    confidence?: SortOrderInput | SortOrder
+    reviewDueAt?: SortOrderInput | SortOrder
+    reviewInterval?: SortOrderInput | SortOrder
+    reviewCount?: SortOrder
+    lastReviewedAt?: SortOrderInput | SortOrder
     subjectId?: SortOrder
     _count?: MilestoneCountOrderByAggregateInput
     _avg?: MilestoneAvgOrderByAggregateInput
@@ -15854,8 +15997,14 @@ export namespace Prisma {
     notes?: StringWithAggregatesFilter<"Milestone"> | string
     order?: IntWithAggregatesFilter<"Milestone"> | number
     isCompleted?: BoolWithAggregatesFilter<"Milestone"> | boolean
+    completedAt?: DateTimeNullableWithAggregatesFilter<"Milestone"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Milestone"> | Date | string
+    confidence?: EnumConfidenceNullableWithAggregatesFilter<"Milestone"> | $Enums.Confidence | null
+    reviewDueAt?: DateTimeNullableWithAggregatesFilter<"Milestone"> | Date | string | null
+    reviewInterval?: IntNullableWithAggregatesFilter<"Milestone"> | number | null
+    reviewCount?: IntWithAggregatesFilter<"Milestone"> | number
+    lastReviewedAt?: DateTimeNullableWithAggregatesFilter<"Milestone"> | Date | string | null
     subjectId?: StringWithAggregatesFilter<"Milestone"> | string
   }
 
@@ -16706,8 +16855,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     subject: SubjectCreateNestedOneWithoutMilestonesInput
     tasks?: TaskCreateNestedManyWithoutMilestoneInput
   }
@@ -16718,8 +16873,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     subjectId: string
     tasks?: TaskUncheckedCreateNestedManyWithoutMilestoneInput
   }
@@ -16730,8 +16891,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: SubjectUpdateOneRequiredWithoutMilestonesNestedInput
     tasks?: TaskUpdateManyWithoutMilestoneNestedInput
   }
@@ -16742,8 +16909,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subjectId?: StringFieldUpdateOperationsInput | string
     tasks?: TaskUncheckedUpdateManyWithoutMilestoneNestedInput
   }
@@ -16754,8 +16927,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     subjectId: string
   }
 
@@ -16765,8 +16944,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MilestoneUncheckedUpdateManyInput = {
@@ -16775,8 +16960,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subjectId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -17717,6 +17908,35 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type EnumConfidenceNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Confidence | EnumConfidenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumConfidenceNullableFilter<$PrismaModel> | $Enums.Confidence | null
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type SubjectScalarRelationFilter = {
     is?: SubjectWhereInput
     isNot?: SubjectWhereInput
@@ -17728,13 +17948,21 @@ export namespace Prisma {
     notes?: SortOrder
     order?: SortOrder
     isCompleted?: SortOrder
+    completedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    confidence?: SortOrder
+    reviewDueAt?: SortOrder
+    reviewInterval?: SortOrder
+    reviewCount?: SortOrder
+    lastReviewedAt?: SortOrder
     subjectId?: SortOrder
   }
 
   export type MilestoneAvgOrderByAggregateInput = {
     order?: SortOrder
+    reviewInterval?: SortOrder
+    reviewCount?: SortOrder
   }
 
   export type MilestoneMaxOrderByAggregateInput = {
@@ -17743,8 +17971,14 @@ export namespace Prisma {
     notes?: SortOrder
     order?: SortOrder
     isCompleted?: SortOrder
+    completedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    confidence?: SortOrder
+    reviewDueAt?: SortOrder
+    reviewInterval?: SortOrder
+    reviewCount?: SortOrder
+    lastReviewedAt?: SortOrder
     subjectId?: SortOrder
   }
 
@@ -17754,13 +17988,21 @@ export namespace Prisma {
     notes?: SortOrder
     order?: SortOrder
     isCompleted?: SortOrder
+    completedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    confidence?: SortOrder
+    reviewDueAt?: SortOrder
+    reviewInterval?: SortOrder
+    reviewCount?: SortOrder
+    lastReviewedAt?: SortOrder
     subjectId?: SortOrder
   }
 
   export type MilestoneSumOrderByAggregateInput = {
     order?: SortOrder
+    reviewInterval?: SortOrder
+    reviewCount?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -17779,7 +18021,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -17787,17 +18029,23 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type EnumPriorityFilter<$PrismaModel = never> = {
-    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
-    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
+  export type EnumConfidenceNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Confidence | EnumConfidenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumConfidenceNullableWithAggregatesFilter<$PrismaModel> | $Enums.Confidence | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumConfidenceNullableFilter<$PrismaModel>
+    _max?: NestedEnumConfidenceNullableFilter<$PrismaModel>
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -17805,7 +18053,19 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type EnumPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
   }
 
   export type EnumRecurrenceNullableFilter<$PrismaModel = never> = {
@@ -17906,20 +18166,6 @@ export namespace Prisma {
     order?: SortOrder
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
   export type EnumPriorityWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
     in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
@@ -17928,22 +18174,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPriorityFilter<$PrismaModel>
     _max?: NestedEnumPriorityFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type EnumRecurrenceNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -18860,6 +19090,22 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type NullableEnumConfidenceFieldUpdateOperationsInput = {
+    set?: $Enums.Confidence | null
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type SubjectUpdateOneRequiredWithoutMilestonesNestedInput = {
     create?: XOR<SubjectCreateWithoutMilestonesInput, SubjectUncheckedCreateWithoutMilestonesInput>
     connectOrCreate?: SubjectCreateOrConnectWithoutMilestonesInput
@@ -18942,20 +19188,8 @@ export namespace Prisma {
     connect?: TimerSessionWhereUniqueInput | TimerSessionWhereUniqueInput[]
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
-  }
-
   export type EnumPriorityFieldUpdateOperationsInput = {
     set?: $Enums.Priority
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type NullableEnumRecurrenceFieldUpdateOperationsInput = {
@@ -19454,6 +19688,24 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumConfidenceNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Confidence | EnumConfidenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumConfidenceNullableFilter<$PrismaModel> | $Enums.Confidence | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -19481,31 +19733,6 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedEnumPriorityFilter<$PrismaModel = never> = {
-    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
-    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
-  }
-
-  export type NestedEnumRecurrenceNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel> | null
-    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumRecurrenceNullableFilter<$PrismaModel> | $Enums.Recurrence | null
-  }
-
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -19520,14 +19747,14 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumPriorityWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
-    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
-    not?: NestedEnumPriorityWithAggregatesFilter<$PrismaModel> | $Enums.Priority
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumPriorityFilter<$PrismaModel>
-    _max?: NestedEnumPriorityFilter<$PrismaModel>
+  export type NestedEnumConfidenceNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Confidence | EnumConfidenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Confidence[] | ListEnumConfidenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumConfidenceNullableWithAggregatesFilter<$PrismaModel> | $Enums.Confidence | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumConfidenceNullableFilter<$PrismaModel>
+    _max?: NestedEnumConfidenceNullableFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -19555,6 +19782,30 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityFilter<$PrismaModel> | $Enums.Priority
+  }
+
+  export type NestedEnumRecurrenceNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Recurrence | EnumRecurrenceFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Recurrence[] | ListEnumRecurrenceFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRecurrenceNullableFilter<$PrismaModel> | $Enums.Recurrence | null
+  }
+
+  export type NestedEnumPriorityWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Priority | EnumPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Priority[] | ListEnumPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityWithAggregatesFilter<$PrismaModel> | $Enums.Priority
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPriorityFilter<$PrismaModel>
+    _max?: NestedEnumPriorityFilter<$PrismaModel>
   }
 
   export type NestedEnumRecurrenceNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -20164,8 +20415,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     tasks?: TaskCreateNestedManyWithoutMilestoneInput
   }
 
@@ -20175,8 +20432,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     tasks?: TaskUncheckedCreateNestedManyWithoutMilestoneInput
   }
 
@@ -20412,8 +20675,14 @@ export namespace Prisma {
     notes?: StringFilter<"Milestone"> | string
     order?: IntFilter<"Milestone"> | number
     isCompleted?: BoolFilter<"Milestone"> | boolean
+    completedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
     createdAt?: DateTimeFilter<"Milestone"> | Date | string
     updatedAt?: DateTimeFilter<"Milestone"> | Date | string
+    confidence?: EnumConfidenceNullableFilter<"Milestone"> | $Enums.Confidence | null
+    reviewDueAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
+    reviewInterval?: IntNullableFilter<"Milestone"> | number | null
+    reviewCount?: IntFilter<"Milestone"> | number
+    lastReviewedAt?: DateTimeNullableFilter<"Milestone"> | Date | string | null
     subjectId?: StringFilter<"Milestone"> | string
   }
 
@@ -20695,8 +20964,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     subject: SubjectCreateNestedOneWithoutMilestonesInput
   }
 
@@ -20706,8 +20981,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
     subjectId: string
   }
 
@@ -20871,8 +21152,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: SubjectUpdateOneRequiredWithoutMilestonesNestedInput
   }
 
@@ -20882,8 +21169,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subjectId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -22118,8 +22411,14 @@ export namespace Prisma {
     notes?: string
     order?: number
     isCompleted?: boolean
+    completedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    confidence?: $Enums.Confidence | null
+    reviewDueAt?: Date | string | null
+    reviewInterval?: number | null
+    reviewCount?: number
+    lastReviewedAt?: Date | string | null
   }
 
   export type ResourceCreateManySubjectInput = {
@@ -22184,8 +22483,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tasks?: TaskUpdateManyWithoutMilestoneNestedInput
   }
 
@@ -22195,8 +22500,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tasks?: TaskUncheckedUpdateManyWithoutMilestoneNestedInput
   }
 
@@ -22206,8 +22517,14 @@ export namespace Prisma {
     notes?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     isCompleted?: BoolFieldUpdateOperationsInput | boolean
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    confidence?: NullableEnumConfidenceFieldUpdateOperationsInput | $Enums.Confidence | null
+    reviewDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    reviewCount?: IntFieldUpdateOperationsInput | number
+    lastReviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ResourceUpdateWithoutSubjectInput = {

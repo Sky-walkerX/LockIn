@@ -161,8 +161,14 @@ exports.Prisma.MilestoneScalarFieldEnum = {
   notes: 'notes',
   order: 'order',
   isCompleted: 'isCompleted',
+  completedAt: 'completedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  confidence: 'confidence',
+  reviewDueAt: 'reviewDueAt',
+  reviewInterval: 'reviewInterval',
+  reviewCount: 'reviewCount',
+  lastReviewedAt: 'lastReviewedAt',
   subjectId: 'subjectId'
 };
 
@@ -275,6 +281,12 @@ exports.ShareType = exports.$Enums.ShareType = {
   MILESTONE: 'MILESTONE',
   TASK: 'TASK',
   SUBTASK: 'SUBTASK'
+};
+
+exports.Confidence = exports.$Enums.Confidence = {
+  WEAK: 'WEAK',
+  OK: 'OK',
+  STRONG: 'STRONG'
 };
 
 exports.Priority = exports.$Enums.Priority = {

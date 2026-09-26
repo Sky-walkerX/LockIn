@@ -64,4 +64,23 @@ describe("setClause", () => {
       expect(set?.clause).toBe(`"priority" = $1::"PriorityDROPTABLETask"`);
     });
   });
+  // Every DateTime column is `timestamp without time zone` holding UTC. A bound
+  // JS Date arrives as timestamptz, and assigning that to a plain timestamp
+  // converts it into the session's zone — so on a database not set to UTC,
+  // every raw date write landed hours off.
+  describe("dates", () => {
+    it("pins a Date value to UTC wall-clock time", () => {
+      const d = new Date("2026-10-01T12:00:00Z");
+      const set = setClause({ title: "x", dueDate: d });
+      expect(set).toEqual({
+        clause: `"title" = $1, "dueDate" = ($2::timestamptz AT TIME ZONE 'UTC')`,
+        values: ["x", d],
+      });
+    });
+
+    it("leaves a null date bare, since NULL has no zone to fix", () => {
+      const set = setClause({ dueDate: null });
+      expect(set).toEqual({ clause: `"dueDate" = $1`, values: [null] });
+    });
+  });
 });
