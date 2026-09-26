@@ -1,1 +1,811 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  LockIn — Lab Book. One design language, light and dark from one token set.
+  The world is a bound lab notebook: green cloth spine, white cover label,
+  grid paper with a red margin rule for lists, clean paper for reading,
+  blue-black ink. Subjects supply the only saturated colour.
+  Light and dark share every token name; only the values change.
+*/
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ok: var(--lk-ok);
+  --color-warn: var(--lk-warn);
+  --color-live: var(--lk-live);
+  --color-margin: var(--lk-margin);
+  --color-cloth: var(--lk-cloth);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--lk-font-body);
+  --font-display: var(--lk-font-display);
+  --font-mono: var(--lk-font-mono);
+  --font-reading: var(--lk-font-prose);
+  --font-code: var(--lk-font-code);
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+}
+
+/* Steps added to Tailwind's default scale (xs 12, sm 14, base 16, lg 18…). */
+@theme {
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  /* The interface's own step: list rows, menus, spine items. */
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.35;
+  --text-reading: 1.15625rem;
+  --text-reading--line-height: 1.65;
+}
+
+/* ================================ Light ================================ */
+:root {
+  --radius: 4px;
+
+  --background: #ffffff;        /* page */
+  --foreground: #1b2a2f;        /* blue-black ink */
+  --card: #ffffff;
+  --card-foreground: #1b2a2f;
+  --popover: #ffffff;
+  --popover-foreground: #1b2a2f;
+  --primary: #1b2a2f;           /* solid ink button */
+  --primary-foreground: #ffffff;
+  --secondary: #f2f6f4;
+  --secondary-foreground: #1b2a2f;
+  --muted: #f2f6f4;
+  --muted-foreground: #5a6b71;
+  --accent: #e8efec;            /* neutral hover, as shadcn intends */
+  --accent-foreground: #1b2a2f;
+  --destructive: #b4372d;
+  --border: #d5dfdc;
+  --input: #b6c5c1;
+  --ring: #d2453a;
+
+  --chart-1: #2f5fa0;
+  --chart-2: #9b3b6a;
+  --chart-3: #c25a1c;
+  --chart-4: #2e7d4f;
+  --chart-5: #6b55a8;
+
+  --lk-font-display: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
+  --lk-font-body: var(--font-barlow), "Helvetica Neue", Arial, sans-serif;
+  /* Printed-form labels in Barlow Condensed caps; code uses --lk-font-code. */
+  --lk-font-mono: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
+  --lk-font-code: var(--font-jetbrains), ui-monospace, "Cascadia Code", monospace;
+  --lk-font-prose: var(--font-spectral), "Iowan Old Style", Georgia, serif;
+
+  --lk-bw: 1px;
+  --lk-shadow: 0 1px 2px rgb(20 40 35 / 0.1), 0 8px 20px -10px rgb(20 40 35 / 0.28);
+  --lk-shadow-sm: 0 1px 2px rgb(20 40 35 / 0.12);
+  --lk-hero-bg: #ffffff;
+  --lk-hero-ink: #1b2a2f;
+  --lk-ok: #2e7d4f;
+  --lk-warn: #a35a12;
+  --lk-bar-track: #e8efec;
+
+  /* The notebook itself */
+  --lk-ink-strong: #1b2a2f;     /* ruled boxes, heavy rules */
+  --lk-live: #2f5fa0;           /* fountain-pen blue: streaming, suggestions, activity */
+  --lk-margin: #d2453a;         /* red margin rule */
+  --lk-stamp: #b4372d;          /* AWAITING WITNESS */
+  --lk-grid: rgb(46 125 110 / 0.09);
+  --lk-grid-major: rgb(46 125 110 / 0.17);
+  --lk-cloth: #24453b;
+  --lk-cloth-2: #1d3a31;
+  --lk-cloth-ink: #eef0e8;
+  --lk-cloth-ink-2: rgb(238 240 232 / 0.66);
+  --lk-label: #f7f5ee;
+  --lk-label-ink: #1b2a2f;
+
+  /* Syntax: shared by .hljs (rendered notes) and CodeMirror (notes-editor.tsx) */
+  --syntax-heading: #1b2a2f;
+  --syntax-link: #2f5fa0;
+  --syntax-keyword: #2f5fa0;
+  --syntax-string: #2e7d4f;
+  --syntax-number: #a8481a;
+  --syntax-fn: #1d4f8f;
+  --syntax-type: #0f6b72;
+  --syntax-tag: #9b3b6a;
+  --syntax-attr: #8a4b12;
+  --syntax-comment: #6f7f84;
+  --syntax-meta: #5a6b71;
+  --syntax-selection: #f6dcd8;
+}
+
+/* ================================= Dark ================================= */
+.dark {
+  --background: #111a1b;        /* slate page */
+  --foreground: #e2ebe8;
+  --card: #141f20;
+  --card-foreground: #e2ebe8;
+  --popover: #141f20;
+  --popover-foreground: #e2ebe8;
+  --primary: #e2ebe8;
+  --primary-foreground: #111a1b;
+  --secondary: #172325;
+  --secondary-foreground: #e2ebe8;
+  --muted: #172325;
+  --muted-foreground: #93a3a0;
+  --accent: #1c2a2c;
+  --accent-foreground: #e2ebe8;
+  --destructive: #e06a5e;
+  --border: #263335;
+  --input: #34474a;
+  --ring: #e06a5e;
+
+  --chart-1: #6b9be0;
+  --chart-2: #d06e9c;
+  --chart-3: #e2833f;
+  --chart-4: #4fae76;
+  --chart-5: #a08be0;
+
+  --lk-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 12px 26px -10px rgb(0 0 0 / 0.75);
+  --lk-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.45);
+  --lk-hero-bg: #141f20;
+  --lk-hero-ink: #e2ebe8;
+  --lk-ok: #4fae76;
+  --lk-warn: #e0a052;
+  --lk-bar-track: #1c2a2c;
+
+  --lk-ink-strong: #b3c2be;
+  --lk-live: #7fa8e8;
+  --lk-margin: #e06a5e;
+  --lk-stamp: #e06a5e;
+  --lk-grid: rgb(130 200 180 / 0.06);
+  --lk-grid-major: rgb(130 200 180 / 0.11);
+  --lk-cloth: #13261f;
+  --lk-cloth-2: #0f1f19;
+  --lk-label: #e9e6dc;
+
+  --syntax-heading: #e2ebe8;
+  --syntax-link: #7fa8e8;
+  --syntax-keyword: #7fa8e8;
+  --syntax-string: #6cc08b;
+  --syntax-number: #e8955a;
+  --syntax-fn: #8db7f0;
+  --syntax-type: #5fc3c9;
+  --syntax-tag: #e07fa8;
+  --syntax-attr: #e0a96a;
+  --syntax-comment: #7d8d8a;
+  --syntax-meta: #93a3a0;
+  --syntax-selection: #2b3c3e;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html { color-scheme: light; }
+  html.dark { color-scheme: dark; }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--lk-font-body);
+    -webkit-font-smoothing: antialiased;
+    caret-color: var(--lk-live);
+  }
+  /* The parts of the page nobody draws still belong to the notebook. */
+  ::selection { background: color-mix(in oklab, var(--lk-margin) 22%, transparent); }
+  * { scrollbar-width: thin; scrollbar-color: var(--input) transparent; }
+  :focus-visible { outline-color: var(--ring); }
+}
+
+/* ============================ Component layer ============================ */
+@layer components {
+  .lk-display { font-family: var(--lk-font-display); letter-spacing: 0.005em; }
+  /* Printed-form caps for labels, counts and small chrome (Barlow Condensed). */
+  .lk-print { font-family: var(--lk-font-mono); letter-spacing: 0.03em; }
+
+  /* The product name, drawn only by <Wordmark />. */
+  .lk-wordmark {
+    font-family: var(--lk-font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  /* The notebook's cover label: a paper plate with the name in print caps. */
+  .lk-wordmark-label {
+    display: inline-block;
+    background: var(--lk-label);
+    color: var(--lk-label-ink);
+    padding: 0.28em 0.5em 0.24em;
+    border-radius: 2px;
+    border: 1px solid color-mix(in oklab, var(--lk-label-ink) 22%, transparent);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.18);
+  }
+
+  /* ── The notebook shell ───────────────────────────────────────────────── */
+
+  /* Bookcloth: a fine weave over the cloth green, darkening toward the page
+     edge the way a spine curves into the binding. */
+  .lk-cloth {
+    background-color: var(--lk-cloth);
+    background-image:
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.09) 0 1px, transparent 1px 3px);
+    color: var(--lk-cloth-ink);
+    box-shadow: inset -6px 0 10px -6px rgb(0 0 0 / 0.5);
+  }
+  .lk-cloth :focus-visible { outline: 2px solid var(--lk-label); outline-offset: 1px; }
+
+  /* The cover label: a paper plate glued to the cloth. */
+  .lk-cover-label {
+    display: grid; gap: 4px;
+    background: var(--lk-label); color: var(--lk-label-ink);
+    padding: 10px 12px 11px; border-radius: 2px;
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.3);
+  }
+  .lk-cover-label-sm { padding: 8px 0; justify-items: center; }
+  .lk-cover-kicker, .lk-cover-line > span {
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: color-mix(in oklab, var(--lk-label-ink) 62%, var(--lk-label));
+  }
+  .lk-cover-line { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: end; margin-top: 2px; }
+  .lk-cover-line i {
+    font-family: var(--lk-font-prose); font-size: 13.5px;
+    border-bottom: 1px solid color-mix(in oklab, var(--lk-label-ink) 30%, var(--lk-label));
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .lk-spine-label {
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--lk-cloth-ink-2);
+    padding: 0 8px 6px;
+  }
+  .lk-spine-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; min-width: 0;
+    padding: 6px 8px; border-radius: 3px;
+    font-size: 15px; line-height: 1.3; text-align: left;
+    color: var(--lk-cloth-ink-2);
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .lk-spine-item > svg { flex: none; }
+  .lk-spine-item:hover { background: rgb(255 255 255 / 0.06); color: var(--lk-cloth-ink); }
+  .lk-spine-item[aria-current="page"] { background: rgb(255 255 255 / 0.11); color: var(--lk-cloth-ink); font-weight: 600; }
+  .lk-spine-count { margin-left: auto; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .lk-spine-due { background: var(--lk-stamp); color: #fff; border-radius: 2px; padding: 0 6px; font-weight: 700; }
+  .lk-spine-kbd { margin-left: auto; font-family: var(--lk-font-body); font-size: 12px; opacity: 0.7; }
+  .lk-spine-mini {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 3px;
+    color: var(--lk-cloth-ink-2);
+  }
+  .lk-spine-mini:hover { background: rgb(255 255 255 / 0.1); color: var(--lk-cloth-ink); }
+
+  /* A subject's section tab, as it shows on the spine and beside titles. */
+  .lk-tab-chip { width: 10px; height: 14px; flex: none; border-radius: 0 2px 2px 0; }
+
+  .lk-avatar {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; flex: none; border-radius: 50%;
+    background: var(--lk-label); color: var(--lk-label-ink);
+    font-family: var(--lk-font-display); font-weight: 700; font-size: 12px; text-transform: uppercase;
+  }
+
+  /* Grid paper for list pages, with the red margin rule once there's room for
+     it to sit clear of the content. Reading surfaces sit on opaque paper. */
+  .lk-paper {
+    position: relative;
+    background-color: var(--background);
+    background-image:
+      linear-gradient(var(--lk-grid-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--lk-grid-major) 1px, transparent 1px),
+      linear-gradient(var(--lk-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--lk-grid) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-position: -1px -1px;
+  }
+  @media (min-width: 1024px) {
+    .lk-paper::before {
+      content: ""; position: absolute; top: 0; bottom: 0; left: 22px; width: 1.5px;
+      background: var(--lk-margin); opacity: 0.7; pointer-events: none;
+    }
+  }
+
+  /* ── Notebook pages ───────────────────────────────────────────────────── */
+
+  .lk-page {
+    display: grid; align-content: start; gap: 28px;
+    width: 100%; max-width: 1180px;
+    padding: 24px 16px 72px;
+  }
+  @media (min-width: 640px) { .lk-page { padding: 28px 28px 80px; } }
+  @media (min-width: 1024px) { .lk-page { padding: 32px 48px 88px 64px; } }
+
+  .lk-page-title {
+    font-family: var(--lk-font-display); font-weight: 700;
+    font-size: clamp(30px, 3.6vw, 40px); line-height: 1;
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  .lk-page-sub { margin-top: 6px; font-family: var(--lk-font-prose); font-style: italic; font-size: 16.5px; color: var(--muted-foreground); }
+
+  /* Ruled header boxes (RuledBoxes) */
+  .lk-ruled { display: grid; border: 1.5px solid var(--lk-ink-strong); background: var(--card); }
+  .lk-ruled > div { padding: 6px 12px 8px; border-left: 1px solid var(--lk-ink-strong); min-width: 0; }
+  .lk-ruled > div:first-child { border-left: 0; }
+  .lk-ruled dt {
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .lk-ruled dd { font-family: var(--lk-font-prose); font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 639px) {
+    .lk-ruled { grid-template-columns: 1fr 1fr !important; }
+    .lk-ruled > div:nth-child(odd) { border-left: 0; }
+    .lk-ruled > div:nth-child(n + 3) { border-top: 1px solid var(--lk-ink-strong); }
+  }
+
+  /* The contents table: entry, section, written. */
+  .lk-contents { display: grid; background: color-mix(in oklab, var(--card) 88%, transparent); }
+  .lk-contents-head, .lk-contents-row {
+    display: grid; align-items: center; gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 180px 116px;
+    padding: 10px 12px;
+  }
+  .lk-contents-head {
+    padding-block: 6px;
+    border-bottom: 1.5px solid var(--lk-ink-strong);
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .lk-contents-row { border-bottom: 1px solid var(--border); transition: background 0.12s ease; }
+  a.lk-contents-row:hover { background: var(--muted); }
+  .lk-contents-title { font-family: var(--lk-font-prose); font-size: 18px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  a.lk-contents-row:hover .lk-contents-title { text-decoration: underline; text-decoration-color: var(--c-eff); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .lk-contents-excerpt { margin-top: 2px; font-size: 14px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lk-contents-section { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14.5px; }
+  .lk-contents-meta { font-size: 13.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .lk-contents-empty { padding: 28px 12px; font-family: var(--lk-font-prose); font-style: italic; color: var(--muted-foreground); }
+  @media (max-width: 767px) {
+    .lk-contents-head, .lk-contents-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+    .lk-contents-head > :nth-child(2), .lk-contents-row > :nth-child(2) { display: none; }
+  }
+
+  /* Section views: Notes · Plan */
+  .lk-tabs { display: flex; gap: 26px; border-bottom: 1px solid var(--border); margin-top: -8px; }
+  .lk-tab {
+    display: inline-flex; align-items: baseline; gap: 7px;
+    padding-bottom: 9px;
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 14.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted-foreground);
+    transition: color 0.12s ease;
+  }
+  .lk-tab:hover { color: var(--foreground); }
+  .lk-tab[aria-current="page"] { color: var(--foreground); box-shadow: inset 0 -3px 0 var(--c-eff, var(--foreground)); }
+  .lk-tab-count { font-family: var(--lk-font-body); font-size: 12.5px; letter-spacing: 0; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* Notes tab: the list on grid paper, the open note on clean paper. */
+  .lk-notes-pane { display: grid; gap: 24px; align-items: start; }
+  @media (min-width: 1024px) {
+    .lk-notes-pane { grid-template-columns: 272px minmax(0, 1fr); gap: 28px; }
+  }
+  @media (max-width: 1023px) {
+    .lk-notes-pane[data-has-note] > .lk-note-list { display: none; }
+    .lk-notes-pane:not([data-has-note]) > .lk-note-page { display: none; }
+  }
+
+  .lk-note-list { display: grid; align-content: start; gap: 6px; }
+  @media (min-width: 1024px) { .lk-note-list { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; } }
+  .lk-note-list ul { display: grid; }
+  .lk-note-new {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border: 1px dashed var(--input); border-radius: 2px;
+    background: color-mix(in oklab, var(--card) 85%, transparent);
+    color: var(--muted-foreground);
+  }
+  .lk-note-new:focus-within { border-style: solid; border-color: var(--lk-ink-strong); color: var(--foreground); }
+  .lk-note-new input { flex: 1; min-width: 0; background: transparent; outline: none; font-family: var(--lk-font-prose); font-size: 16px; color: var(--foreground); }
+  .lk-note-new input::placeholder { color: var(--muted-foreground); font-style: italic; }
+  .lk-note-item {
+    display: grid; gap: 1px;
+    padding: 9px 10px; border-bottom: 1px solid var(--border);
+    background: color-mix(in oklab, var(--card) 70%, transparent);
+    transition: background 0.12s ease;
+  }
+  .lk-note-item:hover { background: var(--muted); }
+  .lk-note-item[aria-current="page"] { background: var(--card); box-shadow: 0 1px 2px rgb(20 40 35 / 0.1), 0 6px 14px -10px rgb(20 40 35 / 0.35); }
+  .lk-note-item-title { font-family: var(--lk-font-prose); font-size: 16.5px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lk-note-item[aria-current="page"] .lk-note-item-title { font-weight: 600; color: var(--c-eff, var(--foreground)); }
+  .lk-note-item-line { font-size: 13.5px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lk-note-item-meta { font-size: 12px; color: var(--muted-foreground); opacity: 0.85; font-variant-numeric: tabular-nums; }
+
+  /* The open note: a sheet of clean paper laid on the grid. */
+  .lk-note-page {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--lk-shadow-sm);
+    padding: 20px 18px 40px;
+    min-width: 0;
+  }
+  @media (min-width: 640px) { .lk-note-page { padding: 26px 40px 56px; } }
+  .lk-runhead {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .lk-runhead b { color: var(--c-eff, var(--foreground)); font-weight: 700; }
+  .lk-note-title {
+    margin: 26px 0 10px;
+    font-family: var(--lk-font-prose); font-weight: 600;
+    font-size: clamp(28px, 3.4vw, 40px); line-height: 1.12; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .lk-note-title button:hover { text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 6px; }
+  .lk-note-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+    padding-bottom: 16px; margin-bottom: 22px;
+    border-bottom: 2px solid var(--c-eff, var(--foreground));
+  }
+  .lk-note-bar-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted-foreground); }
+  .lk-note-bar-link:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 3px; }
+  .lk-note-bar-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border: 1px solid var(--input); border-radius: 2px;
+    font-size: 14px; font-weight: 500; background: var(--card);
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  .lk-note-bar-btn:hover { border-color: var(--lk-ink-strong); }
+  .lk-note-bar-primary { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+  .lk-note-bar-primary:hover { filter: brightness(1.15); }
+  .lk-note-bar-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+  /* Who wrote a note, and whether it's been signed off. */
+  .lk-provenance {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+    margin: -2px 0 14px;
+    font-family: var(--lk-font-prose); font-style: italic; font-size: 15.5px;
+    color: var(--muted-foreground);
+  }
+  .lk-provenance b { font-style: normal; font-family: var(--lk-font-body); font-weight: 600; color: var(--foreground); }
+  .lk-provenance button { font-style: normal; font-family: var(--lk-font-body); }
+
+  /* A rubber stamp in red ink, set slightly off true like a real one. */
+  .lk-stamp {
+    display: inline-block;
+    font-family: var(--lk-font-display); font-weight: 700; font-style: normal;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
+    color: var(--lk-stamp);
+    border: 1.5px solid var(--lk-stamp); border-radius: 2px;
+    padding: 1px 6px;
+    transform: rotate(-2deg);
+  }
+  /* The stamp lands once when a note page opens: pressed down, then set. */
+  @media (prefers-reduced-motion: no-preference) {
+    .lk-provenance .lk-stamp { animation: lk-stamp-in 420ms cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+  }
+  @keyframes lk-stamp-in {
+    from { transform: rotate(-9deg) scale(1.35); opacity: 0; }
+    60% { opacity: 1; }
+    to { transform: rotate(-2deg) scale(1); opacity: 1; }
+  }
+
+  /* Full screen: one note on clean paper, nothing else on screen. */
+  .lk-fullscreen {
+    position: fixed; inset: 0; z-index: 80;
+    overflow-y: auto; outline: none;
+    background: var(--card); color: var(--foreground);
+    padding: 0 20px 96px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .lk-fullscreen { animation: lk-fullscreen-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  }
+  @keyframes lk-fullscreen-in { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+  .lk-fullscreen-bar {
+    position: sticky; top: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    max-width: 880px; margin: 0 auto; padding: 14px 0 12px;
+    background: var(--card); border-bottom: 1px solid var(--border);
+  }
+  .lk-fullscreen-page { max-width: 760px; margin: 0 auto; padding-top: 48px; }
+  .lk-fullscreen-page .lk-note-title { font-size: clamp(34px, 4.6vw, 52px); margin-top: 0; }
+  .lk-fullscreen-rule { height: 2px; background: var(--c-eff, var(--foreground)); margin: 6px 0 32px; }
+  .lk-reading-full .lk-prose { font-size: 20.5px; line-height: 1.7; }
+
+  /* Reading size for a note's body; .lk-prose carries the rest. */
+  .lk-reading .lk-prose { font-size: 18.5px; line-height: 1.65; max-width: 68ch; }
+  .lk-reading .lk-prose pre { font-size: 14px; }
+  .lk-note-empty { display: grid; justify-items: start; gap: 12px; padding: 8px 0; font-family: var(--lk-font-prose); font-style: italic; color: var(--muted-foreground); font-size: 17px; }
+
+  /* Subject colour, set with `style="--c: #hex"` on the element or an ancestor
+     with .lk-subject. Mixed a step toward the ink so it reads on both papers. */
+  .lk-subject { --c-eff: color-mix(in oklab, var(--c) 86%, var(--foreground)); }
+
+  .lk-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* A ruled box: the notebook's header boxes and anything that needs the
+     same weight (Today, exam pace). */
+  .lk-hero {
+    background: var(--lk-hero-bg);
+    color: var(--lk-hero-ink);
+    border: 1.5px solid var(--lk-ink-strong);
+    border-radius: 2px;
+  }
+
+  .lk-btn {
+    font-family: var(--lk-font-mono);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary);
+    border-radius: 2px;
+    transition: transform 0.08s ease, filter 0.12s ease;
+  }
+  .lk-btn:hover { filter: brightness(1.15); }
+  .lk-btn:active { transform: translateY(1px); }
+
+  .lk-pill {
+    display: inline-block;
+    font-family: var(--lk-font-mono);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+  }
+
+  .lk-bar {
+    position: relative;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--lk-bar-track);
+    overflow: hidden;
+  }
+  .lk-bar > i { display: block; height: 100%; background: var(--c-eff, var(--lk-live)); }
+  /* Exam pace: where coverage should be by now. */
+  .lk-bar > .lk-pace-mark { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--foreground); }
+
+  /* A section tab: the subject's colour as a tab chip on the page edge. */
+  .lk-swatch {
+    width: 10px; height: 14px; flex: none;
+    border-radius: 0 2px 2px 0;
+    background: var(--c-eff, var(--lk-live));
+  }
+
+  .lk-pct { font-family: var(--lk-font-display); font-weight: 700; font-size: 28px; line-height: 1; color: var(--c-eff, var(--foreground)); }
+
+  /* Section label: printed-form caps. */
+  .lk-sec {
+    font-family: var(--lk-font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+
+  /* Task checkbox: ticks in the subject's colour (falls back to ink).
+     `!important` beats shadcn's `dark:data-[state=checked]:bg-primary` utility,
+     which otherwise outranks this component-layer rule in dark mode. */
+  .lk-check[data-state="checked"] {
+    background: var(--c-eff, var(--primary)) !important;
+    border-color: var(--c-eff, var(--primary)) !important;
+    color: var(--primary-foreground) !important;
+  }
+
+  /* Small ghost button — used for inline row actions (reorder, edit, delete) */
+  .lk-iconbtn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; flex: none;
+    border-radius: 3px;
+    color: var(--muted-foreground);
+    transition: color 0.1s ease, background 0.1s ease;
+  }
+  .lk-iconbtn:hover { color: var(--foreground); background: var(--accent); }
+  .lk-iconbtn:disabled { opacity: 0.35; pointer-events: none; }
+
+  /* Drag handle — faint until the row is hovered, then grabbable */
+  .lk-grip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 24px; flex: none;
+    border-radius: 2px;
+    color: var(--muted-foreground); opacity: 0.25;
+    cursor: grab; touch-action: none;
+    transition: opacity 0.1s ease, color 0.1s ease, background 0.1s ease;
+  }
+  .group:hover > .lk-grip, .lk-grip:hover { opacity: 1; }
+  .lk-grip:hover { color: var(--foreground); background: var(--accent); }
+  .lk-grip:active { cursor: grabbing; }
+
+  /* ---------------------------- Plan tree ----------------------------
+     Depth in the milestone→task→item tree is carried by two signals besides
+     indentation: a numbered line gutter and a left rail in the subject's
+     colour that fades one step per level.
+     The gutter number is a CSS counter, so it counts only the rows actually in
+     the DOM — collapsing a task removes its children and the numbering closes
+     up on its own, with no shared expand state to lift. Every row therefore has
+     to sit in the same `.lk-tree` container at the same left edge: nesting is
+     expressed by `--lk-depth` padding *inside* the row, never by wrapping the
+     rows in an indented div. */
+  .lk-tree { counter-reset: lk-line; }
+
+  /* depth = rail strength + indent; row 1 is a task, 2 a subtask, 3 a child item */
+  .lk-trow[data-depth="1"], .lk-tsub[data-depth="1"] { --lk-rail: 55%; --lk-indent: 0px; }
+  .lk-trow[data-depth="2"], .lk-tsub[data-depth="2"] { --lk-rail: 26%; --lk-indent: 20px; }
+  .lk-trow[data-depth="3"], .lk-tsub[data-depth="3"] { --lk-rail: 12%; --lk-indent: 40px; }
+
+  .lk-trow {
+    counter-increment: lk-line;
+    position: relative;
+    border-left: 1px solid color-mix(in srgb, var(--c-eff, var(--foreground)) var(--lk-rail, 0%), transparent);
+    padding-left: calc(35px + var(--lk-indent, 0px));
+  }
+  .lk-trow::before {
+    content: counter(lk-line);
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: flex-end;
+    width: 24px;
+    font-family: var(--lk-font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .lk-trow:hover { background: color-mix(in srgb, var(--muted) 70%, transparent); }
+  .lk-trow:hover::before { opacity: 0.8; }
+
+  /* Content hanging off a row (notes, the add-a-row form) keeps the gutter
+     clear and lines up with that row's own children. */
+  .lk-tsub {
+    border-left: 1px solid transparent;
+    padding-left: calc(35px + var(--lk-indent, 0px));
+  }
+
+  /* Type label for resources — printed caps, outlined */
+  .lk-tag {
+    font-family: var(--lk-font-mono);
+    font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 2px;
+    border: 1px solid var(--input);
+    color: var(--muted-foreground);
+  }
+
+  /* ---- Markdown notes (react-markdown output) ----
+     Reading pages are clean paper: no grid, no rules behind the text. */
+  .lk-prose {
+    font-family: var(--lk-font-prose);
+    font-size: 16.5px; line-height: 1.65;
+    color: var(--foreground);
+  }
+  .lk-prose > :first-child { margin-top: 0; }
+  .lk-prose > :last-child { margin-bottom: 0; }
+  .lk-prose p { margin: 0.7em 0; }
+  .lk-prose h1, .lk-prose h2, .lk-prose h3, .lk-prose h4 {
+    font-family: var(--lk-font-prose);
+    font-weight: 600; line-height: 1.25;
+    margin: 1.1em 0 0.45em;
+  }
+  .lk-prose h1 { font-size: 1.4em; }
+  .lk-prose h2 { font-size: 1.2em; }
+  .lk-prose h3 { font-family: var(--lk-font-display); font-size: 0.95em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); }
+  .lk-prose h4 { font-size: 1em; }
+  .lk-prose ul, .lk-prose ol { margin: 0.55em 0; padding-left: 1.4em; }
+  .lk-prose ul { list-style: disc; }
+  .lk-prose ol { list-style: decimal; }
+  .lk-prose li { margin: 0.22em 0; }
+  .lk-prose li::marker { color: var(--muted-foreground); }
+  .lk-prose a { color: var(--c-eff, var(--syntax-link)); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .lk-prose strong { font-weight: 600; }
+  .lk-prose em { font-style: italic; }
+  .lk-prose code {
+    font-family: var(--lk-font-code);
+    font-size: 0.8em;
+    font-feature-settings: "liga" 1, "calt" 1;   /* ligatures: -> ≥ != … */
+    background: var(--muted);
+    padding: 0.12em 0.36em; border-radius: 2px;
+  }
+  .lk-prose pre {
+    font-family: var(--lk-font-code);
+    font-feature-settings: "liga" 1, "calt" 1;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0.9em 1em; margin: 0.7em 0;
+    overflow: auto; max-height: 420px;
+    font-size: 13.5px; line-height: 1.6;
+  }
+  /* Copy button on code blocks (markdown.tsx). The wrapper takes the block's
+     margins so the button can pin to its corner outside the scrolling <pre>. */
+  .lk-prose .lk-code { position: relative; margin: 0.7em 0; }
+  .lk-prose > .lk-code:first-child { margin-top: 0; }
+  .lk-prose > .lk-code:last-child { margin-bottom: 0; }
+  .lk-prose .lk-code > pre { margin: 0; }
+  .lk-prose .lk-copy {
+    position: absolute; top: 6px; right: 6px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    opacity: 0;
+    transition: opacity 0.1s ease, color 0.1s ease;
+  }
+  .lk-prose .lk-code:hover .lk-copy,
+  .lk-prose .lk-copy:focus-visible,
+  .lk-prose .lk-copy[data-copied] { opacity: 1; }
+  @media (hover: none) { .lk-prose .lk-copy { opacity: 1; } }
+  /* A note that opens with a code block would put the button under the note's
+     own edit pencil, so it moves over to sit beside it. */
+  .lk-notes > .lk-prose > .lk-code:first-child .lk-copy { right: 30px; }
+
+  .lk-prose img {
+    display: block;
+    max-width: 100%; height: auto;
+    margin: 0.7em 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: zoom-in;
+  }
+  .lk-prose pre code { background: none; padding: 0; font-size: 1em; }
+  .lk-prose blockquote {
+    border-left: 1px solid var(--lk-ink-strong);
+    padding-left: 1em; margin: 0.8em 0;
+    color: var(--muted-foreground); font-style: italic;
+  }
+  .lk-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
+  .lk-prose table { width: 100%; border-collapse: collapse; margin: 0.7em 0; font-size: 0.9em; font-variant-numeric: tabular-nums; }
+  .lk-prose th, .lk-prose td { border: 1px solid var(--border); padding: 0.4em 0.6em; text-align: left; }
+  .lk-prose th { background: var(--muted); font-family: var(--lk-font-display); font-weight: 600; letter-spacing: 0.06em; }
+  .lk-prose input[type="checkbox"] { margin-right: 0.45em; accent-color: var(--c-eff, var(--lk-live)); }
+  .lk-prose ul:has(> li > input[type="checkbox"]) { list-style: none; padding-left: 0.2em; }
+
+  /* ---- Syntax highlighting (rehype-highlight / highlight.js `hljs-*`) ----
+     One palette, read from the --syntax-* tokens, so light and dark switch
+     with everything else and match the CodeMirror editor exactly. */
+  .lk-prose .hljs { color: var(--foreground); background: transparent; }
+  .lk-prose .hljs-comment, .lk-prose .hljs-quote { color: var(--syntax-comment); font-style: italic; }
+  .lk-prose .hljs-keyword, .lk-prose .hljs-selector-tag,
+  .lk-prose .hljs-literal, .lk-prose .hljs-doctag { color: var(--syntax-keyword); }
+  .lk-prose .hljs-string, .lk-prose .hljs-regexp, .lk-prose .hljs-addition { color: var(--syntax-string); }
+  .lk-prose .hljs-number, .lk-prose .hljs-symbol, .lk-prose .hljs-bullet { color: var(--syntax-number); }
+  .lk-prose .hljs-title, .lk-prose .hljs-title.function_, .lk-prose .hljs-section { color: var(--syntax-fn); }
+  .lk-prose .hljs-built_in, .lk-prose .hljs-type, .lk-prose .hljs-title.class_ { color: var(--syntax-type); }
+  .lk-prose .hljs-name, .lk-prose .hljs-tag, .lk-prose .hljs-selector-id,
+  .lk-prose .hljs-selector-class { color: var(--syntax-tag); }
+  .lk-prose .hljs-attr, .lk-prose .hljs-attribute,
+  .lk-prose .hljs-variable, .lk-prose .hljs-template-variable { color: var(--syntax-attr); }
+  .lk-prose .hljs-meta { color: var(--syntax-meta); }
+  .lk-prose .hljs-deletion { color: var(--destructive); }
+  .lk-prose .hljs-emphasis { font-style: italic; }
+  .lk-prose .hljs-strong { font-weight: 700; }
+}
