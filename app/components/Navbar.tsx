@@ -6,7 +6,15 @@ import { isChromeless } from "@/lib/chrome";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Sparkles, Terminal, LogOut, Plus, MessageSquare, Search } from "lucide-react";
+import { Sparkles, Terminal, LogOut, Plus, MessageSquare, Search, Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import { useQuickAdd } from "./quick-add";
 import { useSearchPalette } from "./search";
 import { useChatPanel } from "./chat/chat-provider";
@@ -100,14 +108,29 @@ export default function Navbar() {
           </button>
         )}
         {session?.user && (
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            title="Sign out"
-            className="lk-mono flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <LogOut size={13} />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              title="Account"
+              className="lk-mono flex h-7 w-7 items-center justify-center rounded-full border border-border text-[11px] font-bold uppercase text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {(session.user.name || session.user.email || "?").charAt(0)}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="truncate text-sm font-semibold">{session.user.name || "Account"}</div>
+                <div className="lk-mono truncate text-[11px] text-muted-foreground">{session.user.email}</div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings size={14} /> Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => signOut({ callbackUrl: "/login" })}>
+                <LogOut size={14} /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     </header>

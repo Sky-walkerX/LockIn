@@ -10,7 +10,7 @@
  * when they drifted apart a public page kept rendering a chat rail nobody
  * signed in for.
  */
-const CHROMELESS_ROUTES = ["/login", "/signup", "/forgot-password", "/share"];
+const CHROMELESS_ROUTES = ["/login", "/signup", "/share"];
 
 export function isChromeless(pathname: string | null | undefined): boolean {
   return CHROMELESS_ROUTES.some((p) => pathname?.startsWith(p));

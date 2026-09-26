@@ -1,6 +1,6 @@
 "use client";
 
-import type { Resource } from "@/app/generated/prisma";
+import type { ResourceRow } from "@/hooks/useResources";
 import { ResourceItem } from "./resource-item";
 import { NewResource } from "./new-resource";
 
@@ -9,7 +9,7 @@ export function ResourceSection({
   resources,
 }: {
   subjectId: string;
-  resources: Resource[];
+  resources: ResourceRow[];
 }) {
   return (
     <section>

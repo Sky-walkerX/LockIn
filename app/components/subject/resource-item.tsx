@@ -1,8 +1,8 @@
 "use client";
 
 import { Link2, MessageSquare, FileText, BookOpen, Trash2, ExternalLink, Sparkles, Loader2, AlertCircle } from "lucide-react";
-import { useDeleteResource, useIngestResource } from "@/hooks/useResources";
-import type { Resource, ResourceType } from "@/app/generated/prisma";
+import { useDeleteResource, useIngestResource, type ResourceRow } from "@/hooks/useResources";
+import type { ResourceType } from "@/app/generated/prisma";
 
 // Only these types point at something worth extracting text from: AI_CHAT is
 // a link to a conversation, not a document, so "extract text" would have
@@ -31,7 +31,7 @@ function host(url: string) {
   }
 }
 
-export function ResourceItem({ resource }: { resource: Resource }) {
+export function ResourceItem({ resource }: { resource: ResourceRow }) {
   const del = useDeleteResource();
   const ingest = useIngestResource();
   const Icon = ICON[resource.type];

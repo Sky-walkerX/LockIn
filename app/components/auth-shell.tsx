@@ -2,7 +2,7 @@ import type React from "react";
 import Link from "next/link";
 import { FolderKanban, Timer, LineChart } from "lucide-react";
 
-// Shared shell for the public auth pages (login / signup / forgot-password).
+// Shared shell for the public auth pages (login / signup).
 // Dot-grid background + optional left branding panel, themed for both modes.
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
