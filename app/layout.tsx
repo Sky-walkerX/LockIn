@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, Spectral, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./components/QueryProviders";
 import { ThemeProvider } from "next-themes";
 import { BRAND } from "@/lib/brand";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 // Lab Book type: Barlow for the interface, Barlow Condensed for printed labels
 // and headings, Spectral for reading, JetBrains Mono for code only.
@@ -16,7 +19,10 @@ export const metadata: Metadata = {
   description: BRAND.description,
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Read once here (a JWT decode, no database) so the client starts with the
+  // session settled, instead of waiting on a /api/auth/session round trip.
+  const session = await getServerSession(authOptions);
   return (
     // Font variables live on <html>: the --lk-font-* tokens in globals.css are
     // declared on :root, and CSS custom properties substitute var() refs at
@@ -29,7 +35,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     >
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <Providers session={session}>
+            {children}
+          </Providers>
         </ThemeProvider>
       </body>
     </html>
