@@ -15,6 +15,7 @@ export function Contents() {
       <div className="lk-contents-head" aria-hidden>
         <span>Entry</span>
         <span>Section</span>
+        <span>Plan</span>
         <span className="text-right">Written</span>
       </div>
 
@@ -49,6 +50,9 @@ export function Contents() {
             <span className="lk-contents-section">
               <i className="lk-tab-chip" style={{ background: "var(--c-eff)" }} aria-hidden />
               <span className="truncate">{n.subject.title}</span>
+            </span>
+            <span className="lk-contents-meta">
+              {n.taskCount > 0 ? `${n.taskCount} task${n.taskCount === 1 ? "" : "s"}` : ""}
             </span>
             <time className="lk-contents-meta text-right" dateTime={n.updatedAt}>
               {ago(n.updatedAt)}

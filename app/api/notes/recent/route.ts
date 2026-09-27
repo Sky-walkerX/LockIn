@@ -8,6 +8,7 @@ export type RecentNote = {
   title: string;
   excerpt: string;
   updatedAt: string;
+  taskCount: number;
   subject: { id: string; title: string; color: string | null };
 };
 
@@ -16,6 +17,7 @@ type Row = {
   title: string;
   head: string;
   updatedAt: Date;
+  taskCount: number;
   subjectId: string;
   subjectTitle: string;
   subjectColor: string | null;
@@ -26,6 +28,7 @@ type Row = {
 // body, since a note can be pages long.
 const RECENT_SQL = `
   SELECT m.id, m.title, left(m.notes, 1500) AS head, m."updatedAt",
+         (SELECT count(*)::int FROM "Task" t WHERE t."milestoneId" = m.id) AS "taskCount",
          s.id AS "subjectId", s.title AS "subjectTitle", s.color AS "subjectColor"
   FROM "Milestone" m
   JOIN "Subject" s ON s.id = m."subjectId"
@@ -47,6 +50,7 @@ export async function GET(request: NextRequest) {
     title: r.title,
     excerpt: excerpt(r.head),
     updatedAt: r.updatedAt.toISOString(),
+    taskCount: r.taskCount,
     subject: { id: r.subjectId, title: r.subjectTitle, color: r.subjectColor },
   }));
   return NextResponse.json(notes);

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useMounted } from "@/hooks/useMounted";
 import {
+  CalendarCheck,
   Home,
   PanelLeftClose,
   PanelLeftOpen,
@@ -16,10 +17,12 @@ import { Wordmark } from "@/app/components/brand/wordmark";
 import { BRAND } from "@/lib/brand";
 import { NewSubject } from "@/app/components/home/new-subject";
 import { useSubjects } from "@/hooks/useSubjects";
+import { useTodayTasks } from "@/hooks/useTasks";
+import { useDueReviews } from "@/hooks/useReviews";
 import { AccountMenu } from "./account-menu";
 
 // The notebook's spine: cover label, the book's own pages, its sections (one per
-// subject, as coloured tabs) and the account. Rendered docked on
+// subject, as coloured tabs) and the optional Plan layer. Rendered docked on
 // wide screens and inside a sheet on phones; `collapsed` keeps icons only.
 export function Spine({
   collapsed = false,
@@ -39,6 +42,9 @@ export function Spine({
   const mounted = useMounted();
 
   const { data: subjects = [] } = useSubjects();
+  const { data: today = [] } = useTodayTasks();
+  const { data: reviews = [] } = useDueReviews();
+  const dueToday = today.length + reviews.length;
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const owner = session?.user?.name || session?.user?.email?.split("@")[0];
@@ -139,6 +145,15 @@ export function Spine({
             )}
           </nav>
 
+          <nav className="grid gap-px" aria-label="Plan">
+            {!collapsed && <div className="lk-spine-label">Plan</div>}
+            {link(
+              "/#today",
+              <CalendarCheck size={16} strokeWidth={1.75} />,
+              "Today",
+              dueToday > 0 ? <span className="lk-spine-count lk-spine-due">{dueToday}</span> : undefined,
+            )}
+          </nav>
         </>
       )}
 

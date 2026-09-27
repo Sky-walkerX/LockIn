@@ -4,15 +4,23 @@ import { useCallback, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useSubject } from "@/hooks/useSubjects";
-import { SubjectHeader } from "@/app/components/subject/subject-header";
+import { useSubject, type SubjectDetail } from "@/hooks/useSubjects";
+import { useReorderTasks } from "@/hooks/useTasks";
+import { SubjectHeader, SubjectProgress } from "@/app/components/subject/subject-header";
+import { MilestoneSection } from "@/app/components/subject/milestone-section";
+import { TaskRow } from "@/app/components/subject/task-row";
+import { AddTask } from "@/app/components/subject/add-task";
+import { SortableList } from "@/app/components/subject/sortable-list";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
 const FALLBACK = "#8b8f9e";
+type Tab = "notes" | "plan";
 
-// The URL carries the note being read: ?note=<id>.
+// The URL carries everything a link might want to land on:
+//   ?note=<id>            a note on the Notes tab (the default tab)
+//   ?tab=plan             the Plan tab
 export default function SubjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -20,6 +28,7 @@ export default function SubjectPage() {
   const { status } = useSession({ required: true });
   const { data: subject, isLoading, isError } = useSubject(id);
 
+  const tab: Tab = (["plan"] as const).find((t) => t === searchParams.get("tab")) ?? "notes";
   const noteParam = searchParams.get("note");
 
   const href = useCallback(
@@ -66,38 +75,94 @@ export default function SubjectPage() {
     (notes.length > 0
       ? [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0]
       : null);
+  const allTasks = [...notes.flatMap((m) => m.tasks), ...subject.tasks];
+  const tasksDone = allTasks.filter((t) => t.isCompleted).length;
+
+  const tabs: { key: Tab; label: string; count: string }[] = [
+    { key: "notes", label: "Notes", count: String(notes.length) },
+    { key: "plan", label: "Plan", count: allTasks.length > 0 ? `${tasksDone}/${allTasks.length}` : "" },
+  ];
 
   return (
     <main className="lk-page lk-subject" style={{ "--c": subject.color ?? FALLBACK } as React.CSSProperties}>
       <SubjectHeader subject={subject} />
 
-      <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
-        <NoteList
-          subjectId={subject.id}
-          notes={notes}
-          selectedId={shown?.id ?? null}
-          hrefFor={(noteId) => href({ note: noteId })}
-          onCreated={(noteId) => {
-            setJustCreated(noteId);
-            router.replace(href({ note: noteId }), { scroll: false });
-          }}
-        />
-        {shown ? (
-          <NoteView
-            key={shown.id}
-            note={shown}
-            sectionTitle={subject.title}
-            backHref={href({})}
-            startEditing={justCreated === shown.id}
-            onDeleted={() => router.replace(href({}), { scroll: false })}
+      <nav className="lk-tabs" aria-label="Section views">
+        {tabs.map((t) => (
+          <Link
+            key={t.key}
+            href={href({ tab: t.key === "notes" ? null : t.key })}
+            scroll={false}
+            aria-current={tab === t.key ? "page" : undefined}
+            className="lk-tab"
+          >
+            {t.label}
+            {t.count && <span className="lk-tab-count">{t.count}</span>}
+          </Link>
+        ))}
+      </nav>
+
+      {tab === "notes" && (
+        <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
+          <NoteList
+            subjectId={subject.id}
+            notes={notes}
+            selectedId={shown?.id ?? null}
+            hrefFor={(noteId) => href({ note: noteId })}
+            onCreated={(noteId) => {
+              setJustCreated(noteId);
+              router.replace(href({ note: noteId }), { scroll: false });
+            }}
           />
-        ) : (
-          <div className="lk-note-page lk-note-empty">
-            <p>This section has no notes yet.</p>
-          </div>
-        )}
-      </div>
+          {shown ? (
+            <NoteView
+              key={shown.id}
+              note={shown}
+              sectionTitle={subject.title}
+              planHref={href({ tab: "plan" })}
+              backHref={href({})}
+              startEditing={justCreated === shown.id}
+              onDeleted={() => router.replace(href({}), { scroll: false })}
+            />
+          ) : (
+            <div className="lk-note-page lk-note-empty">
+              <p>This section has no notes yet.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+
+      {tab === "plan" && (
+        <PlanTab subject={subject} />
+      )}
+
     </main>
   );
 }
 
+function PlanTab({ subject }: { subject: SubjectDetail }) {
+  const reorderTasks = useReorderTasks();
+  const looseDone = subject.tasks.filter((t) => t.isCompleted).length;
+  return (
+    <div className="grid gap-7">
+      <SubjectProgress subject={subject} />
+      <MilestoneSection subjectId={subject.id} color={subject.color} milestones={subject.milestones} />
+      <section>
+        <div className="lk-sec mb-3">
+          tasks · not tied to a note{subject.tasks.length > 0 ? ` · ${looseDone}/${subject.tasks.length}` : ""}
+        </div>
+        <div className="lk-card lk-tree flex flex-col p-2">
+          <SortableList ids={subject.tasks.map((t) => t.id)} onReorder={(ids) => reorderTasks.mutate({ ids })}>
+            {subject.tasks.map((t) => (
+              <TaskRow key={t.id} task={t} />
+            ))}
+          </SortableList>
+          <div data-depth="1" className="lk-tsub">
+            <AddTask subjectId={subject.id} />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

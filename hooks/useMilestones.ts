@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Milestone } from "@/app/generated/prisma/browser";
+import type { Confidence, Milestone } from "@/app/generated/prisma/browser";
 import { api } from "@/lib/fetcher";
 import type { MilestoneWithTasks, SubjectDetail } from "@/hooks/useSubjects";
 import {
@@ -7,6 +7,7 @@ import {
   restoreSubjectCaches,
   addMilestoneToSubject,
   replaceMilestone,
+  reorderMilestones,
   tempId,
 } from "@/lib/subject-cache";
 
@@ -66,10 +67,16 @@ export type MilestoneUpdate = Partial<{
   title: string;
   notes: string;
   order: number;
+  isCompleted: boolean;
+  confidence: Confidence | null;
+  reviewDueAt: string | null; // ISO; null stops revising
+  reviewInterval: number | null;
+  weight: number;
 }>;
 
 // The optimistic patch plus the server's returned row cover every field here,
 // so no refetch — a title/notes edit changes nothing outside this milestone.
+// Completion and review-date changes do move the cross-subject revision list.
 export function useUpdateMilestone() {
   const qc = useQueryClient();
   const invalidate = useInvalidate();
@@ -77,7 +84,9 @@ export function useUpdateMilestone() {
     mutationFn: ({ id, data }: { id: string; data: MilestoneUpdate }) =>
       api.put<Milestone>(`/api/milestones/${id}`, data),
     onMutate: async ({ id, data }) => {
-      const patch: Partial<Milestone> = { ...data };
+      const { reviewDueAt, ...rest } = data;
+      const patch: Partial<Milestone> = { ...rest };
+      if (reviewDueAt !== undefined) patch.reviewDueAt = reviewDueAt ? new Date(reviewDueAt) : null;
       const prev = await patchSubjectCaches(qc, (s) => ({
         ...s,
         milestones: s.milestones.map((m) => (m.id === id ? { ...m, ...patch } : m)),
@@ -88,6 +97,9 @@ export function useUpdateMilestone() {
       qc.setQueriesData<SubjectDetail>({ queryKey: ["subject"] }, (old) =>
         old ? replaceMilestone(old, milestone.id, milestone) : old,
       );
+      if (data.isCompleted !== undefined || data.reviewDueAt !== undefined) {
+        qc.invalidateQueries({ queryKey: ["reviews"] });
+      }
       if (data.title !== undefined || data.notes !== undefined) {
         qc.invalidateQueries({ queryKey: ["notes"] });
       }
@@ -101,10 +113,30 @@ export function useUpdateMilestone() {
   });
 }
 
+// Optimistic + atomic: re-sorts the cached list immediately and persists all
+// orders in one transaction.
+export function useReorderMilestones() {
+  const qc = useQueryClient();
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ ids }: { ids: string[] }) => api.post("/api/milestones/reorder", { ids }),
+    onMutate: async ({ ids }) => {
+      const prev = await patchSubjectCaches(qc, (s) => reorderMilestones(s, ids));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
+    onSettled: invalidate,
+  });
+}
+
 export function useDeleteMilestone() {
+  const qc = useQueryClient();
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/milestones/${id}`),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["reviews"] });
+    },
   });
 }

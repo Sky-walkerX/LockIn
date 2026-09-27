@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useSubjects } from "@/hooks/useSubjects";
 import { RuledBoxes } from "../notebook/ruled-boxes";
 import { Contents } from "./contents";
+import { TodayStrip } from "./today-strip";
 import { NewSubject } from "./new-subject";
 import { Skeleton } from "../ui/skeleton";
 
@@ -53,6 +54,8 @@ export function NotebookHome() {
           </div>
         )}
       </header>
+
+      <TodayStrip />
 
       {list.length > 0 && <Contents />}
     </main>

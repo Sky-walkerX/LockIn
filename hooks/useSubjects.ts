@@ -3,7 +3,10 @@ import type { Subject, Milestone, Task, Subtask } from "@/app/generated/prisma/b
 import { api } from "@/lib/fetcher";
 
 export type SubjectWithProgress = Subject & {
-  _count: { milestones: number };
+  _count: { milestones: number; tasks: number };
+  totalTasks: number;
+  completedTasks: number;
+  coverage: number; // 0–1, weighted by milestone (lib/pace/pace.ts)
 };
 
 // Subtasks nest one level: top-level subtasks carry their children inline.
@@ -63,6 +66,7 @@ export function useUpdateSubject() {
       qc.invalidateQueries({ queryKey: ["subjects"] });
       qc.invalidateQueries({ queryKey: ["subject", vars.id] });
       // Archiving hides a subject's topics from the revision list.
+      if (vars.data.isArchived !== undefined) qc.invalidateQueries({ queryKey: ["reviews"] });
     },
   });
 }
@@ -73,6 +77,7 @@ export function useDeleteSubject() {
     mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/subjects/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["subjects"] });
+      qc.invalidateQueries({ queryKey: ["reviews"] });
     },
   });
 }

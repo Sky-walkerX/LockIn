@@ -9,8 +9,17 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { useUpdateSubject, useDeleteSubject } from "@/hooks/useSubjects";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { SUBJECT_PALETTE } from "@/app/components/home/new-subject";
-import { format } from "date-fns";
+import { isReviewDue } from "@/app/components/review/revision";
+import { PACE_META, PaceBar, countdown } from "@/app/components/pace/pace";
+import { computeCoverage, subjectPace } from "@/lib/pace/pace";
+import { endOfDay, format, startOfDay } from "date-fns";
 import { RuledBoxes } from "@/app/components/notebook/ruled-boxes";
+
+// <input type="date"> speaks yyyy-MM-dd in local time. A target counts through
+// the end of its day; a start counts from its beginning.
+const toInput = (d: Date | string | null) => (d ? format(new Date(d), "yyyy-MM-dd") : "");
+const fromInput = (v: string, edge: "start" | "end") =>
+  v ? (edge === "end" ? endOfDay(new Date(`${v}T00:00`)) : startOfDay(new Date(`${v}T00:00`))).toISOString() : null;
 
 const FALLBACK = "#8b8f9e";
 
@@ -23,6 +32,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
   const [title, setTitle] = useState(subject.title);
   const [description, setDescription] = useState(subject.description ?? "");
   const [color, setColor] = useState(subject.color ?? SUBJECT_PALETTE[0]);
+  const [targetDate, setTargetDate] = useState(toInput(subject.targetDate));
+  const [startDate, setStartDate] = useState(toInput(subject.startDate));
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Re-seed the draft fields every time the popover opens so an edit started
@@ -32,6 +43,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
       setTitle(subject.title);
       setDescription(subject.description ?? "");
       setColor(subject.color ?? SUBJECT_PALETTE[0]);
+      setTargetDate(toInput(subject.targetDate));
+      setStartDate(toInput(subject.startDate));
     }
     setEditOpen(o);
   };
@@ -46,6 +59,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
           title: title.trim(),
           description: description.trim() || null,
           color,
+          targetDate: fromInput(targetDate, "end"),
+          startDate: fromInput(startDate, "start"),
         },
       },
       { onSuccess: () => setEditOpen(false) },
@@ -113,6 +128,21 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
                     />
                   ))}
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="lk-print flex flex-col gap-1 text-2xs uppercase tracking-wide text-muted-foreground">
+                    Exam / target
+                    <Input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
+                  </label>
+                  <label className="lk-print flex flex-col gap-1 text-2xs uppercase tracking-wide text-muted-foreground">
+                    Started
+                    <Input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      title="Defaults to when you created the subject"
+                    />
+                  </label>
+                </div>
                 <button
                   type="submit"
                   disabled={update.isPending || !title.trim()}
@@ -162,5 +192,69 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
       </div>
 
     </header>
+  );
+}
+
+// Task progress, or weighted syllabus coverage against the exam date when the
+// subject has one. Part of the Plan layer, so it lives on the Plan tab.
+export function SubjectProgress({ subject }: { subject: SubjectDetail }) {
+  const milestoneTasks = subject.milestones.flatMap((m) => m.tasks);
+  const allTasks = [...milestoneTasks, ...subject.tasks];
+  const total = allTasks.length;
+  const done = allTasks.filter((t) => t.isCompleted).length;
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  const complete = total > 0 && done === total;
+  const weak = subject.milestones.filter((m) => m.confidence === "WEAK").length;
+  const toRevise = subject.milestones.filter((m) => m.isCompleted && isReviewDue(m.reviewDueAt)).length;
+
+  const coverage = computeCoverage(
+    subject.milestones.map((m) => ({
+      weight: m.weight,
+      isCompleted: m.isCompleted,
+      doneTasks: m.tasks.filter((t) => t.isCompleted).length,
+      totalTasks: m.tasks.length,
+    })),
+    { done, total },
+  );
+  const pace = subjectPace(subject, coverage);
+  // With a target date the headline number is weighted syllabus coverage;
+  // without one it stays plain task progress.
+  const examMode = pace.status !== "none";
+  const shown = examMode ? Math.round(coverage * 100) : pct;
+
+  return (
+    <div className="lk-hero px-4 py-3">
+      <div className="flex items-end gap-4">
+        <span className="lk-pct" title={examMode ? "Weighted syllabus coverage" : "Tasks done"}>
+          {shown}%
+        </span>
+        <div className="flex-1 pb-1">
+          <PaceBar
+            coverage={shown / 100}
+            elapsed={pace.elapsed}
+            showMark={examMode && pace.status !== "done" && pace.status !== "overdue"}
+          />
+          <div className="lk-print mt-2 text-2xs uppercase tracking-wide text-muted-foreground">
+            {done}/{total} tasks · {subject.milestones.length} notes
+            {weak > 0 && <span style={{ color: "var(--destructive)" }}> · {weak} weak</span>}
+            {toRevise > 0 && <span> · {toRevise} to revise</span>}
+            {complete && <span className="text-ok"> · done</span>}
+          </div>
+          {examMode && subject.targetDate && pace.status !== "none" && (
+            <div className="lk-print mt-1 text-2xs uppercase tracking-wide text-muted-foreground">
+              target {countdown(subject.targetDate, pace.daysLeft)} ·{" "}
+              <span style={{ color: PACE_META[pace.status].color }}>{PACE_META[pace.status].label}</span>
+              {pace.status !== "done" && pace.status !== "overdue" && (
+                <>
+                  {" "}
+                  · {Math.round(pace.elapsed * 100)}% of time gone
+                  {pace.neededPerWeek !== null && <> · need {Math.ceil(pace.neededPerWeek * 100)}%/wk</>}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

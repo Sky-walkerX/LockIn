@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Maximize2, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, ListChecks, Maximize2, Pencil, Trash2 } from "lucide-react";
 import { ago } from "@/lib/dates";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
@@ -18,12 +18,15 @@ import { NoteFullscreen } from "./note-fullscreen";
 export function NoteView({
   note,
   sectionTitle,
+  planHref,
   backHref,
   startEditing = false,
   onDeleted,
 }: {
   note: MilestoneWithTasks;
   sectionTitle: string;
+  /** Null where the note has no Plan to show. */
+  planHref: string | null;
   /** Phones show the list or the page, never both: this leads back to the list. */
   backHref: string;
   startEditing?: boolean;
@@ -121,6 +124,14 @@ export function NoteView({
       )}
 
       <div className="lk-note-bar">
+        {planHref && (
+          <Link href={planHref} className="lk-note-bar-link">
+            <ListChecks size={14} />
+            {note.tasks.length > 0
+              ? `${note.tasks.filter((t) => t.isCompleted).length}/${note.tasks.length} tasks in Plan`
+              : "Plan tasks for this note"}
+          </Link>
+        )}
         <span className="flex-1" />
         {!draft.editing && (
           <button type="button" onClick={draft.open} disabled={pending} className="lk-note-bar-btn">
@@ -149,7 +160,11 @@ export function NoteView({
           <PopoverContent align="end" className="w-64">
             <div className="flex flex-col gap-3">
               <div className="lk-sec">Delete this note?</div>
-              <p className="text-sm text-muted-foreground">This can&apos;t be undone.</p>
+              <p className="text-sm text-muted-foreground">
+                {note.tasks.length > 0
+                  ? `Its ${note.tasks.length} task${note.tasks.length === 1 ? "" : "s"} stay in Plan, no longer tied to a note.`
+                  : "This can't be undone."}
+              </p>
               <button
                 type="button"
                 onClick={remove}

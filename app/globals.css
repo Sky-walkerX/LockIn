@@ -363,11 +363,11 @@
     .lk-ruled > div:nth-child(n + 3) { border-top: 1px solid var(--lk-ink-strong); }
   }
 
-  /* The contents table: entry, section, written. */
+  /* The contents table: entry, section, plan, written. */
   .lk-contents { display: grid; background: color-mix(in oklab, var(--card) 88%, transparent); }
   .lk-contents-head, .lk-contents-row {
     display: grid; align-items: center; gap: 16px;
-    grid-template-columns: minmax(0, 1fr) 180px 116px;
+    grid-template-columns: minmax(0, 1fr) 180px 72px 116px;
     padding: 10px 12px;
   }
   .lk-contents-head {
@@ -387,7 +387,10 @@
   .lk-contents-empty { padding: 28px 12px; font-family: var(--lk-font-prose); font-style: italic; color: var(--muted-foreground); }
   @media (max-width: 767px) {
     .lk-contents-head, .lk-contents-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
-    .lk-contents-head > :nth-child(2), .lk-contents-row > :nth-child(2) { display: none; }
+    .lk-contents-head > :nth-child(2), .lk-contents-head > :nth-child(3),
+    .lk-contents-row > :nth-child(3) { display: none; }
+    .lk-contents-row > :nth-child(2) { display: none; }
+    .lk-contents-head > :nth-child(4) { display: block; }
   }
 
   /* Section views: Notes · Plan */
