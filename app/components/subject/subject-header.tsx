@@ -72,6 +72,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
             ),
             grow: 2,
           },
+          { label: "Notes", value: subject.milestones.length },
           { label: "Updated", value: format(new Date(subject.updatedAt), "d MMM yyyy"), grow: 1.3 },
         ]}
       />

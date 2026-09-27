@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { useSubjects } from "@/hooks/useSubjects";
 import { RuledBoxes } from "../notebook/ruled-boxes";
+import { Contents } from "./contents";
 import { NewSubject } from "./new-subject";
 import { Skeleton } from "../ui/skeleton";
 
@@ -23,6 +24,7 @@ export function NotebookHome() {
   }
 
   const list = subjects ?? [];
+  const noteCount = list.reduce((n, s) => n + s._count.milestones, 0);
   const owner = session?.user?.name || session?.user?.email?.split("@")[0] || "—";
 
   return (
@@ -31,6 +33,7 @@ export function NotebookHome() {
         items={[
           { label: "Owner", value: owner, grow: 2 },
           { label: "Sections", value: list.length },
+          { label: "Notes", value: noteCount },
           { label: "Date", value: format(new Date(), "d MMM yyyy"), grow: 1.3 },
         ]}
       />
@@ -41,7 +44,7 @@ export function NotebookHome() {
           <p className="lk-page-sub">
             {list.length === 0
               ? "An empty notebook. Start a section for the first thing you're learning."
-              : `${list.length} section${list.length === 1 ? "" : "s"}, listed in the spine.`}
+              : `${noteCount} note${noteCount === 1 ? "" : "s"} across ${list.length} section${list.length === 1 ? "" : "s"}, most recent first.`}
           </p>
         </div>
         {list.length === 0 && (
@@ -51,6 +54,7 @@ export function NotebookHome() {
         )}
       </header>
 
+      {list.length > 0 && <Contents />}
     </main>
   );
 }

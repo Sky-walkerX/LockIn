@@ -128,6 +128,7 @@ export function Spine({
                 >
                   <i className="lk-tab-chip" style={{ background: s.color || "var(--lk-cloth-ink-2)" }} aria-hidden />
                   {!collapsed && <span className="truncate">{s.title}</span>}
+                  {!collapsed && <span className="lk-spine-count">{s._count.milestones}</span>}
                 </Link>
               );
             })}
