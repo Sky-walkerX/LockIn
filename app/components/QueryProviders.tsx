@@ -6,8 +6,8 @@ import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import React from "react";
 
-// Data stays fresh for 30s so navigation doesn't refetch what it just loaded;
-// mutations invalidate explicitly, so correctness holds.
+// Data stays fresh for 30s so navigation doesn't refetch the heavy subject
+// detail payload; mutations invalidate explicitly, so correctness holds.
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

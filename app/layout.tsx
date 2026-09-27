@@ -3,6 +3,7 @@ import { Barlow, Barlow_Condensed, Spectral, JetBrains_Mono } from "next/font/go
 import "./globals.css";
 import { Providers } from "./components/QueryProviders";
 import { ThemeProvider } from "next-themes";
+import { AppShell } from "./components/shell/app-shell";
 import { BRAND } from "@/lib/brand";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -36,7 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers session={session}>
-            {children}
+            <AppShell>{children}</AppShell>
           </Providers>
         </ThemeProvider>
       </body>

@@ -1,0 +1,78 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Subject, Milestone, Task, Subtask } from "@/app/generated/prisma/browser";
+import { api } from "@/lib/fetcher";
+
+export type SubjectWithProgress = Subject & {
+  _count: { milestones: number };
+};
+
+// Subtasks nest one level: top-level subtasks carry their children inline.
+export type SubtaskWithChildren = Subtask & { children: Subtask[] };
+
+export type TaskWithSubtasks = Task & { subtasks: SubtaskWithChildren[] };
+
+export type MilestoneWithTasks = Milestone & { tasks: TaskWithSubtasks[] };
+
+export type SubjectDetail = Subject & {
+  milestones: MilestoneWithTasks[];
+  tasks: TaskWithSubtasks[]; // loose tasks (no milestone)
+};
+
+export function useSubjects() {
+  return useQuery({
+    queryKey: ["subjects"],
+    queryFn: () => api.get<SubjectWithProgress[]>("/api/subjects"),
+  });
+}
+
+export function useSubject(id: string | undefined) {
+  return useQuery({
+    queryKey: ["subject", id],
+    enabled: !!id,
+    queryFn: () => api.get<SubjectDetail>(`/api/subjects/${id}`),
+  });
+}
+
+export function useCreateSubject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { title: string; description?: string; color?: string }) =>
+      api.post<Subject>("/api/subjects", input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["subjects"] }),
+  });
+}
+
+export function useUpdateSubject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<{
+        title: string;
+        description: string | null;
+        color: string | null;
+        isArchived: boolean;
+        targetDate: string | null; // ISO
+        startDate: string | null; // ISO
+      }>;
+    }) => api.put<Subject>(`/api/subjects/${id}`, data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["subjects"] });
+      qc.invalidateQueries({ queryKey: ["subject", vars.id] });
+      // Archiving hides a subject's topics from the revision list.
+    },
+  });
+}
+
+export function useDeleteSubject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/subjects/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["subjects"] });
+    },
+  });
+}
