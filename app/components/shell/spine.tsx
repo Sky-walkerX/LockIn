@@ -12,10 +12,12 @@ import {
   PanelLeftOpen,
   Plus,
   SunMoon,
+  Timer,
 } from "lucide-react";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { BRAND } from "@/lib/brand";
 import { NewSubject } from "@/app/components/home/new-subject";
+import { fmtClock, useFocus } from "@/app/components/focus/focus-provider";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useTodayTasks } from "@/hooks/useTasks";
 import { useDueReviews } from "@/hooks/useReviews";
@@ -38,6 +40,7 @@ export function Spine({
   const { data: session } = useSession();
   const signedIn = !!session?.user;
 
+  const { running, clock } = useFocus();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
 
@@ -152,6 +155,12 @@ export function Spine({
               <CalendarCheck size={16} strokeWidth={1.75} />,
               "Today",
               dueToday > 0 ? <span className="lk-spine-count lk-spine-due">{dueToday}</span> : undefined,
+            )}
+            {link(
+              "/focus",
+              <Timer size={16} strokeWidth={1.75} />,
+              "Focus",
+              running ? <span className="lk-spine-count tabular-nums">{fmtClock(clock)}</span> : undefined,
             )}
           </nav>
         </>

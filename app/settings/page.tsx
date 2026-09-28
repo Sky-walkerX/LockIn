@@ -4,6 +4,7 @@ import { useMounted } from "@/hooks/useMounted";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { FocusSettings } from "@/app/components/focus/focus-settings";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
 const THEMES = [
@@ -79,6 +80,12 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        <section>
+          <div className="lk-sec mb-3">focus timer</div>
+          <div className="lk-card p-4">
+            <FocusSettings />
+          </div>
+        </section>
       </div>
     </main>
   );

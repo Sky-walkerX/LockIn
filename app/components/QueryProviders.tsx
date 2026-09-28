@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import React from "react";
+import { FocusProvider } from "./focus/focus-provider";
 
 // Data stays fresh for 30s so navigation doesn't refetch the heavy subject
 // detail payload; mutations invalidate explicitly, so correctness holds.
@@ -22,7 +23,7 @@ export function Providers({ children, session }: { children: React.ReactNode; se
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
-        {children}
+        <FocusProvider>{children}</FocusProvider>
       </SessionProvider>
     </QueryClientProvider>
   );
