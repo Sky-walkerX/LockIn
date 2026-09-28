@@ -1,8 +1,8 @@
 import prisma from "@/lib/prisma";
 
-// The full plan tree for a subject: milestones with their tasks and loose
-// tasks (no milestone). Subtasks nest one level: top-level subtasks carry
-// their children. With `relationJoins` this is one statement.
+// The full plan tree for a subject: milestones with their tasks, loose tasks
+// (no milestone), and resources. Subtasks nest one level: top-level subtasks
+// carry their children. With `relationJoins` this is one statement.
 
 const subtasks = {
   where: { parentId: null },
@@ -18,6 +18,8 @@ const taskInclude = {
 export const subjectTreeInclude = {
   milestones: { orderBy: { order: "asc" as const }, include: { tasks: taskInclude } },
   tasks: { where: { milestoneId: null }, ...taskInclude },
+  // The extracted document text can run to megabytes; nothing here needs it.
+  resources: { orderBy: { createdAt: "desc" as const }, omit: { extracted: true } },
 };
 
 export function loadSubjectTree(userId: string, id: string) {

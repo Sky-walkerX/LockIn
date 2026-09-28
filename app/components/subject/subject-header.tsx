@@ -88,6 +88,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
             grow: 2,
           },
           { label: "Notes", value: subject.milestones.length },
+          { label: "Resources", value: subject.resources.length },
           { label: "Updated", value: format(new Date(subject.updatedAt), "d MMM yyyy"), grow: 1.3 },
         ]}
       />
@@ -174,7 +175,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
               <div className="flex flex-col gap-3">
                 <div className="lk-sec">Delete subject?</div>
                 <p className="text-xs text-muted-foreground">
-                  This permanently removes its notes and tasks.
+                  This permanently removes its notes, tasks &amp; resources.
                 </p>
                 <button
                   type="button"
@@ -235,7 +236,7 @@ export function SubjectProgress({ subject }: { subject: SubjectDetail }) {
             showMark={examMode && pace.status !== "done" && pace.status !== "overdue"}
           />
           <div className="lk-print mt-2 text-2xs uppercase tracking-wide text-muted-foreground">
-            {done}/{total} tasks · {subject.milestones.length} notes
+            {done}/{total} tasks · {subject.milestones.length} notes · {subject.resources.length} resources
             {weak > 0 && <span style={{ color: "var(--destructive)" }}> · {weak} weak</span>}
             {toRevise > 0 && <span> · {toRevise} to revise</span>}
             {complete && <span className="text-ok"> · done</span>}

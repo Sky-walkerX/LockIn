@@ -393,7 +393,7 @@
     .lk-contents-head > :nth-child(4) { display: block; }
   }
 
-  /* Section views: Notes · Plan */
+  /* Section views: Notes · Resources · Plan */
   .lk-tabs { display: flex; gap: 26px; border-bottom: 1px solid var(--border); margin-top: -8px; }
   .lk-tab {
     display: inline-flex; align-items: baseline; gap: 7px;

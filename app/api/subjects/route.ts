@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     where: { userId, isArchived: false },
     orderBy: { updatedAt: "desc" },
     include: {
-      _count: { select: { milestones: true, tasks: true } },
+      _count: { select: { milestones: true, tasks: true, resources: true } },
       tasks: { select: { isCompleted: true, milestoneId: true } },
       milestones: { select: { id: true, weight: true, isCompleted: true } },
     },

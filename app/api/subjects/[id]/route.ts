@@ -16,7 +16,7 @@ const UpdateSubjectSchema = z.object({
 const toDate = (v: string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
 
 // GET /api/subjects/[id] - full subject: milestones (with their tasks),
-// and loose tasks (no milestone).
+// loose tasks (no milestone), and resources.
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json(subject);
 }
 
-// DELETE /api/subjects/[id] - cascades milestones and tasks
+// DELETE /api/subjects/[id] - cascades milestones, tasks, resources
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

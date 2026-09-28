@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -8,19 +8,22 @@ import { useSubject, type SubjectDetail } from "@/hooks/useSubjects";
 import { useReorderTasks } from "@/hooks/useTasks";
 import { SubjectHeader, SubjectProgress } from "@/app/components/subject/subject-header";
 import { MilestoneSection } from "@/app/components/subject/milestone-section";
+import { ResourceSection } from "@/app/components/subject/resource-section";
 import { TaskRow } from "@/app/components/subject/task-row";
 import { AddTask } from "@/app/components/subject/add-task";
 import { SortableList } from "@/app/components/subject/sortable-list";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { ResourceReader } from "@/app/components/reader/resource-reader";
 
 const FALLBACK = "#8b8f9e";
-type Tab = "notes" | "plan";
+type Tab = "notes" | "resources" | "plan";
 
 // The URL carries everything a link might want to land on:
 //   ?note=<id>            a note on the Notes tab (the default tab)
-//   ?tab=plan             the Plan tab
+//   ?tab=resources|plan   the other tabs
+//   ?read=<id>[&q=…]      the resource reader, over any tab
 export default function SubjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -28,8 +31,10 @@ export default function SubjectPage() {
   const { status } = useSession({ required: true });
   const { data: subject, isLoading, isError } = useSubject(id);
 
-  const tab: Tab = (["plan"] as const).find((t) => t === searchParams.get("tab")) ?? "notes";
+  const tab: Tab = (["resources", "plan"] as const).find((t) => t === searchParams.get("tab")) ?? "notes";
   const noteParam = searchParams.get("note");
+  const readId = searchParams.get("read");
+  const passage = searchParams.get("q");
 
   const href = useCallback(
     (params: Record<string, string | null>) => {
@@ -40,9 +45,15 @@ export default function SubjectPage() {
     },
     [id],
   );
+  const here = useMemo(
+    () => ({ tab: tab === "notes" ? null : tab, note: tab === "notes" ? noteParam : null }),
+    [tab, noteParam],
+  );
 
   // A freshly created note opens in the editor.
   const [justCreated, setJustCreated] = useState<string | null>(null);
+
+  const closeReader = useCallback(() => router.replace(href(here), { scroll: false }), [router, href, here]);
 
   if (status === "loading" || isLoading) {
     return (
@@ -80,6 +91,7 @@ export default function SubjectPage() {
 
   const tabs: { key: Tab; label: string; count: string }[] = [
     { key: "notes", label: "Notes", count: String(notes.length) },
+    { key: "resources", label: "Resources", count: String(subject.resources.length) },
     { key: "plan", label: "Plan", count: allTasks.length > 0 ? `${tasksDone}/${allTasks.length}` : "" },
   ];
 
@@ -132,11 +144,13 @@ export default function SubjectPage() {
         </div>
       )}
 
+      {tab === "resources" && <ResourceSection subjectId={subject.id} resources={subject.resources} />}
 
       {tab === "plan" && (
         <PlanTab subject={subject} />
       )}
 
+      {readId && <ResourceReader resourceId={readId} subject={subject} passage={passage} onClose={closeReader} />}
     </main>
   );
 }

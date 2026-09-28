@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Subject, Milestone, Task, Subtask } from "@/app/generated/prisma/browser";
+import type { ResourceRow } from "./useResources";
 import { api } from "@/lib/fetcher";
 
 export type SubjectWithProgress = Subject & {
-  _count: { milestones: number; tasks: number };
+  _count: { milestones: number; tasks: number; resources: number };
   totalTasks: number;
   completedTasks: number;
   coverage: number; // 0–1, weighted by milestone (lib/pace/pace.ts)
@@ -19,6 +20,7 @@ export type MilestoneWithTasks = Milestone & { tasks: TaskWithSubtasks[] };
 export type SubjectDetail = Subject & {
   milestones: MilestoneWithTasks[];
   tasks: TaskWithSubtasks[]; // loose tasks (no milestone)
+  resources: ResourceRow[];
 };
 
 export function useSubjects() {
