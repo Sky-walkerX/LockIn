@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useMounted } from "@/hooks/useMounted";
 import {
+  Activity,
   CalendarCheck,
   Home,
   PanelLeftClose,
@@ -162,6 +163,7 @@ export function Spine({
               "Focus",
               running ? <span className="lk-spine-count tabular-nums">{fmtClock(clock)}</span> : undefined,
             )}
+            {link("/analytics", <Activity size={16} strokeWidth={1.75} />, "Progress")}
           </nav>
         </>
       )}
