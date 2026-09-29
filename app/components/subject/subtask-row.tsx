@@ -14,6 +14,7 @@ import { NotesEditor } from "./notes-editor-lazy";
 import { SortableList } from "./sortable-list";
 import { AddSubtask } from "./add-subtask";
 import { useReveal } from "./reveal";
+import { ShareButton } from "@/app/components/share/share-button";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // subtasks, so only rows whose subtask actually changed re-render.
@@ -169,6 +170,7 @@ export const SubtaskRow = memo(function SubtaskRow({
           <button type="button" onClick={startRenaming} className="lk-iconbtn" title="Rename subtask">
             <Pencil size={12} />
           </button>
+          <ShareButton target={{ type: "SUBTASK", entityId: subtask.id }} size={12} />
           <button
             type="button"
             onClick={() => del.mutate(subtask.id)}

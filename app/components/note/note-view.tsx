@@ -9,6 +9,7 @@ import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
+import { ShareButton } from "@/app/components/share/share-button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { isTempId } from "@/lib/subject-cache";
 import { NoteFullscreen } from "./note-fullscreen";
@@ -151,6 +152,7 @@ export function NoteView({
         >
           <Maximize2 size={14} />
         </button>
+        {!pending && <ShareButton target={{ type: "MILESTONE", entityId: note.id }} />}
         <Popover open={confirmOpen} onOpenChange={setConfirmOpen}>
           <PopoverTrigger asChild>
             <button type="button" disabled={pending} className="lk-iconbtn hover:text-destructive" title="Delete note">

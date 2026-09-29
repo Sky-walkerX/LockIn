@@ -26,6 +26,7 @@ import { SortableList } from "./sortable-list";
 import { SubtaskRow } from "./subtask-row";
 import { AddSubtask } from "./add-subtask";
 import { useReveal } from "./reveal";
+import { ShareButton } from "@/app/components/share/share-button";
 
 const PRIORITY_COLOR: Record<Priority, string> = {
   HIGH: "var(--destructive)",
@@ -279,6 +280,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
             </PopoverContent>
           </Popover>
 
+          <ShareButton target={{ type: "TASK", entityId: task.id }} />
 
           <button
             type="button"

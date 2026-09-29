@@ -14,6 +14,7 @@ import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
 import { useReveal } from "./reveal";
+import { ShareButton } from "@/app/components/share/share-button";
 import { ConfidenceMenu, ReviewStatus } from "@/app/components/review/revision";
 
 // A note as the Plan tab sees it: its tasks, completion, weight and revision.
@@ -178,6 +179,7 @@ export const MilestoneItem = memo(function MilestoneItem({
               </form>
             </PopoverContent>
           </Popover>
+          <ShareButton target={{ type: "MILESTONE", entityId: milestone.id }} />
           <button
             type="button"
             onClick={() => onMove(milestone.id, -1)}
