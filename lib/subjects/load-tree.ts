@@ -2,7 +2,8 @@ import prisma from "@/lib/prisma";
 
 // The full plan tree for a subject: milestones with their tasks, loose tasks
 // (no milestone), and resources. Subtasks nest one level: top-level subtasks
-// carry their children. With `relationJoins` this is one statement.
+// carry their children. Shared by the subject page and the exports, so both
+// see the same shape. With `relationJoins` this is one statement.
 
 const subtasks = {
   where: { parentId: null },

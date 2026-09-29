@@ -3,7 +3,7 @@
 import { useMounted } from "@/hooks/useMounted";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { Download, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { FocusSettings } from "@/app/components/focus/focus-settings";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
@@ -78,6 +78,25 @@ export default function SettingsPage() {
               );
             })}
           </div>
+        </section>
+
+        <section>
+          <div className="lk-sec mb-3">your data</div>
+          <div className="lk-card flex flex-wrap items-center justify-between gap-4 p-4">
+            <p className="text-sm text-muted-foreground">
+              Every subject, archived ones included, with its plan, notes and resources.
+            </p>
+            <a
+              href="/api/export"
+              download
+              className="lk-print flex shrink-0 items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-2xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Download size={13} /> Export all (JSON)
+            </a>
+          </div>
+          <p className="lk-print mt-2 text-2xs text-muted-foreground">
+            A single subject can also be downloaded as Markdown from its page.
+          </p>
         </section>
 
         <section>
