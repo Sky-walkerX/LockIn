@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useStoredValue } from "@/hooks/useStoredValue";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useChromeless } from "@/hooks/useChromeless";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { Sheet, SheetContent, SheetTrigger } from "@/app/components/ui/sheet";
+import { useCommandPalette } from "@/app/components/command/command-palette";
 import { Spine } from "./spine";
 
 const COLLAPSE_KEY = "lockin.sidebar";
@@ -16,7 +18,9 @@ const COLLAPSE_KEY = "lockin.sidebar";
 // Below `md` the spine moves into a sheet behind a bar.
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const chromeless = useChromeless();
+  const { open: openPalette } = useCommandPalette();
   // Remembered per browser. The server renders it open; the client switches
   // to the stored state after hydration (useStoredValue).
   const [stored, setStored] = useStoredValue(COLLAPSE_KEY, "open");
@@ -54,6 +58,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link href="/" aria-label="Home">
               <Wordmark className="text-ui" />
             </Link>
+            {session?.user && (
+              <div className="ml-auto flex items-center gap-1">
+                <button type="button" onClick={openPalette} className="lk-spine-mini h-8 w-8" aria-label="Search">
+                  <Search size={17} />
+                </button>
+              </div>
+            )}
           </header>
           <SheetContent label="Notebook" className="lk-cloth">
             <Spine onNavigate={() => setSheetOpen(false)} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -12,9 +12,11 @@ import { ResourceSection } from "@/app/components/subject/resource-section";
 import { TaskRow } from "@/app/components/subject/task-row";
 import { AddTask } from "@/app/components/subject/add-task";
 import { SortableList } from "@/app/components/subject/sortable-list";
+import { RevealProvider } from "@/app/components/subject/reveal";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { parseOpen, revealPath, type RevealTarget } from "@/lib/search/path";
 import { ResourceReader } from "@/app/components/reader/resource-reader";
 
 const FALLBACK = "#8b8f9e";
@@ -24,6 +26,8 @@ type Tab = "notes" | "resources" | "plan";
 //   ?note=<id>            a note on the Notes tab (the default tab)
 //   ?tab=resources|plan   the other tabs
 //   ?read=<id>[&q=…]      the resource reader, over any tab
+//   ?open=<kind>:<id>     a search result: a note opens on Notes, a task or
+//                         subtask opens Plan and is revealed in the tree
 export default function SubjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -49,6 +53,35 @@ export default function SubjectPage() {
     () => ({ tab: tab === "notes" ? null : tab, note: tab === "notes" ? noteParam : null }),
     [tab, noteParam],
   );
+
+  // A search result's ?open= becomes a selected note or a Plan reveal. The
+  // reveal request moves into state because rows deeper in the tree mount only
+  // once their parent has opened, a few renders later, and opening the same
+  // result again must count as a new request.
+  const openParam = searchParams.get("open");
+  const [request, setRequest] = useState<{ target: RevealTarget; nonce: number } | null>(null);
+  // Taken up while rendering, once per appearance of the param: the URL drops
+  // it straight after, so the same result opened again arrives as a new value.
+  const [seenOpen, setSeenOpen] = useState<string | null>(null);
+  if (openParam !== seenOpen) {
+    setSeenOpen(openParam);
+    const target = parseOpen(openParam);
+    if (target && target.kind !== "milestone") setRequest((r) => ({ target, nonce: (r?.nonce ?? 0) + 1 }));
+  }
+  // Then the param leaves the URL: a note opens on Notes, a task on Plan.
+  useEffect(() => {
+    const target = parseOpen(openParam);
+    if (!target) return;
+    router.replace(target.kind === "milestone" ? href({ note: target.id }) : href({ tab: "plan" }), { scroll: false });
+  }, [openParam, href, router]);
+
+  const pathKey = subject && request ? (revealPath(subject, request.target) ?? []).join(",") : "";
+  const nonce = request?.nonce ?? 0;
+  const done = useCallback(() => setRequest(null), []);
+  const reveal = useMemo(() => {
+    const path = pathKey ? pathKey.split(",") : [];
+    return { path, target: path[path.length - 1] ?? null, nonce, done };
+  }, [pathKey, nonce, done]);
 
   // A freshly created note opens in the editor.
   const [justCreated, setJustCreated] = useState<string | null>(null);
@@ -147,7 +180,9 @@ export default function SubjectPage() {
       {tab === "resources" && <ResourceSection subjectId={subject.id} resources={subject.resources} />}
 
       {tab === "plan" && (
-        <PlanTab subject={subject} />
+        <RevealProvider value={reveal}>
+          <PlanTab subject={subject} />
+        </RevealProvider>
       )}
 
       {readId && <ResourceReader resourceId={readId} subject={subject} passage={passage} onClose={closeReader} />}

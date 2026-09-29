@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import React from "react";
+import { QuickAddProvider } from "./quick-add";
+import { CommandPaletteProvider } from "./command/command-palette";
 import { FocusProvider } from "./focus/focus-provider";
 
 // Data stays fresh for 30s so navigation doesn't refetch the heavy subject
@@ -23,7 +25,12 @@ export function Providers({ children, session }: { children: React.ReactNode; se
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
-        <FocusProvider>{children}</FocusProvider>
+        {/* The palette sits innermost: its actions open the others. */}
+        <QuickAddProvider>
+          <FocusProvider>
+            <CommandPaletteProvider>{children}</CommandPaletteProvider>
+          </FocusProvider>
+        </QuickAddProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

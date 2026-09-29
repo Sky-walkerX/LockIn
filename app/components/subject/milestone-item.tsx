@@ -13,6 +13,7 @@ import { isTempId } from "@/lib/subject-cache";
 import { TaskRow } from "./task-row";
 import { AddTask } from "./add-task";
 import { SortableList } from "./sortable-list";
+import { useReveal } from "./reveal";
 import { ConfidenceMenu, ReviewStatus } from "@/app/components/review/revision";
 
 // A note as the Plan tab sees it: its tasks, completion, weight and revision.
@@ -38,6 +39,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   const reorderTasks = useReorderTasks();
 
   const [open, setOpen] = useState(true);
+  const reveal = useReveal(milestone.id, setOpen);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleVal, setTitleVal] = useState(milestone.title);
   const [weightOpen, setWeightOpen] = useState(false);
@@ -83,7 +85,7 @@ export const MilestoneItem = memo(function MilestoneItem({
   return (
     <div className={`lk-card overflow-hidden ${pending ? "pointer-events-none opacity-60" : ""}`}>
       {/* Header */}
-      <div className={`group flex items-center gap-2 p-3`}>
+      <div ref={reveal.ref} className={`group flex items-center gap-2 p-3`}>
         <Checkbox checked={milestone.isCompleted} onCheckedChange={toggleDone} className="lk-check" />
 
         {editingTitle ? (
