@@ -16,6 +16,8 @@ const UpdateMilestoneSchema = z.object({
   reviewDueAt: z.iso.datetime().nullable().optional(),
   reviewInterval: z.number().int().positive().nullable().optional(),
   weight: z.number().positive().max(10_000).optional(),
+  // Signing off on an agent's note. Only ever set, never cleared.
+  witnessed: z.literal(true).optional(),
 });
 
 // See the tasks route: an enum column needs its placeholder cast, or Postgres
@@ -36,8 +38,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { reviewDueAt, ...rest } = parsed.data;
+  const { reviewDueAt, witnessed, ...rest } = parsed.data;
   const data: Record<string, unknown> = { ...rest };
+  if (witnessed) data.witnessedAt = new Date();
   if (reviewDueAt !== undefined) data.reviewDueAt = reviewDueAt ? new Date(reviewDueAt) : null;
 
   // Un-completing a topic takes it out of revision; completing one schedules

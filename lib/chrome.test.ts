@@ -9,6 +9,7 @@ describe("isChromeless", () => {
 
   it("keeps the chrome on notebook pages", () => {
     expect(isChromeless("/")).toBe(false);
+    expect(isChromeless("/inbox")).toBe(false);
     expect(isChromeless("/subjects/x")).toBe(false);
   });
 });

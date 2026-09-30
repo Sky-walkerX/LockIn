@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useMounted } from "@/hooks/useMounted";
@@ -9,11 +9,13 @@ import {
   Activity,
   CalendarCheck,
   Home,
+  Inbox,
   MessageSquareQuote,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
   Search,
+  SquarePen,
   SunMoon,
   Timer,
 } from "lucide-react";
@@ -24,6 +26,7 @@ import { useCommandPalette } from "@/app/components/command/command-palette";
 import { useChatPanel } from "@/app/components/chat/chat-provider";
 import { fmtClock, useFocus } from "@/app/components/focus/focus-provider";
 import { useSubjects } from "@/hooks/useSubjects";
+import { useInbox } from "@/hooks/useInbox";
 import { useTodayTasks } from "@/hooks/useTasks";
 import { useDueReviews } from "@/hooks/useReviews";
 import { AccountMenu } from "./account-menu";
@@ -46,12 +49,14 @@ export function Spine({
   const signedIn = !!session?.user;
 
   const { open: openPalette } = useCommandPalette();
+  const router = useRouter();
   const { open: openChat } = useChatPanel();
   const { running, clock } = useFocus();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
 
   const { data: subjects = [] } = useSubjects();
+  const { data: inbox } = useInbox(signedIn);
   const { data: today = [] } = useTodayTasks();
   const { data: reviews = [] } = useDueReviews();
   const dueToday = today.length + reviews.length;
@@ -115,7 +120,20 @@ export function Spine({
         <>
           <nav className="grid gap-px" aria-label="Notebook">
             {link("/", <Home size={16} strokeWidth={1.75} />, "Home")}
+            {link(
+              "/inbox",
+              <Inbox size={16} strokeWidth={1.75} />,
+              "Inbox",
+              inbox && inbox.awaiting > 0 ? (
+                <span className="lk-spine-count lk-spine-due" title={`${inbox.awaiting} to witness`}>
+                  {inbox.awaiting}
+                </span>
+              ) : inbox && inbox.count > 0 ? (
+                <span className="lk-spine-count">{inbox.count}</span>
+              ) : undefined,
+            )}
             {action(openPalette, <Search size={16} strokeWidth={1.75} />, "Search", "⌘K")}
+            {action(() => router.push("/inbox?new=1"), <SquarePen size={16} strokeWidth={1.75} />, "New note")}
           </nav>
 
           <nav className="grid gap-px" aria-label="Sections">

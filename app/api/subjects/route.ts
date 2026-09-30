@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const subjects = await prisma.subject.findMany({
-    where: { userId, isArchived: false },
+    // The Inbox is a subject underneath but never listed as one.
+    where: { userId, isArchived: false, isInbox: false },
     orderBy: { updatedAt: "desc" },
     include: {
       _count: { select: { milestones: true, tasks: true, resources: true } },

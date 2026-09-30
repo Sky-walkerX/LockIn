@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ago } from "@/lib/dates";
 import { useRecentNotes } from "@/hooks/useNotes";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { awaitingWitness, isOwnNote, sourceLabel } from "@/lib/notes/source";
 
 // The notebook's contents page: notes across every section, most recently
 // written first. Each row opens the note where it lives.
@@ -37,18 +38,25 @@ export function Contents() {
         notes.map((n) => (
           <Link
             key={n.id}
-            href={`/subjects/${n.subject.id}?note=${n.id}`}
+            href={n.subject.isInbox ? `/inbox?note=${n.id}` : `/subjects/${n.subject.id}?note=${n.id}`}
             className="lk-contents-row lk-subject group"
             style={{ "--c": n.subject.color ?? "var(--muted-foreground)" } as React.CSSProperties}
           >
             <div className="min-w-0">
               <div className="flex items-center gap-2.5">
                 <span className="lk-contents-title">{n.title}</span>
+                {awaitingWitness(n) && <span className="lk-stamp flex-none">Awaiting witness</span>}
               </div>
-              {n.excerpt && <div className="lk-contents-excerpt">{n.excerpt}</div>}
+              {(n.excerpt || !isOwnNote(n.source)) && (
+                <div className="lk-contents-excerpt">
+                  {!isOwnNote(n.source) && <span className="text-foreground/80">via {sourceLabel(n.source)}</span>}
+                  {!isOwnNote(n.source) && n.excerpt && " · "}
+                  {n.excerpt}
+                </div>
+              )}
             </div>
             <span className="lk-contents-section">
-              <i className="lk-tab-chip" style={{ background: "var(--c-eff)" }} aria-hidden />
+              {n.subject.isInbox ? null : <i className="lk-tab-chip" style={{ background: "var(--c-eff)" }} aria-hidden />}
               <span className="truncate">{n.subject.title}</span>
             </span>
             <span className="lk-contents-meta">

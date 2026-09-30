@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ListChecks, Maximize2, MessageSquareQuote, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, ListChecks, Maximize2, MessageSquareQuote, PenLine, Pencil, Trash2 } from "lucide-react";
 import { ago } from "@/lib/dates";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
@@ -13,6 +13,8 @@ import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
 import { ShareButton } from "@/app/components/share/share-button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { isTempId } from "@/lib/subject-cache";
+import { awaitingWitness, isOwnNote, sourceLabel } from "@/lib/notes/source";
+import { MoveNoteMenu } from "./move-note-menu";
 import { NoteFullscreen } from "./note-fullscreen";
 
 // One note as a page: a running head, the title, then the body on clean paper.
@@ -24,15 +26,17 @@ export function NoteView({
   backHref,
   startEditing = false,
   onDeleted,
+  onMoved,
 }: {
   note: MilestoneWithTasks;
   sectionTitle: string;
-  /** Null where the note has no Plan to show. */
+  /** Null where the note has no Plan to show (the Inbox). */
   planHref: string | null;
   /** Phones show the list or the page, never both: this leads back to the list. */
   backHref: string;
   startEditing?: boolean;
   onDeleted: () => void;
+  onMoved: (subjectId: string) => void;
 }) {
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
@@ -46,6 +50,7 @@ export function NoteView({
   const [fullscreen, setFullscreen] = useState<{ color: string | null } | null>(null);
   const pageRef = useRef<HTMLElement>(null);
   const pending = isTempId(note.id);
+  const awaiting = awaitingWitness(note);
 
   // A note that was just created opens straight into the editor, once.
   const opened = useRef<string | null>(null);
@@ -126,6 +131,31 @@ export function NoteView({
         </h2>
       )}
 
+      {!isOwnNote(note.source) && (
+        <div className="lk-provenance">
+          <span>
+            Recorded by <b>{sourceLabel(note.source)}</b>
+          </span>
+          {awaiting ? (
+            <>
+              <span className="lk-stamp">Awaiting witness</span>
+              <button
+                type="button"
+                onClick={() => update.mutate({ id: note.id, data: { witnessed: true } })}
+                className="lk-note-bar-btn"
+                title="Sign off: you've read this and it belongs in your notebook"
+              >
+                <PenLine size={14} /> Witness
+              </button>
+            </>
+          ) : (
+            <span>
+              · witnessed by you{note.witnessedAt ? ` ${ago(note.witnessedAt)}` : ""}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="lk-note-bar">
         {planHref && (
           <Link href={planHref} className="lk-note-bar-link">
@@ -161,6 +191,7 @@ export function NoteView({
         >
           <Maximize2 size={14} />
         </button>
+        <MoveNoteMenu noteId={note.id} currentSubjectId={note.subjectId} onMoved={onMoved} disabled={pending} />
         {!pending && <ShareButton target={{ type: "MILESTONE", entityId: note.id }} />}
         <Popover open={confirmOpen} onOpenChange={setConfirmOpen}>
           <PopoverTrigger asChild>

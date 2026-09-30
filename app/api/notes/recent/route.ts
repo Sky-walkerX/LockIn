@@ -9,7 +9,9 @@ export type RecentNote = {
   excerpt: string;
   updatedAt: string;
   taskCount: number;
-  subject: { id: string; title: string; color: string | null };
+  source: string | null;
+  witnessedAt: string | null;
+  subject: { id: string; title: string; color: string | null; isInbox: boolean };
 };
 
 type Row = {
@@ -21,15 +23,18 @@ type Row = {
   subjectId: string;
   subjectTitle: string;
   subjectColor: string | null;
+  subjectIsInbox: boolean;
+  source: string | null;
+  witnessedAt: Date | null;
 };
 
 // One statement for the whole list. Only the head of each note comes
 // back (enough for an excerpt once code blocks are dropped), never the whole
 // body, since a note can be pages long.
 const RECENT_SQL = `
-  SELECT m.id, m.title, left(m.notes, 1500) AS head, m."updatedAt",
+  SELECT m.id, m.title, left(m.notes, 1500) AS head, m."updatedAt", m.source, m."witnessedAt",
          (SELECT count(*)::int FROM "Task" t WHERE t."milestoneId" = m.id) AS "taskCount",
-         s.id AS "subjectId", s.title AS "subjectTitle", s.color AS "subjectColor"
+         s.id AS "subjectId", s.title AS "subjectTitle", s.color AS "subjectColor", s."isInbox" AS "subjectIsInbox"
   FROM "Milestone" m
   JOIN "Subject" s ON s.id = m."subjectId"
   WHERE s."userId" = $1 AND s."isArchived" = false
@@ -51,7 +56,9 @@ export async function GET(request: NextRequest) {
     excerpt: excerpt(r.head),
     updatedAt: r.updatedAt.toISOString(),
     taskCount: r.taskCount,
-    subject: { id: r.subjectId, title: r.subjectTitle, color: r.subjectColor },
+    source: r.source,
+    witnessedAt: r.witnessedAt ? r.witnessedAt.toISOString() : null,
+    subject: { id: r.subjectId, title: r.subjectTitle, color: r.subjectColor, isInbox: r.subjectIsInbox },
   }));
   return NextResponse.json(notes);
 }

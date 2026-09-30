@@ -88,6 +88,12 @@ export default function SubjectPage() {
 
   const closeReader = useCallback(() => router.replace(href(here), { scroll: false }), [router, href, here]);
 
+  // The Inbox is a subject underneath, but it has its own page.
+  const isInbox = subject?.isInbox;
+  useEffect(() => {
+    if (isInbox) router.replace(`/inbox${searchParams.size ? `?${searchParams}` : ""}`);
+  }, [isInbox, router, searchParams]);
+
   if (status === "loading" || isLoading) {
     return (
       <main className="lk-page">
@@ -168,6 +174,7 @@ export default function SubjectPage() {
               backHref={href({})}
               startEditing={justCreated === shown.id}
               onDeleted={() => router.replace(href({}), { scroll: false })}
+              onMoved={() => router.replace(href({}), { scroll: false })}
             />
           ) : (
             <div className="lk-note-page lk-note-empty">

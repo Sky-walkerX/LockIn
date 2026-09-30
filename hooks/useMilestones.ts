@@ -13,13 +13,14 @@ import {
 
 // Milestones (notes) are read through the subject detail query (["subject",
 // id]). These mutations invalidate that, the spine's subject counts, and the
-// cross-subject note lists (home contents).
+// cross-subject note lists (home contents, Inbox counts).
 function useInvalidate() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["subject"] });
     qc.invalidateQueries({ queryKey: ["subjects"] });
     qc.invalidateQueries({ queryKey: ["notes"] });
+    qc.invalidateQueries({ queryKey: ["inbox"] });
   };
 }
 
@@ -45,6 +46,8 @@ export function useCreateMilestone() {
         reviewCount: 0,
         lastReviewedAt: null,
         weight: 1,
+        source: "web",
+        witnessedAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
         subjectId: input.subjectId,
@@ -72,6 +75,8 @@ export type MilestoneUpdate = Partial<{
   reviewDueAt: string | null; // ISO; null stops revising
   reviewInterval: number | null;
   weight: number;
+  /** Sign off on an agent's note. */
+  witnessed: true;
 }>;
 
 // The optimistic patch plus the server's returned row cover every field here,
@@ -84,9 +89,10 @@ export function useUpdateMilestone() {
     mutationFn: ({ id, data }: { id: string; data: MilestoneUpdate }) =>
       api.put<Milestone>(`/api/milestones/${id}`, data),
     onMutate: async ({ id, data }) => {
-      const { reviewDueAt, ...rest } = data;
+      const { reviewDueAt, witnessed, ...rest } = data;
       const patch: Partial<Milestone> = { ...rest };
       if (reviewDueAt !== undefined) patch.reviewDueAt = reviewDueAt ? new Date(reviewDueAt) : null;
+      if (witnessed) patch.witnessedAt = new Date();
       const prev = await patchSubjectCaches(qc, (s) => ({
         ...s,
         milestones: s.milestones.map((m) => (m.id === id ? { ...m, ...patch } : m)),
@@ -100,8 +106,9 @@ export function useUpdateMilestone() {
       if (data.isCompleted !== undefined || data.reviewDueAt !== undefined) {
         qc.invalidateQueries({ queryKey: ["reviews"] });
       }
-      if (data.title !== undefined || data.notes !== undefined) {
+      if (data.witnessed || data.title !== undefined || data.notes !== undefined) {
         qc.invalidateQueries({ queryKey: ["notes"] });
+        qc.invalidateQueries({ queryKey: ["inbox"] });
       }
     },
     // A failed save still refetches, so the rolled-back cache can't drift from a
@@ -136,6 +143,22 @@ export function useDeleteMilestone() {
     mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/milestones/${id}`),
     onSuccess: () => {
       invalidate();
+      qc.invalidateQueries({ queryKey: ["reviews"] });
+    },
+  });
+}
+
+// File a note under another subject. Not optimistic: the note leaves one cached
+// subject and joins another, with its tasks, so both are refetched instead.
+export function useMoveMilestone() {
+  const invalidate = useInvalidate();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, subjectId }: { id: string; subjectId: string }) =>
+      api.post<Milestone>(`/api/milestones/${id}/move`, { subjectId }),
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["tasks"] });
       qc.invalidateQueries({ queryKey: ["reviews"] });
     },
   });

@@ -8,6 +8,7 @@ import { useNoteDraft } from "@/hooks/useNoteDraft";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
 import { ago } from "@/lib/dates";
+import { isOwnNote, sourceLabel } from "@/lib/notes/source";
 
 // One note and nothing else: the whole window becomes the page. It also asks
 // the browser for real full screen, and falls back to just covering the window
@@ -109,6 +110,7 @@ export function NoteFullscreen({
         <h1 id="fullscreen-note-title" className="lk-note-title">
           {note.title}
         </h1>
+        {!isOwnNote(note.source) && <p className="lk-provenance">Recorded by {sourceLabel(note.source)}</p>}
         <div className="lk-fullscreen-rule" />
         {draft.editing ? (
           <NotesEditor

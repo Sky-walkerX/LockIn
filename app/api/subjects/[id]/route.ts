@@ -39,8 +39,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   const { targetDate, startDate, ...rest } = parsed.data;
+  // The Inbox can't be renamed, recoloured or archived; it reads as not found.
   const { count } = await prisma.subject.updateMany({
-    where: { id, userId },
+    where: { id, userId, isInbox: false },
     data: { ...rest, targetDate: toDate(targetDate), startDate: toDate(startDate) },
   });
   if (count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -55,7 +56,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
 
-  const { count } = await prisma.subject.deleteMany({ where: { id, userId } });
+  const { count } = await prisma.subject.deleteMany({ where: { id, userId, isInbox: false } });
   if (count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ success: true });
 }

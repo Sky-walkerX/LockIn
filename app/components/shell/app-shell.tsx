@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useStoredValue } from "@/hooks/useStoredValue";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, SquarePen } from "lucide-react";
 import { useChromeless } from "@/hooks/useChromeless";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { Sheet, SheetContent, SheetTrigger } from "@/app/components/ui/sheet";
@@ -22,6 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const chromeless = useChromeless();
   const { open: openPalette } = useCommandPalette();
+  const router = useRouter();
   // Remembered per browser. The server renders it open; the client switches
   // to the stored state after hydration (useStoredValue).
   const [stored, setStored] = useStoredValue(COLLAPSE_KEY, "open");
@@ -63,6 +64,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="ml-auto flex items-center gap-1">
                 <button type="button" onClick={openPalette} className="lk-spine-mini h-8 w-8" aria-label="Search">
                   <Search size={17} />
+                </button>
+                <button type="button" onClick={() => router.push("/inbox?new=1")} className="lk-spine-mini h-8 w-8" aria-label="New note">
+                  <SquarePen size={17} />
                 </button>
               </div>
             )}
