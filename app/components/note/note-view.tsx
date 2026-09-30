@@ -193,6 +193,7 @@ export function NoteView({
         {draft.editing ? (
           <NotesEditor
             value={draft.failed ?? note.notes}
+            breadcrumb={note.title}
             placeholder="Write in markdown: headings, lists, code, tables, links…"
             onSave={draft.save}
             onCancel={draft.cancel}

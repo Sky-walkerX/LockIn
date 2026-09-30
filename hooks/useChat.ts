@@ -7,6 +7,7 @@ import { api } from "@/lib/fetcher";
 import type { PromptMessage } from "@/lib/chat/types";
 import type { RetrievalBudget } from "@/lib/chat/retrieve";
 import { streamingPrefix } from "@/lib/chat/stream-buffer";
+import { acquireEngine } from "@/lib/llm/engine-lock";
 import type { EmbedderBackend } from "@/lib/llm/embedder";
 import { createOpenAiTransport, LlmError } from "@/lib/llm/client";
 import { effectiveContextTokens, loadSettings, type LlmSettings } from "@/lib/llm/settings";
@@ -167,6 +168,7 @@ export function useSendMessage() {
 
       let streamed = "";
       let sources: string[] = [];
+      let release: (() => void) | null = null;
       try {
         setPhase("preparing");
         const prepared = await api.post<PrepareResponse>(
@@ -189,6 +191,9 @@ export function useSendMessage() {
             ? (await import("@/lib/llm/webllm-transport")).createWebllmTransport(settings.webllmModel)
             : createOpenAiTransport(settings);
 
+        // Chat owns the engine for the duration, so note autocomplete steps
+        // aside instead of queueing a completion behind a long reply.
+        release = acquireEngine("chat");
         setPhase("waiting");
 
         for await (const token of transport.streamChat(prepared.messages, { signal: controller.signal })) {
@@ -218,6 +223,8 @@ export function useSendMessage() {
         }
         // A deliberate stop is different from a broken stream: the user read
         // what arrived, so it's kept rather than thrown away.
+      } finally {
+        release?.();
       }
 
       // The queued paint would land after the transcript already shows this

@@ -113,6 +113,7 @@ export function NoteFullscreen({
         {draft.editing ? (
           <NotesEditor
             value={draft.failed ?? note.notes}
+            breadcrumb={note.title}
             placeholder="Write in markdown…"
             onSave={draft.save}
             onCancel={draft.cancel}
