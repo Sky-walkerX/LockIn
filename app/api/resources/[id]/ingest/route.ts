@@ -5,14 +5,18 @@ import { getUserId } from "@/lib/auth";
 /**
  * POST /api/resources/[id]/ingest
  *
- * Turns a resource's URL into readable markdown by calling the Python ingest
- * service's `/parse`, and stores the result on `Resource.extracted`, where
- * the in-app reader and search pick it up.
+ * Turns a resource's URL into indexable markdown by calling the Python ingest
+ * service's `/parse`, and stores the result on `Resource.extracted`. From
+ * there it's just another source: the next `/api/rag/status` poll sees it
+ * through `lib/rag/sources.ts`'s `RESOURCE_DOC` producer and the existing
+ * pending → embed → chunks loop indexes it exactly like a note. No new
+ * indexing code exists because none was needed.
  *
  * This is a synchronous, on-demand action — the user clicks "Extract text"
- * and waits — not a background job. LockIn has no queue and no cron, and a
- * PDF's text does not change on its own, so there is nothing for a queue to
- * do that a button press doesn't already cover.
+ * and waits — not a background job. LockIn has no queue and no cron (see
+ * `useIndexing`'s doc comment), and a PDF's text does not change on its own,
+ * so there is nothing for a queue to do that a button press doesn't already
+ * cover.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = await getUserId(request);

@@ -7,6 +7,7 @@ import type { Session } from "next-auth";
 import React from "react";
 import { QuickAddProvider } from "./quick-add";
 import { CommandPaletteProvider } from "./command/command-palette";
+import { ChatProvider } from "./chat/chat-provider";
 import { FocusProvider } from "./focus/focus-provider";
 
 // Data stays fresh for 30s so navigation doesn't refetch the heavy subject
@@ -28,7 +29,9 @@ export function Providers({ children, session }: { children: React.ReactNode; se
         {/* The palette sits innermost: its actions open the others. */}
         <QuickAddProvider>
           <FocusProvider>
-            <CommandPaletteProvider>{children}</CommandPaletteProvider>
+            <ChatProvider>
+              <CommandPaletteProvider>{children}</CommandPaletteProvider>
+            </ChatProvider>
           </FocusProvider>
         </QuickAddProvider>
       </SessionProvider>

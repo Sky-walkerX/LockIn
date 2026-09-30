@@ -84,8 +84,8 @@ export function ResourceItem({ resource }: { resource: ResourceRow }) {
           <span className="lk-tag">{LABEL[resource.type]}</span>
           <span className="truncate">{host(resource.url)}</span>
           {resource.ingestState === "READY" && (
-            <span className="flex items-center gap-1" title={resource.pageCount ? `${resource.pageCount} pages of text extracted` : "Text extracted"}>
-              <Sparkles size={10} /> text
+            <span className="flex items-center gap-1" title={resource.pageCount ? `${resource.pageCount} pages, indexed for Ask` : "Indexed for Ask"}>
+              <Sparkles size={10} /> indexed
             </span>
           )}
           {resource.ingestState === "FAILED" && (
@@ -103,7 +103,7 @@ export function ResourceItem({ resource }: { resource: ResourceRow }) {
           onClick={() => ingest.mutate(resource.id)}
           disabled={ingest.isPending}
           className="lk-iconbtn opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-100"
-          title={resource.ingestState === "FAILED" ? "Retry text extraction" : "Extract the text to read and search it"}
+          title={resource.ingestState === "FAILED" ? "Retry text extraction" : "Extract text for Ask to search"}
         >
           {ingest.isPending ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
         </button>

@@ -8,7 +8,7 @@ import { rankHits, toHit, type SearchHit, type SearchRow } from "@/lib/search/hi
 // (ILIKE ALL over the term patterns). Title matches are pulled forward before
 // the LIMIT so a big notes-only result set can't crowd them out; rankHits does
 // the real ordering. Resources match on title, note and URL only: their
-// extracted text can be a whole book, too much to scan on every keystroke.
+// extracted text can be a whole book, and semantic search covers it by meaning.
 const SEARCH_SQL = `
 SELECT * FROM (
   SELECT 'subject' AS kind, s.id, s.title, coalesce(s.description, '') AS notes,

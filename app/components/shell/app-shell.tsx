@@ -15,7 +15,8 @@ import { Spine } from "./spine";
 const COLLAPSE_KEY = "lockin.sidebar";
 
 // The signed-in frame: the cloth spine on the left, grid paper to its right.
-// Below `md` the spine moves into a sheet behind a bar.
+// It sits inside ChatProvider's content column, so the Ask dock on the far
+// right is untouched. Below `md` the spine moves into a sheet behind a bar.
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();

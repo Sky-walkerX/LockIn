@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ListChecks, Maximize2, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, ListChecks, Maximize2, MessageSquareQuote, Pencil, Trash2 } from "lucide-react";
 import { ago } from "@/lib/dates";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
+import { useChatPanel } from "@/app/components/chat/chat-provider";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
 import { ShareButton } from "@/app/components/share/share-button";
@@ -36,6 +37,7 @@ export function NoteView({
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
   const draft = useNoteDraft(note.id);
+  const { open: openChat } = useChatPanel();
   const [renaming, setRenaming] = useState(false);
   const [titleVal, setTitleVal] = useState(note.title);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -139,6 +141,13 @@ export function NoteView({
             <Pencil size={14} /> Edit
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => openChat({ prompt: `In my note "${note.title}": ` })}
+          className="lk-note-bar-btn lk-note-bar-primary"
+        >
+          <MessageSquareQuote size={14} /> Ask this note
+        </button>
         <button
           type="button"
           onClick={() => {

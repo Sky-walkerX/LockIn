@@ -9,6 +9,7 @@ import {
   Activity,
   CalendarCheck,
   Home,
+  MessageSquareQuote,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -20,6 +21,7 @@ import { Wordmark } from "@/app/components/brand/wordmark";
 import { BRAND } from "@/lib/brand";
 import { NewSubject } from "@/app/components/home/new-subject";
 import { useCommandPalette } from "@/app/components/command/command-palette";
+import { useChatPanel } from "@/app/components/chat/chat-provider";
 import { fmtClock, useFocus } from "@/app/components/focus/focus-provider";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useTodayTasks } from "@/hooks/useTasks";
@@ -44,6 +46,7 @@ export function Spine({
   const signedIn = !!session?.user;
 
   const { open: openPalette } = useCommandPalette();
+  const { open: openChat } = useChatPanel();
   const { running, clock } = useFocus();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
@@ -173,6 +176,7 @@ export function Spine({
       )}
 
       <div className="mt-auto grid gap-px">
+        {signedIn && action(() => openChat(), <MessageSquareQuote size={16} strokeWidth={1.75} />, "Ask", "⌘J")}
         {mounted &&
           action(
             () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),

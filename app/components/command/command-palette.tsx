@@ -9,6 +9,7 @@ import {
   ArrowRight,
   BookmarkPlus,
   CornerDownLeft,
+  MessageSquare,
   Moon,
   Plus,
   Search as SearchIcon,
@@ -19,12 +20,14 @@ import {
 } from "lucide-react";
 import { isChromeless } from "@/lib/chrome";
 import { useSearch } from "@/hooks/useSearch";
+import { useSemanticSearch } from "@/hooks/useSemanticSearch";
 import { useSubject, useSubjects } from "@/hooks/useSubjects";
 import { useCreateTask, useTasks } from "@/hooks/useTasks";
 import { parseTerms } from "@/lib/search/query";
 import { splitMatches } from "@/lib/search/text";
 import { parseQuickAdd, type ParsedTask } from "@/lib/quickadd/parse";
 import { useQuickAdd } from "../quick-add";
+import { useChatPanel } from "../chat/chat-provider";
 import { useFocus } from "../focus/focus-provider";
 
 const FALLBACK = "#8b8f9e";
@@ -120,6 +123,7 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const quickAdd = useQuickAdd();
+  const chat = useChatPanel();
   const focus = useFocus();
   const createTask = useCreateTask();
 
@@ -211,6 +215,9 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
   const actions: Row[] = [
     { key: "new-task", label: "New task (full form)…", tag: "action", icon: Plus, run: () => (onClose(), quickAdd.open("task")) },
     { key: "new-resource", label: "New resource…", tag: "action", icon: BookmarkPlus, run: () => (onClose(), quickAdd.open("resource")) },
+    input.trim()
+      ? { key: "ask", label: `Ask “${input.trim()}”`, tag: "ask ⌘J", icon: MessageSquare, run: () => (onClose(), chat.open({ prompt: input.trim() })) }
+      : { key: "ask", label: "Open Ask", tag: "⌘J", icon: MessageSquare, run: () => (onClose(), chat.open()) },
     ...(focus.running
       ? [{ key: "stop-focus", label: "Stop the focus timer", tag: "focus", icon: Square, run: () => (focus.stop(), onClose()) }]
       : []),
@@ -226,8 +233,11 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
       run: () => (setTheme(isDark ? "light" : "dark"), onClose()),
     },
   ];
-  // Typed words filter actions by label.
-  const shownActions = words.length ? actions.filter((a) => matchesAll(a.label, words)) : actions;
+  // Typed words filter actions by label. "Ask …" always matches what was
+  // typed, so it goes after the actions that matched on their own.
+  const shownActions = words.length
+    ? [...actions.filter((a) => a.key !== "ask" && matchesAll(a.label, words)), ...actions.filter((a) => a.key === "ask")]
+    : actions;
 
   // Start a focus session straight on a matching open task.
   const focusRows: Row[] =
@@ -251,6 +261,7 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
 
   // ── Search ──
   const { data: hitsData, isFetching, isError } = useSearch(q);
+  const semantic = useSemanticSearch(input);
   const tooShort = q.trim().length < 2;
   const hits = tooShort ? [] : (hitsData ?? []);
   const terms = parseTerms(q);
@@ -265,11 +276,27 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
     highlight: terms,
     run: go(h.href),
   }));
+  const seen = new Set(hits.map((h) => h.id));
+  const relatedRows: Row[] =
+    semantic.active && semantic.state.status === "ready"
+      ? (semantic.results.data ?? [])
+          .filter((h) => !seen.has(h.id))
+          .map((h) => ({
+            key: `sem-${h.kind}-${h.id}`,
+            label: h.title,
+            tag: h.kind,
+            color: h.color,
+            path: h.path,
+            snippet: h.snippet,
+            run: go(h.href),
+          }))
+      : [];
 
   const groups: Group[] = [
     ...(createRow && structured ? [{ title: null, rows: [createRow] }] : []),
     { title: words.length ? "actions" : null, rows: [...focusRows, ...shownActions.slice(0, words.length ? 4 : actions.length)] },
     { title: "results", rows: resultRows },
+    { title: "related by meaning", rows: relatedRows },
     ...(createRow && !structured ? [{ title: null, rows: [createRow] }] : []),
   ].filter((g) => g.rows.length > 0);
   const rows = groups.flatMap((g) => g.rows);
@@ -290,8 +317,8 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    // Handled here, and stopped: the quick-add form listens for Escape on the
-    // window, and one press should close only this.
+    // Handled here, and stopped: the chat panel and the quick-add form listen
+    // for Escape on the window, and one press should close only this.
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
@@ -308,6 +335,7 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const st = semantic.state;
   let index = 0;
 
   return (
@@ -354,10 +382,30 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
 
           {!tooShort && isError && <Message text="Search failed. Try again." />}
           {/* A task being written isn't a failed search. */}
-          {!tooShort && !isError && !structured && hits.length === 0 && (
-            <Message text={isFetching ? "Searching…" : `No notes match “${q.trim()}”.`} />
+          {!tooShort && !isError && !structured && hits.length === 0 && relatedRows.length === 0 && (
+            <Message text={isFetching || semantic.results.isFetching ? "Searching…" : `No notes match “${q.trim()}”.`} />
           )}
 
+          {!tooShort && semantic.active && st.status === "needs-load" && (
+            <button
+              type="button"
+              onClick={semantic.load}
+              className="lk-print w-full rounded-md px-2.5 py-2 text-left text-2xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              Search by meaning too — loads the embedding model (about 130 MB, once)
+            </button>
+          )}
+          {st.status === "loading" && (
+            <p className="lk-print px-2.5 py-2 text-2xs text-muted-foreground">
+              Loading the model… {Math.round(st.progress * 100)}%
+            </p>
+          )}
+          {!tooShort && semantic.active && st.status === "ready" && semantic.unindexed > 0 && (
+            <p className="lk-print px-2.5 py-1.5 text-2xs text-muted-foreground">
+              {semantic.unindexed} item{semantic.unindexed === 1 ? " isn't" : "s aren't"} indexed yet — they&apos;re indexed
+              while Ask (⌘J) is open.
+            </p>
+          )}
         </div>
 
         <div className="lk-print flex items-center gap-3 border-t border-border px-4 py-1.5 text-2xs uppercase tracking-wide text-muted-foreground">
