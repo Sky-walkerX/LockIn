@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
+import { takePage } from "@/lib/notes/page";
 import { z } from "zod";
 
 const ResourceSchema = z.object({
@@ -40,6 +41,6 @@ export async function POST(request: NextRequest) {
   const subject = await prisma.subject.findFirst({ where: { id: parsed.data.subjectId, userId } });
   if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
 
-  const resource = await prisma.resource.create({ data: { ...parsed.data, userId } });
+  const resource = await prisma.resource.create({ data: { ...parsed.data, userId, page: await takePage(userId) } });
   return NextResponse.json(resource, { status: 201 });
 }

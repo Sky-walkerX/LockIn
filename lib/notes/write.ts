@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { takePage } from "./page";
 import type { Milestone } from "@/app/generated/prisma/client";
 import { getOrCreateInbox } from "@/lib/subjects/inbox";
 import { appendNote } from "./append";
@@ -53,19 +54,22 @@ export async function nextOrder(subjectId: string): Promise<number> {
 }
 
 /**
- * Insert a note at the end of its subject (unless `order` is given). Notes
- * typed in the app are witnessed as they're written; anyone else's wait.
- * The caller has already checked the subject belongs to the user.
+ * Insert a note at the end of its subject (unless `order` is given), on the
+ * notebook's next page. Notes typed in the app are witnessed as they're
+ * written; anyone else's wait. The caller has already checked the subject
+ * belongs to the user.
  */
 export async function insertNote(
+  userId: string,
   subjectId: string,
   input: { title: string; notes?: string; order?: number; source?: string },
 ): Promise<Milestone> {
   const source = input.source ?? WEB_SOURCE;
-  const order = input.order ?? (await nextOrder(subjectId));
+  const [order, page] = await Promise.all([input.order ?? nextOrder(subjectId), takePage(userId)]);
   return prisma.milestone.create({
     data: {
       subjectId,
+      page,
       title: input.title,
       notes: input.notes ?? "",
       order,

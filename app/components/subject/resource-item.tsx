@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Link2, MessageSquare, FileText, BookOpen, Trash2, ExternalLink, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { useDeleteResource, useIngestResource, type ResourceRow } from "@/hooks/useResources";
 import type { ResourceType } from "@/app/generated/prisma/browser";
+import { pageLabel } from "@/lib/notes/page-label";
 
 // Only these types point at something worth extracting text from: AI_CHAT is
 // a link to a conversation, not a document, so "extract text" would have
@@ -81,6 +82,7 @@ export function ResourceItem({ resource }: { resource: ResourceRow }) {
           </a>
         </div>
         <div className="lk-print mt-0.5 flex items-center gap-2 text-2xs text-muted-foreground">
+          {resource.page != null && <span title="Its page in your notebook">{pageLabel(resource.page)}</span>}
           <span className="lk-tag">{LABEL[resource.type]}</span>
           <span className="truncate">{host(resource.url)}</span>
           {resource.ingestState === "READY" && (

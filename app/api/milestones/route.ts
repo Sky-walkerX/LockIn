@@ -49,6 +49,6 @@ export async function POST(request: NextRequest) {
   ]);
   if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
 
-  const milestone = await insertNote(subjectId, { title, notes, order: resolvedOrder, source });
+  const milestone = await insertNote(userId, subjectId, { title, notes, order: resolvedOrder, source });
   return NextResponse.json(milestone, { status: 201 });
 }

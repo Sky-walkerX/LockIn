@@ -48,6 +48,7 @@ export function useCreateMilestone() {
         weight: 1,
         source: "web",
         witnessedAt: new Date(),
+        page: null, // the server assigns it
         createdAt: new Date(),
         updatedAt: new Date(),
         subjectId: input.subjectId,

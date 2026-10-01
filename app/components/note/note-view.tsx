@@ -16,6 +16,7 @@ import { isTempId } from "@/lib/subject-cache";
 import { awaitingWitness, isOwnNote, sourceLabel } from "@/lib/notes/source";
 import { MoveNoteMenu } from "./move-note-menu";
 import { NoteFullscreen } from "./note-fullscreen";
+import { pageLabel } from "@/lib/notes/page-label";
 
 // One note as a page: a running head, the title, then the body on clean paper.
 // Reading is the default; the editor opens in place.
@@ -84,7 +85,7 @@ export function NoteView({
           <ArrowLeft size={13} /> All notes
         </Link>
         <span className="hidden lg:inline">
-          <b>{sectionTitle}</b> · Note
+          <b>{sectionTitle}</b> · Note{note.page != null && <> · {pageLabel(note.page)}</>}
         </span>
         <span>Updated {ago(note.updatedAt)}</span>
       </div>

@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { authenticateToken } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
 import { appendToNote, insertNote, placeNote } from "@/lib/notes/write";
+import { pagesOf } from "@/lib/notes/page";
 import { sourceLabel } from "@/lib/notes/source";
 import { embedOnServer } from "@/lib/rag/ingest";
 import { searchKeyword } from "@/lib/search/keyword";
@@ -82,6 +83,8 @@ const handler = createMcpHandler(
           if (found.some((f) => f.id === h.id)) continue;
           found.push({ kind: h.kind, id: h.id, title: h.title, path: h.path, snippet: h.snippet, href: h.href });
         }
+        const pages = await pagesOf(userId, found);
+        for (const f of found) f.page = pages.get(f.id) ?? null;
         return text(formatSearch(query, found, origin, mode));
       },
     );
@@ -124,7 +127,7 @@ const handler = createMcpHandler(
       async ({ title, body, subject }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
         const place = await placeNote(userId, subject);
-        const note = await insertNote(place.subjectId, { title, notes: body, source });
+        const note = await insertNote(userId, place.subjectId, { title, notes: body, source });
         const where = place.isInbox
           ? place.requested
             ? `the Inbox (there's no subject called "${place.requested}"; call list_subjects to see them)`
@@ -132,7 +135,7 @@ const handler = createMcpHandler(
           : place.subjectTitle;
         const url = noteUrl(origin, place.subjectId, place.isInbox, note.id);
         return text(
-          `Saved "${note.title}" to ${where}. Note id ${note.id}.\nIt shows as recorded by ${sourceLabel(source)} and waits for the user to witness it.${url ? `\n${url}` : ""}`,
+          `Saved "${note.title}" to ${where}, on page ${note.page}. Note id ${note.id}.\nIt shows as recorded by ${sourceLabel(source)} and waits for the user to witness it.${url ? `\n${url}` : ""}`,
         );
       },
     );

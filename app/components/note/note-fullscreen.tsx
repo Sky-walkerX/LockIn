@@ -9,6 +9,7 @@ import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
 import { ago } from "@/lib/dates";
 import { isOwnNote, sourceLabel } from "@/lib/notes/source";
+import { pageLabel } from "@/lib/notes/page-label";
 
 // One note and nothing else: the whole window becomes the page. It also asks
 // the browser for real full screen, and falls back to just covering the window
@@ -91,7 +92,7 @@ export function NoteFullscreen({
       <div className="lk-fullscreen-bar">
         <span className="lk-runhead !border-0 !p-0">
           <span>
-            <b>{sectionTitle}</b> · Note · updated {ago(note.updatedAt)}
+            <b>{sectionTitle}</b> · Note{note.page != null && <> · {pageLabel(note.page)}</>} · updated {ago(note.updatedAt)}
           </span>
         </span>
         <div className="flex items-center gap-2">

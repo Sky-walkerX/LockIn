@@ -27,6 +27,19 @@ describe("formatSearch", () => {
     expect(text).toContain("   one &mut reference");
     expect(text).toContain("   https://nb.example/subjects/s1?note=m1");
   });
+  it("gives a note's or resource's page when it has one", () => {
+    const text = formatSearch(
+      "borrow",
+      [
+        { kind: "milestone", id: "m1", title: "Ownership", path: ["Rust"], snippet: null, href: "/x", page: 12 },
+        { kind: "task", id: "t1", title: "Read ch. 4", path: ["Rust"], snippet: null, href: "/y" },
+      ],
+      null,
+      "keyword",
+    );
+    expect(text).toContain("1. Ownership (note, p. 12, in Rust) id m1");
+    expect(text).toContain("2. Read ch. 4 (task, in Rust) id t1");
+  });
   it("reports no matches plainly", () => {
     expect(formatSearch("zzz", [], null, "meaning")).toBe('Nothing in the notebook matches "zzz".');
   });
@@ -35,6 +48,7 @@ describe("formatSearch", () => {
 describe("formatNote", () => {
   const base = {
     id: "m1",
+    page: 12,
     title: "Advisory locks",
     notes: "Use xact locks.",
     updatedAt: "2026-10-02T10:00:00Z",
@@ -44,6 +58,7 @@ describe("formatNote", () => {
   it("marks an agent's unwitnessed note and lists its tasks", () => {
     const text = formatNote({ ...base, source: "claude-code", witnessedAt: null }, null);
     expect(text).toContain("# Advisory locks");
+    expect(text).toContain("Page 12 · Subject: Distributed Systems");
     expect(text).toContain("Recorded by Claude Code · Not yet witnessed by the user");
     expect(text).toContain("- [x] Try it");
   });

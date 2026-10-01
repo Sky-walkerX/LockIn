@@ -57,6 +57,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // The page the user's next note or resource gets. Pages count up across the
+  // whole notebook and are never reused, so a citation like "p. 12" keeps
+  // pointing at the same note after others are moved or deleted.
+  nextPage Int @default(1)
+
   subjects      Subject[]
   tasks         Task[]
   resources     Resource[]
@@ -167,6 +172,9 @@ model Milestone {
   // witnessed as they're written; an agent's note waits in "To witness".
   witnessedAt DateTime?
 
+  // Its page in the notebook (see User.nextPage), shared with resources.
+  page Int?
+
   // Revision (lib/review/schedule.ts). Completing a milestone schedules its
   // first review; each rating moves reviewDueAt out by a stretching interval.
   // A null reviewDueAt means the topic isn't being revised.
@@ -271,6 +279,9 @@ model Resource {
   pageCount   Int?
   ingestState IngestState @default(NONE)
   ingestError String?
+
+  // Its page in the notebook (see User.nextPage), shared with notes.
+  page Int?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String

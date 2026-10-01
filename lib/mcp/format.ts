@@ -16,7 +16,16 @@ export function formatSubjects(subjects: SubjectLine[]): string {
   return `Subjects in the user's notebook:\n${lines.join("\n")}`;
 }
 
-export type FoundLine = { kind: string; id: string; title: string; path: string[]; snippet: string | null; href: string };
+export type FoundLine = {
+  kind: string;
+  id: string;
+  title: string;
+  path: string[];
+  snippet: string | null;
+  href: string;
+  /** The note's or resource's page, so an agent can cite it as the user sees it. */
+  page?: number | null;
+};
 
 const KIND_WORD: Record<string, string> = {
   milestone: "note",
@@ -31,7 +40,8 @@ export function formatSearch(query: string, hits: FoundLine[], origin: string | 
   if (hits.length === 0) return `Nothing in the notebook matches "${query}".`;
   const lines = hits.map((h, i) => {
     const where = h.path.length > 0 ? `, in ${h.path.join(" › ")}` : "";
-    const parts = [`${i + 1}. ${h.title} (${KIND_WORD[h.kind] ?? h.kind}${where}) id ${h.id}`];
+    const page = h.page != null ? `, p. ${h.page}` : "";
+    const parts = [`${i + 1}. ${h.title} (${KIND_WORD[h.kind] ?? h.kind}${page}${where}) id ${h.id}`];
     if (h.snippet) parts.push(`   ${h.snippet.replace(/\s+/g, " ").trim()}`);
     if (origin) parts.push(`   ${origin}${h.href}`);
     return parts.join("\n");
@@ -42,6 +52,7 @@ export function formatSearch(query: string, hits: FoundLine[], origin: string | 
 
 export type NoteForAgent = {
   id: string;
+  page: number | null;
   title: string;
   notes: string;
   source: string | null;
@@ -53,6 +64,7 @@ export type NoteForAgent = {
 
 export function formatNote(note: NoteForAgent, url: string | null): string {
   const meta = [
+    note.page != null ? `Page ${note.page}` : null,
     note.subject.isInbox ? "In the Inbox (not filed yet)" : `Subject: ${note.subject.title}`,
     isOwnNote(note.source) ? "Written by the user" : `Recorded by ${sourceLabel(note.source)}`,
     awaitingWitness(note) ? "Not yet witnessed by the user" : null,
