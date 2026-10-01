@@ -2,8 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
-import { EMBEDDING_DIMS, EMBEDDING_MODEL, listLiveSources, sourceKey } from "@/lib/rag/sources";
-import type { Prisma } from "@/app/generated/prisma/client";
+import { EMBEDDING_DIMS, EMBEDDING_MODEL, listLiveSources } from "@/lib/rag/sources";
+import { storeChunks } from "@/lib/rag/store";
 
 // The browser asks `/api/rag/pending` for 20 chunks at a time and can overshoot
 // by one source's worth, so real batches sit well under this. The cap exists to
@@ -34,17 +34,9 @@ const PostSchema = z.object({
 /**
  * POST /api/rag/chunks
  *
- * Writes embedded chunks, grouped by (source, sourceId): each group's
- * existing rows are deleted and replaced in one transaction (re-indexing
- * never upserts by ordinal, since a shorter re-chunk would leave surplus
- * high-ordinal rows behind).
- *
- * A group is rejected — not written, not erroring the whole request — when
- * its source record no longer exists, or when `contentHash` no longer
- * matches the live text. The latter means the user edited the note while
- * this batch was being embedded; writing it would mark stale content as
- * indexed and it would never be corrected. Rejecting leaves it stale, and the
- * next status check picks it up.
+ * Writes the browser's embedded chunks through `storeChunks`, which replaces
+ * each source's rows and skips any source that was deleted or edited while
+ * the batch was being embedded.
  *
  * `content` is trusted only within the caller's own account: every row is
  * scoped by `userId`, so the worst a tampered client achieves is poisoning
@@ -58,51 +50,8 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
-  const { model, dims, chunks } = parsed.data;
 
-  const live = await listLiveSources(userId);
-  const liveByKey = new Map(live.map((l) => [sourceKey(l.source, l.sourceId), l]));
-
-  const groups = new Map<string, typeof chunks>();
-  for (const chunk of chunks) {
-    const key = sourceKey(chunk.source, chunk.sourceId);
-    const group = groups.get(key);
-    if (group) group.push(chunk);
-    else groups.set(key, [chunk]);
-  }
-
-  const ops: Prisma.PrismaPromise<unknown>[] = [];
-  let written = 0;
-
-  for (const [key, group] of groups) {
-    const liveEntry = liveByKey.get(key);
-    if (!liveEntry) continue; // source no longer exists — reject the group
-    if (group.some((c) => c.contentHash !== liveEntry.contentHash)) continue; // edited mid-batch — reject
-
-    const { source, sourceId } = group[0];
-    ops.push(prisma.noteChunk.deleteMany({ where: { userId, source, sourceId } }));
-    ops.push(
-      prisma.noteChunk.createMany({
-        data: group.map((c) => ({
-          userId,
-          subjectId: liveEntry.subjectId,
-          source: c.source,
-          sourceId: c.sourceId,
-          ordinal: c.ordinal,
-          breadcrumb: c.breadcrumb,
-          content: c.content,
-          contentHash: c.contentHash,
-          embedding: c.embedding,
-          embeddingModel: model,
-          dims,
-        })),
-      }),
-    );
-    written += group.length;
-  }
-
-  if (ops.length > 0) await prisma.$transaction(ops);
-
+  const written = await storeChunks(userId, parsed.data.chunks, await listLiveSources(userId));
   return NextResponse.json({ written });
 }
 

@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { createMcpHandler, getPublicOrigin, withMcpAuth } from "mcp-handler";
 import type { AuthInfo } from "@modelcontextprotocol/server";
 import { z } from "zod";
@@ -8,6 +9,7 @@ import { appendToNote, insertNote, placeNote } from "@/lib/notes/write";
 import { pagesOf } from "@/lib/notes/page";
 import { sourceLabel } from "@/lib/notes/source";
 import { embedOnServer } from "@/lib/rag/ingest";
+import { indexNoteOnServer } from "@/lib/rag/index-note";
 import { searchKeyword } from "@/lib/search/keyword";
 import { searchSemantic } from "@/lib/search/semantic";
 import { formatNote, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
@@ -25,6 +27,12 @@ function caller(authInfo: AuthInfo | undefined): Caller {
   if (!extra?.userId || !extra.source) throw new Error("Not authenticated");
   return { userId: extra.userId, source: extra.source, origin: extra.origin ?? null };
 }
+
+// Index a note the agent just wrote once the reply has gone, so search_notes
+// finds it by meaning right away. Without the ingest service this does nothing
+// and the browser indexes the note later, as it does for notes written in the app.
+const indexAfterReply = (userId: string, noteId: string) =>
+  after(() => indexNoteOnServer(userId, noteId).catch((e) => console.error("Indexing an agent's note failed", e)));
 
 const text = (t: string) => ({ content: [{ type: "text" as const, text: t }] });
 const noteUrl = (origin: string | null, subjectId: string, isInbox: boolean, noteId: string) =>
@@ -128,6 +136,7 @@ const handler = createMcpHandler(
         const { userId, source, origin } = caller(ctx.http?.authInfo);
         const place = await placeNote(userId, subject);
         const note = await insertNote(userId, place.subjectId, { title, notes: body, source });
+        indexAfterReply(userId, note.id);
         const where = place.isInbox
           ? place.requested
             ? `the Inbox (there's no subject called "${place.requested}"; call list_subjects to see them)`
@@ -156,6 +165,7 @@ const handler = createMcpHandler(
         const { userId, source, origin } = caller(ctx.http?.authInfo);
         const note = await appendToNote(userId, id, addition, `From ${sourceLabel(source)}`);
         if (!note) return { ...text(`No note with id ${id} in this notebook.`), isError: true };
+        indexAfterReply(userId, note.id);
         const url = noteUrl(origin, note.subject.id, note.subject.isInbox, note.id);
         return text(`Added to "${note.title}" in ${note.subject.isInbox ? "the Inbox" : note.subject.title}.${url ? `\n${url}` : ""}`);
       },
