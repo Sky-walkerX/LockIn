@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -51,6 +52,9 @@ export function NotebookHome() {
         {list.length === 0 && (
           <div className="flex flex-wrap items-center gap-3">
             <NewSubject />
+            <Link href="/settings#agents" className="text-ui text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+              Connect an agent
+            </Link>
           </div>
         )}
       </header>

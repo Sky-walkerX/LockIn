@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { awaitingWitness, isOwnNote, sourceLabel } from "./source";
 import { chunkSourcesOf } from "./move";
+import { matchSubject } from "./write";
 
 describe("sourceLabel", () => {
   it("names known agents", () => {
@@ -45,5 +46,22 @@ describe("chunkSourcesOf", () => {
   });
   it("leaves out empty groups", () => {
     expect(chunkSourcesOf({ id: "m1", tasks: [] })).toEqual([{ source: "MILESTONE", ids: ["m1"] }]);
+  });
+});
+
+
+describe("matchSubject", () => {
+  const subjects = [
+    { id: "s1", title: "Rust" },
+    { id: "s2", title: "Operating  Systems" },
+  ];
+  it("matches by id or by title, ignoring case and spacing", () => {
+    expect(matchSubject(subjects, "s1")?.id).toBe("s1");
+    expect(matchSubject(subjects, "rust")?.id).toBe("s1");
+    expect(matchSubject(subjects, " operating systems ")?.id).toBe("s2");
+  });
+  it("returns null for no match or an empty query", () => {
+    expect(matchSubject(subjects, "Rusty")).toBeNull();
+    expect(matchSubject(subjects, "  ")).toBeNull();
   });
 });

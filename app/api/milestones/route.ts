@@ -11,7 +11,7 @@ const MilestoneSchema = z.object({
   title: z.string().min(1),
   notes: z.string().optional(),
   order: z.number().int().optional(),
-  // Who's writing: "web" from the app, or an agent's id.
+  // Who's writing: "web" from the app, an agent's id over MCP.
   source: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9_-]{0,39}$/).optional(),
 });
 

@@ -514,6 +514,13 @@
     to { transform: rotate(-2deg) scale(1); opacity: 1; }
   }
 
+  /* Settings → Connect your agents: one row per token. */
+  .lk-agent-row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+  }
+  .lk-agent-row:last-child { border-bottom: 0; }
+
   /* Full screen: one note on clean paper, nothing else on screen. */
   .lk-fullscreen {
     position: fixed; inset: 0; z-index: 80;

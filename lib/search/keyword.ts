@@ -59,7 +59,8 @@ LIMIT 60`;
 
 /**
  * Titles and notes (code included) across the user's subjects, notes, tasks,
- * subtasks and resources, ranked, for the palette's /api/search.
+ * subtasks and resources, ranked. Shared by the palette's /api/search and the
+ * MCP server's search_notes.
  */
 export async function searchKeyword(userId: string, query: string): Promise<SearchHit[]> {
   const terms = parseTerms(query);

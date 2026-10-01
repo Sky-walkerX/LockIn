@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Download, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { FocusSettings } from "@/app/components/focus/focus-settings";
+import { AgentConnections } from "@/app/components/settings/agent-connections";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
 const THEMES = [
@@ -51,6 +52,11 @@ export default function SettingsPage() {
               <LogOut size={13} /> Sign out
             </button>
           </div>
+        </section>
+
+        <section id="agents" className="scroll-mt-6">
+          <div className="lk-sec mb-3">connect your agents</div>
+          <AgentConnections />
         </section>
 
         <section>

@@ -8,7 +8,7 @@ const CANDIDATES = 40;
 /**
  * The user's notes and documents ranked by meaning against an already-embedded
  * query. Same brute-force dot product Ask uses (see lib/rag/similarity.ts for
- * why that's enough). Used by /api/search/semantic.
+ * why that's enough). Shared by /api/search/semantic and the MCP server.
  */
 export async function searchSemantic(userId: string, queryEmbedding: number[], limit?: number): Promise<SemanticHit[]> {
   const chunks = await listScorableChunks(userId, []);
