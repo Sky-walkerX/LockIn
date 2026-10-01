@@ -34,6 +34,11 @@ function flatten(text: string, cap: number): string {
   return `${oneLine.slice(0, cap).trimEnd()}…`;
 }
 
+/** How a page is labelled for the model, in the form it's asked to cite. */
+function pageTag(page: number | null | undefined): string {
+  return page != null ? ` [p. ${page}]` : "";
+}
+
 /** The digest owns `#`–`###`; user notes are nested below a note's heading. */
 const MIN_NOTE_HEADING = 4;
 
@@ -113,7 +118,7 @@ function renderMilestone(milestone: ContextMilestone, options: DigestOptions): s
   const done = tasks.filter((t) => t.isCompleted).length;
   const progress = tasks.length > 0 ? ` — ${done}/${tasks.length} done` : milestone.isCompleted ? " — done" : "";
 
-  const lines = [`### Note: ${milestone.title}${progress}`];
+  const lines = [`### Note: ${milestone.title}${pageTag(milestone.page)}${progress}`];
 
   if (options.milestoneNoteChars > 0 && milestone.notes?.trim()) {
     const notes = capNotes(milestone.notes, options.milestoneNoteChars);
@@ -125,7 +130,7 @@ function renderMilestone(milestone: ContextMilestone, options: DigestOptions): s
 }
 
 function renderResource(resource: ContextResource, options: DigestOptions): string[] {
-  const lines = [`- ${resource.type} · ${resource.title} — ${resource.url}`];
+  const lines = [`- ${resource.type} · ${resource.title}${pageTag(resource.page)} — ${resource.url}`];
   if (options.includeResourceNotes && resource.note?.trim()) {
     lines.push(`  ${flatten(resource.note, RESOURCE_NOTE_CHARS)}`);
   }
@@ -180,7 +185,7 @@ function renderOutlineMilestone(milestone: ContextMilestone): string[] {
   const tasks = milestone.tasks ?? [];
   const done = tasks.filter((t) => t.isCompleted).length;
   const progress = tasks.length > 0 ? ` — ${done}/${tasks.length} done` : milestone.isCompleted ? " — done" : "";
-  const lines = [`- ${milestone.title}${progress}`];
+  const lines = [`- ${milestone.title}${pageTag(milestone.page)}${progress}`];
   for (const task of tasks) {
     if (!task.isCompleted) lines.push(`  - [ ] ${task.title}`);
   }

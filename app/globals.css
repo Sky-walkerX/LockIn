@@ -713,6 +713,22 @@
     color: var(--muted-foreground);
   }
 
+  /* A page citation in an Ask reply ("p. 12"): a small printed tab that
+     opens the note. Outranks .lk-prose a, which would underline it. */
+  .lk-cite,
+  .lk-prose a.lk-cite {
+    display: inline-block;
+    font-family: var(--lk-font-mono);
+    font-size: 11px; font-weight: 600; line-height: 1;
+    letter-spacing: 0.04em; white-space: nowrap;
+    padding: 2px 5px; margin: 0 1px; vertical-align: 1px;
+    border: 1px solid var(--input); border-radius: 3px;
+    color: var(--muted-foreground); text-decoration: none;
+    transition: color 120ms, border-color 120ms;
+  }
+  .lk-cite:hover,
+  .lk-prose a.lk-cite:hover { color: var(--foreground); border-color: var(--foreground); }
+
   /* ---- Markdown notes (react-markdown output) ----
      Reading pages are clean paper: no grid, no rules behind the text. */
   .lk-prose {

@@ -156,3 +156,34 @@ describe("assembleRetrievalPrompt", () => {
     expect(budget.truncated.some((t) => t.startsWith('subject "Subject Number'))).toBe(true);
   });
 });
+
+describe("assembleRetrievalPrompt page refs", () => {
+  const ref = (page: number, id: string) => ({
+    page,
+    kind: "note" as const,
+    id,
+    subjectId: "s1",
+    subjectTitle: "Operating Systems",
+    title: id,
+    inbox: false,
+  });
+
+  it("offers every page of a digest, none marked retrieved", () => {
+    const paged: ContextSubject = { ...smallSubject, milestones: [{ id: "m1", page: 4, title: "Memory", isCompleted: false }] };
+    const { budget } = assembleRetrievalPrompt({ ...baseInput, subjects: [paged], chunks: [], ceiling: 8000 });
+    expect(budget.refs.map((r) => [r.page, r.retrieved])).toEqual([[4, false]]);
+  });
+
+  it("labels retrieved passages with their page and marks them retrieved", () => {
+    const { messages, budget } = assembleRetrievalPrompt({
+      ...baseInput,
+      subjects: [bigSubject("s1", "Operating Systems")],
+      chunks: [chunk({ embedding: [1, 0], ref: ref(12, "m1") }), chunk({ embedding: [1, 0], sourceId: "m2", ref: null })],
+      ceiling: 500,
+      queryEmbedding: [1, 0],
+    });
+    expect(budget.mode).toBe("retrieval");
+    expect(messages[0].content).toContain("### Operating Systems > Memory management [p. 12]");
+    expect(budget.refs.map((r) => [r.page, r.retrieved])).toEqual([[12, true]]);
+  });
+});

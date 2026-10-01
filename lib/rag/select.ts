@@ -1,5 +1,7 @@
 import { demoteHeadings, estimateTokens } from "@/lib/chat/context";
 import type { ChunkSourceType } from "./chunk";
+import type { PageRef } from "@/lib/chat/refs";
+import { passageQuote } from "@/lib/notes/plain-text";
 
 /**
  * Turns scored chunks into the "## Relevant notes" block that supplies depth
@@ -19,9 +21,16 @@ export type ScoredChunk = {
   breadcrumb: string;
   content: string;
   score: number;
+  ref?: PageRef | null;
 };
 
-export type SelectManifestEntry = { breadcrumb: string; score: number };
+export type SelectManifestEntry = {
+  breadcrumb: string;
+  score: number;
+  ref?: PageRef | null;
+  /** The passage's opening words, for finding it on its page. */
+  quote: string;
+};
 
 export type SelectResult = {
   /** "" when nothing survived selection — the caller omits the section entirely. */
@@ -40,8 +49,10 @@ const MAX_TOTAL = 12;
 // route than the digest — but a stray `##` in a note would still read as a
 // sibling of this section's own `###` breadcrumb heading and re-parent
 // whatever follows it. Demoted for the same reason `context.ts` demotes it.
-function passageText(chunk: Pick<ScoredChunk, "breadcrumb" | "content">): string {
-  return `### ${chunk.breadcrumb}\n${demoteHeadings(chunk.content)}`;
+// The page goes on the heading in the form the model is asked to cite.
+function passageText(chunk: Pick<ScoredChunk, "breadcrumb" | "content" | "ref">): string {
+  const page = chunk.ref ? ` [p. ${chunk.ref.page}]` : "";
+  return `### ${chunk.breadcrumb}${page}\n${demoteHeadings(chunk.content)}`;
 }
 
 export function selectPassages(
@@ -90,7 +101,7 @@ export function selectPassages(
   });
 
   const block = ["## Relevant notes", ...ordered.map(passageText)].join("\n\n");
-  const manifest = ordered.map((c) => ({ breadcrumb: c.breadcrumb, score: c.score }));
+  const manifest = ordered.map((c) => ({ breadcrumb: c.breadcrumb, score: c.score, ref: c.ref ?? null, quote: passageQuote(c.content) }));
 
   return { block, manifest };
 }

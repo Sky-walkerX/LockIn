@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { chunkSource, hashContent, type Chunk, type ChunkSourceType } from "./chunk";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "./embedding-model";
+import type { PageRef } from "@/lib/chat/refs";
 
 export { EMBEDDING_DIMS, EMBEDDING_MODEL };
 
@@ -249,7 +250,72 @@ export type ScorableChunk = {
   breadcrumb: string;
   content: string;
   embedding: number[];
+  /** The page a passage is cited by: its note's or resource's. A plan task's
+   *  passage cites the note it sits under; one with no note has no page. */
+  ref?: PageRef | null;
 };
+
+const NOTE_REF_SELECT = {
+  id: true,
+  page: true,
+  title: true,
+  subject: { select: { id: true, title: true, isInbox: true } },
+} as const;
+
+type NoteRow = { id: string; page: number | null; title: string; subject: { id: string; title: string; isInbox: boolean } };
+
+function noteRef(note: NoteRow | null | undefined): PageRef | null {
+  if (!note || note.page == null) return null;
+  return {
+    page: note.page,
+    kind: "note",
+    id: note.id,
+    subjectId: note.subject.id,
+    subjectTitle: note.subject.title,
+    title: note.title,
+    inbox: note.subject.isInbox,
+  };
+}
+
+/** The page each chunk's source is cited by, keyed by `sourceKey`. Four reads
+ *  at most, run together, and only for the sources actually present. */
+async function pageRefs(userId: string, rows: { source: ChunkSourceType; sourceId: string }[]): Promise<Map<string, PageRef | null>> {
+  const ids = (...sources: ChunkSourceType[]) => [...new Set(rows.filter((r) => sources.includes(r.source)).map((r) => r.sourceId))];
+  const [noteIds, taskIds, subtaskIds, resourceIds] = [ids("MILESTONE"), ids("TASK"), ids("SUBTASK"), ids("RESOURCE", "RESOURCE_DOC")];
+
+  const [notes, tasks, subtasks, resources] = await Promise.all([
+    noteIds.length ? prisma.milestone.findMany({ where: { id: { in: noteIds }, subject: { userId } }, select: NOTE_REF_SELECT }) : [],
+    taskIds.length
+      ? prisma.task.findMany({ where: { id: { in: taskIds }, userId }, select: { id: true, milestone: { select: NOTE_REF_SELECT } } })
+      : [],
+    subtaskIds.length
+      ? prisma.subtask.findMany({
+          where: { id: { in: subtaskIds }, task: { userId } },
+          select: { id: true, task: { select: { milestone: { select: NOTE_REF_SELECT } } } },
+        })
+      : [],
+    resourceIds.length
+      ? prisma.resource.findMany({
+          where: { id: { in: resourceIds }, userId },
+          select: { id: true, page: true, title: true, subject: { select: { id: true, title: true, isInbox: true } } },
+        })
+      : [],
+  ]);
+
+  const out = new Map<string, PageRef | null>();
+  for (const n of notes) out.set(sourceKey("MILESTONE", n.id), noteRef(n));
+  for (const t of tasks) out.set(sourceKey("TASK", t.id), noteRef(t.milestone));
+  for (const s of subtasks) out.set(sourceKey("SUBTASK", s.id), noteRef(s.task.milestone));
+  for (const r of resources) {
+    const ref: PageRef | null =
+      r.page == null
+        ? null
+        : { page: r.page, kind: "resource", id: r.id, subjectId: r.subject.id, subjectTitle: r.subject.title, title: r.title, inbox: r.subject.isInbox };
+    out.set(sourceKey("RESOURCE", r.id), ref);
+    out.set(sourceKey("RESOURCE_DOC", r.id), ref);
+  }
+  return out;
+}
 
 /** Chunks eligible for retrieval — current embedding model only, so a stale
  *  vector space is never scored alongside the current one. */
@@ -275,7 +341,10 @@ export async function listScorableChunks(
     },
   });
 
+  const refs = await pageRefs(userId, rows);
+
   return rows.map((r) => ({
+    ref: refs.get(sourceKey(r.source, r.sourceId)) ?? null,
     subjectId: r.subjectId,
     subjectTitle: r.subject.title,
     subjectColor: r.subject.color,

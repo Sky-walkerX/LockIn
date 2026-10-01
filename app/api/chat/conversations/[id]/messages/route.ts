@@ -9,6 +9,24 @@ const MessageSchema = z.object({
   // Breadcrumbs of the passages retrieval selected for this reply, so history
   // shows what an old answer cited. Empty on digest-mode replies.
   sources: z.array(z.string()).optional(),
+  // The pages the reply could cite, as `prepare` returned them, so its
+  // "[p. 12]" stay links when the thread is reopened.
+  refs: z
+    .array(
+      z.object({
+        page: z.number().int().positive(),
+        kind: z.enum(["note", "resource"]),
+        id: z.string().min(1).max(64),
+        subjectId: z.string().min(1).max(64),
+        subjectTitle: z.string().max(500),
+        title: z.string().max(500),
+        inbox: z.boolean(),
+        retrieved: z.boolean(),
+        quote: z.string().max(300).optional(),
+      }),
+    )
+    .max(2000)
+    .optional(),
 });
 
 /**
@@ -43,6 +61,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       content: parsed.data.content,
       model: parsed.data.model ?? null,
       sources: parsed.data.sources ?? [],
+      refs: parsed.data.refs,
     },
   });
 

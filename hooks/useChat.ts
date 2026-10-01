@@ -9,9 +9,11 @@ import type { RetrievalBudget } from "@/lib/chat/retrieve";
 import { streamingPrefix } from "@/lib/chat/stream-buffer";
 import { acquireEngine } from "@/lib/llm/engine-lock";
 import type { EmbedderBackend } from "@/lib/llm/embedder";
-import { createOpenAiTransport, LlmError } from "@/lib/llm/client";
-import { effectiveContextTokens, loadSettings, type LlmSettings } from "@/lib/llm/settings";
+import { LlmError } from "@/lib/llm/client";
+import { effectiveContextTokens, loadSettings, modelName, type LlmSettings } from "@/lib/llm/settings";
+import { createTransport } from "@/lib/llm/create-transport";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/rag/embedding-model";
+import type { MessageRef } from "@/lib/chat/refs";
 
 export type ConversationSummary = Pick<
   Conversation,
@@ -168,6 +170,7 @@ export function useSendMessage() {
 
       let streamed = "";
       let sources: string[] = [];
+      let refs: MessageRef[] = [];
       let release: (() => void) | null = null;
       try {
         setPhase("preparing");
@@ -182,14 +185,12 @@ export function useSendMessage() {
         );
         setBudget(prepared.budget);
         sources = prepared.budget.sources.map((s) => s.breadcrumb);
+        refs = prepared.budget.refs;
 
         // Show the question immediately; `prepare` has already stored it.
         qc.invalidateQueries({ queryKey: ["conversation", conversationId] });
 
-        const transport =
-          settings.provider === "webllm"
-            ? (await import("@/lib/llm/webllm-transport")).createWebllmTransport(settings.webllmModel)
-            : createOpenAiTransport(settings);
+        const transport = await createTransport(settings);
 
         // Chat owns the engine for the duration, so note autocomplete steps
         // aside instead of queueing a completion behind a long reply.
@@ -234,8 +235,9 @@ export function useSendMessage() {
       if (streamed.trim()) {
         await api.post<ChatMessage>(`/api/chat/conversations/${conversationId}/messages`, {
           content: streamed,
-          model: settings.provider === "webllm" ? settings.webllmModel : settings.model,
+          model: modelName(settings),
           sources,
+          refs,
         });
       }
 

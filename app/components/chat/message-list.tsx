@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { ChatMessage } from "@/app/generated/prisma/browser";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Markdown } from "@/app/components/subject/markdown";
 import { splitReasoning } from "@/lib/chat/reasoning";
+import { citedPages, linkCitations } from "@/lib/chat/citations";
+import { refHref, type MessageRef } from "@/lib/chat/refs";
+import { pageLabel } from "@/lib/notes/page-label";
 import type { StreamPhase } from "@/hooks/useChat";
 import { SaveToNote } from "./save-to-note";
 
@@ -31,8 +35,11 @@ export function MessageList({
   phaseDetail,
   error,
   subjectId,
+  streamRefs,
 }: {
   messages: ChatMessage[];
+  /** The pages the reply arriving now can cite. */
+  streamRefs?: MessageRef[];
   streamText: string;
   isStreaming: boolean;
   phase: StreamPhase;
@@ -62,7 +69,7 @@ export function MessageList({
         <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
           Ask about your notes, or anything else.
           <br />
-          Pick subjects below to give the model context.
+          Pick subjects below, and answers cite the pages they used.
         </p>
       )}
 
@@ -80,12 +87,13 @@ export function MessageList({
             content={message.content}
             model={message.model}
             sources={message.sources}
+            refs={readRefs(message.refs)}
             subjectId={subjectId}
           />
         ),
       )}
 
-      {isStreaming && <StreamingBubble text={streamText} phase={phase} detail={phaseDetail} />}
+      {isStreaming && <StreamingBubble text={streamText} refs={streamRefs} phase={phase} detail={phaseDetail} />}
 
       {error && (
         <div className="lk-card border-destructive p-3">
@@ -104,11 +112,13 @@ function AssistantBubble({
   content,
   model,
   sources,
+  refs,
   subjectId,
 }: {
   content: string;
   model: string | null;
   sources: string[];
+  refs: MessageRef[] | null;
   subjectId: string | null;
 }) {
   const { answer, reasoning } = splitReasoning(content);
@@ -116,14 +126,80 @@ function AssistantBubble({
   return (
     <div className="lk-chat-bubble assistant">
       {reasoning && <Reasoning text={reasoning} />}
-      <Markdown>{answer}</Markdown>
-      {sources.length > 0 && <Sources breadcrumbs={sources} />}
+      <Answer text={answer} refs={refs} />
+      {/* Replies from before pages existed only have breadcrumbs. */}
+      {refs ? <FromNotebook refs={refs} answer={answer} /> : sources.length > 0 && <Sources breadcrumbs={sources} />}
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className="lk-print truncate text-2xs uppercase tracking-wide text-muted-foreground">
           {model ?? ""}
         </span>
         {subjectId && <SaveToNote subjectId={subjectId} answer={answer} />}
       </div>
+    </div>
+  );
+}
+
+/** `ChatMessage.refs` is JSON; anything that isn't a list of refs reads as none. */
+function readRefs(value: unknown): MessageRef[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.filter(
+    (r): r is MessageRef => !!r && typeof r === "object" && typeof r.page === "number" && typeof r.id === "string",
+  );
+}
+
+/** An answer, with its "[p. 12]" citations drawn as links to the page. */
+function Answer({ text, refs }: { text: string; refs: MessageRef[] | null | undefined }) {
+  if (!refs || refs.length === 0) return <Markdown>{text}</Markdown>;
+  const byPage = new Map(refs.map((r) => [r.page, r]));
+  return (
+    <Markdown cite={(page) => (byPage.has(page) ? <Cite target={byPage.get(page)!} /> : pageLabel(page))}>
+      {linkCitations(text, new Set(byPage.keys()))}
+    </Markdown>
+  );
+}
+
+function Cite({ target }: { target: MessageRef }) {
+  return (
+    <Link
+      href={refHref(target)}
+      className="lk-cite"
+      title={`${target.subjectTitle} › ${target.title}`}
+      aria-label={`Page ${target.page}: ${target.title}`}
+    >
+      {pageLabel(target.page)}
+    </Link>
+  );
+}
+
+/**
+ * The pages an answer drew on: the passages search retrieved for it, and any
+ * page it cites. Always shown, because a small model often answers from a
+ * passage without citing it, and this is how the user checks the answer
+ * against the notes it came from.
+ */
+function FromNotebook({ refs, answer }: { refs: MessageRef[]; answer: string }) {
+  const cited = new Set(citedPages(answer));
+  const shown = refs.filter((r) => r.retrieved || cited.has(r.page)).sort((a, b) => a.page - b.page);
+  if (shown.length === 0) return null;
+
+  return (
+    <div className="mt-2.5 border-t border-border pt-2">
+      <p className="lk-print text-2xs uppercase tracking-wide text-muted-foreground">From your notebook</p>
+      <ul className="mt-1 space-y-0.5">
+        {shown.map((r) => (
+          <li key={r.page}>
+            <Link
+              href={refHref(r)}
+              className="group flex items-baseline gap-2 text-2xs leading-relaxed text-muted-foreground hover:text-foreground"
+            >
+              <span className="lk-cite">{pageLabel(r.page)}</span>
+              <span className="truncate">
+                {r.subjectTitle} › <span className="group-hover:underline">{r.title}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -204,7 +280,17 @@ function useElapsed(active: boolean): number {
  * to sit alone in an empty bubble, which read as a stray lime rectangle rather
  * than as progress.
  */
-function StreamingBubble({ text, phase, detail }: { text: string; phase: StreamPhase; detail: string | null }) {
+function StreamingBubble({
+  text,
+  refs,
+  phase,
+  detail,
+}: {
+  text: string;
+  refs: MessageRef[] | undefined;
+  phase: StreamPhase;
+  detail: string | null;
+}) {
   const { answer, reasoning } = splitReasoning(text);
   const elapsed = useElapsed(true);
 
@@ -223,7 +309,7 @@ function StreamingBubble({ text, phase, detail }: { text: string; phase: StreamP
         // sibling: as a sibling of a block-level <p> it wrapped onto its own
         // line instead of trailing the sentence.
         <div className="lk-chat-stream">
-          <Markdown>{answer}</Markdown>
+          <Answer text={answer} refs={refs} />
         </div>
       )}
 

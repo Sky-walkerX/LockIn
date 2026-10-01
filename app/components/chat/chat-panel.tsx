@@ -10,7 +10,16 @@ import {
   useSendMessage,
   useUpdateConversation,
 } from "@/hooks/useChat";
-import { isConfigured, loadSettings, type LlmSettings } from "@/lib/llm/settings";
+import {
+  destination,
+  isConfigured,
+  isLocalConnection,
+  loadStore,
+  modelName,
+  saveStore,
+  settingsFrom,
+  type LlmStore,
+} from "@/lib/llm/settings";
 import { ContextPicker } from "./context-picker";
 import { HistoryList } from "./history-list";
 import { IndexStatus } from "./index-status";
@@ -43,11 +52,11 @@ export function ChatPanel({
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [view, setView] = useState<View>("chat");
   const [draft, setDraft] = useState("");
-  // Settings live in localStorage, which isn't readable during SSR — start from
-  // the defaults and hydrate on mount so the markup matches on both sides.
-  // The panel only mounts in the browser (the chat opens client-side), so the
-  // stored settings can seed state directly instead of arriving in an effect.
-  const [settings, setSettings] = useState<LlmSettings>(loadSettings);
+  // Connections live in localStorage. The panel only mounts in the browser
+  // (the chat opens client-side), so they can seed state directly instead of
+  // arriving in an effect.
+  const [store, setStore] = useState<LlmStore>(loadStore);
+  const settings = settingsFrom(store);
   const [selected, setSelected] = useState<string[]>(homeSubjectId ? [homeSubjectId] : []);
 
   const createConversation = useCreateConversation();
@@ -79,7 +88,13 @@ export function ChatPanel({
     onStreamingChange(isStreaming);
   }, [isStreaming, onStreamingChange]);
 
-  const ready = isConfigured(settings);
+  const ready = store.connections.length > 0 && isConfigured(settings);
+
+  const pickConnection = (id: string) => {
+    const next = { ...store, activeId: id };
+    saveStore(next);
+    setStore(next);
+  };
   const messages = conversation?.messages ?? [];
 
   const submit = async () => {
@@ -149,9 +164,26 @@ export function ChatPanel({
       <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="lk-display text-sm font-black tracking-tight">Ask</span>
-          <span className="lk-print truncate text-2xs uppercase tracking-wide text-muted-foreground">
-            {ready ? (settings.provider === "webllm" ? settings.webllmModel : settings.model) : "not connected"}
-          </span>
+          {store.connections.length > 1 ? (
+            <select
+              aria-label="Model that answers"
+              value={settings.id}
+              onChange={(e) => pickConnection(e.target.value)}
+              disabled={isStreaming}
+              className="lk-print min-w-0 truncate rounded border border-transparent bg-transparent py-0.5 text-2xs uppercase tracking-wide text-muted-foreground outline-none hover:border-border focus:border-foreground"
+            >
+              {store.connections.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {modelName(c) ? ` · ${modelName(c)}` : ""}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="lk-print truncate text-2xs uppercase tracking-wide text-muted-foreground">
+              {ready ? `${settings.name} · ${modelName(settings)}` : "not connected"}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -184,7 +216,7 @@ export function ChatPanel({
 
       {view === "settings" && (
         <div className="flex-1 overflow-hidden">
-          <SettingsSheet settings={settings} onChange={setSettings} onClose={() => setView("chat")} />
+          <SettingsSheet store={store} onChange={setStore} onClose={() => setView("chat")} />
         </div>
       )}
 
@@ -213,6 +245,7 @@ export function ChatPanel({
             phaseDetail={phaseDetail}
             error={error}
             subjectId={homeSubjectId}
+            streamRefs={budget?.refs}
           />
 
           <div className="border-t border-border px-4 py-3">
@@ -251,6 +284,12 @@ export function ChatPanel({
                 </button>
               )}
             </div>
+
+            {ready && !isLocalConnection(settings) && (
+              <p className="lk-print mt-2 text-2xs uppercase tracking-wide text-muted-foreground">
+                Sent to {destination(settings)} with your key
+              </p>
+            )}
 
             {budgetLine && (
               <p className="lk-print mt-2 text-2xs uppercase tracking-wide text-muted-foreground">

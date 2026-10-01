@@ -1,15 +1,18 @@
 import type { PromptMessage } from "@/lib/chat/types";
 import type { ChatTransport, StreamOpts } from "./transport";
-import { normalizeBaseUrl, type LlmSettings } from "./settings";
+import { isLocalConnection, normalizeBaseUrl, type Connection } from "./settings";
 
 /**
  * Browser-side transport to an OpenAI-compatible endpoint.
  *
  * This runs in the browser because it has to: LockIn is deployed remotely and
  * the model listens on the user's own localhost, which no server of ours can
- * reach. One wire format (`/chat/completions` + `/models`) covers Ollama, LM
- * Studio, llama.cpp, Jan, vLLM and LocalAI.
+ * reach, and a cloud key must never pass through our server. One wire format
+ * (`/chat/completions` + `/models`) covers Ollama, LM Studio, llama.cpp, Jan,
+ * vLLM and LocalAI, and OpenAI, Gemini and OpenRouter in the cloud.
  */
+
+type ServerSettings = Pick<Connection, "provider" | "baseUrl" | "apiKey" | "model" | "temperature" | "preset">;
 
 /** A failure with a message worth showing the user verbatim. */
 export class LlmError extends Error {
@@ -22,7 +25,7 @@ export class LlmError extends Error {
   }
 }
 
-function headers(settings: LlmSettings): HeadersInit {
+function headers(settings: ServerSettings): HeadersInit {
   const h: Record<string, string> = { "Content-Type": "application/json" };
   if (settings.apiKey.trim()) h.Authorization = `Bearer ${settings.apiKey.trim()}`;
   return h;
@@ -30,19 +33,27 @@ function headers(settings: LlmSettings): HeadersInit {
 
 /**
  * A cross-origin fetch that a browser blocks fails as a bare `TypeError` with
- * no status — indistinguishable from the server being down. Since a misconfigured
- * `OLLAMA_ORIGINS` is by far the most likely cause, that's what we lead with.
+ * no status — indistinguishable from the server being down. For a local server
+ * a misconfigured `OLLAMA_ORIGINS` is by far the most likely cause, so that's
+ * what we lead with; a cloud provider allows browsers, so there it's the network.
  */
-function asNetworkError(baseUrl: string): LlmError {
+export function asNetworkError(settings: Pick<Connection, "provider" | "baseUrl">): LlmError {
+  const baseUrl = normalizeBaseUrl(settings.baseUrl);
+  if (!isLocalConnection(settings)) {
+    return new LlmError(`Can't reach ${baseUrl}. Check your internet connection and the address.`, "endpoint");
+  }
   return new LlmError(
     `Can't reach ${baseUrl}. Check the server is running and that it allows requests from this page's origin.`,
     "cors",
   );
 }
 
-async function describeHttpError(response: Response, baseUrl: string): Promise<LlmError> {
+export async function describeHttpError(response: Response, baseUrl: string): Promise<LlmError> {
   if (response.status === 401 || response.status === 403) {
-    return new LlmError("The endpoint rejected the API key.", "auth");
+    return new LlmError("The provider rejected the API key.", "auth");
+  }
+  if (response.status === 429) {
+    return new LlmError("The provider is rate-limiting this key, or it's out of credit. Try again shortly.", "server");
   }
   if (response.status === 404) {
     return new LlmError(
@@ -63,7 +74,7 @@ async function describeHttpError(response: Response, baseUrl: string): Promise<L
 }
 
 /** Model ids the endpoint reports, for the settings dropdown. */
-export async function listModels(settings: LlmSettings): Promise<string[]> {
+export async function listModels(settings: ServerSettings): Promise<string[]> {
   const baseUrl = normalizeBaseUrl(settings.baseUrl);
   if (!baseUrl) throw new LlmError("Set a server URL first.", "endpoint");
 
@@ -71,16 +82,27 @@ export async function listModels(settings: LlmSettings): Promise<string[]> {
   try {
     response = await fetch(`${baseUrl}/models`, { headers: headers(settings) });
   } catch {
-    throw asNetworkError(baseUrl);
+    throw asNetworkError(settings);
   }
   if (!response.ok) throw await describeHttpError(response, baseUrl);
 
   const body = (await response.json()) as { data?: { id?: string }[] };
-  return (body.data ?? []).map((m) => m.id).filter((id): id is string => typeof id === "string" && id.length > 0);
+  const ids = (body.data ?? [])
+    .map((m) => m.id)
+    .filter((id): id is string => typeof id === "string" && id.length > 0)
+    // Gemini lists "models/gemini-2.5-flash" but is asked for "gemini-2.5-flash".
+    .map((id) => id.replace(/^models\//, ""));
+  return settings.preset === "openai" ? ids.filter(isOpenAiChatModel).sort() : ids;
+}
+
+// OpenAI's list mixes in embedding, speech, image and moderation models that
+// can't answer a chat message.
+function isOpenAiChatModel(id: string): boolean {
+  return !/embedding|tts|whisper|dall-e|davinci|babbage|moderation|audio|realtime|transcribe|image|search|computer-use/.test(id);
 }
 
 export type StreamOptions = {
-  settings: LlmSettings;
+  settings: ServerSettings;
   messages: PromptMessage[];
   signal: AbortSignal;
   onToken: (chunk: string) => void;
@@ -114,7 +136,7 @@ export async function streamCompletion({
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") throw error;
-    throw asNetworkError(baseUrl);
+    throw asNetworkError(settings);
   }
 
   if (!response.ok) throw await describeHttpError(response, baseUrl);
@@ -167,7 +189,7 @@ export async function streamCompletion({
  * how its tokens are consumed, via a small resolve-queue: tokens pushed by
  * `onToken` wake a generator that's parked awaiting the next one.
  */
-async function* streamTokens(settings: LlmSettings, messages: PromptMessage[], opts: StreamOpts): AsyncGenerator<string> {
+async function* streamTokens(settings: ServerSettings, messages: PromptMessage[], opts: StreamOpts): AsyncGenerator<string> {
   const queue: string[] = [];
   let done = false;
   let failure: unknown = null;
@@ -215,9 +237,9 @@ async function* streamTokens(settings: LlmSettings, messages: PromptMessage[], o
   }
 }
 
-/** The local-server transport: an OpenAI-compatible endpoint on the user's
- *  own machine, wrapped to satisfy `ChatTransport`. */
-export function createOpenAiTransport(settings: LlmSettings): ChatTransport {
+/** An OpenAI-compatible endpoint, on the user's machine or a provider's,
+ *  wrapped to satisfy `ChatTransport`. */
+export function createOpenAiTransport(settings: ServerSettings): ChatTransport {
   return {
     listModels: () => listModels(settings),
     streamChat: (messages, opts) => streamTokens(settings, messages, opts),

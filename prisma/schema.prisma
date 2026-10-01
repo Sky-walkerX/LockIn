@@ -348,6 +348,11 @@ model ChatMessage {
   // and on digest-mode replies.
   sources String[]
 
+  // The pages this reply could cite (lib/chat/refs.ts MessageRef[]): what
+  // turns its "[p. 12]" into links, and the retrieved ones listed under it.
+  // Null on user turns and on replies from before pages existed.
+  refs Json?
+
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
 

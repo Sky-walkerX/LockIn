@@ -5,8 +5,8 @@ import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/fetcher";
 import { acquireEngine } from "@/lib/llm/engine-lock";
-import { createOpenAiTransport } from "@/lib/llm/client";
-import { isConfigured, loadSettings } from "@/lib/llm/settings";
+import { isConfigured, isLocalConnection, loadSettings } from "@/lib/llm/settings";
+import { createTransport } from "@/lib/llm/create-transport";
 import { buildCompletionPrompt, cleanCompletion } from "@/lib/notes/suggest-prompt";
 
 /**
@@ -48,6 +48,9 @@ export function useNoteCompletion(subjectId: string | null, breadcrumb: string) 
   const requestModel = useCallback(async (doc: string, pos: number): Promise<string | null> => {
     const settings = loadSettings();
     if (!isConfigured(settings)) return null;
+    // Ghost text asks the model on every pause in typing. On a cloud key that
+    // would send the note being written, and a bill, with each one.
+    if (!isLocalConnection(settings)) return null;
 
     // A keystroke should never start a multi-gigabyte download. If the model
     // isn't on disk yet, the settings sheet is where that decision belongs.
@@ -65,10 +68,7 @@ export function useNoteCompletion(subjectId: string | null, breadcrumb: string) 
     const timeout = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS);
 
     try {
-      const transport =
-        settings.provider === "webllm"
-          ? (await import("@/lib/llm/webllm-transport")).createWebllmTransport(settings.webllmModel)
-          : createOpenAiTransport(settings);
+      const transport = await createTransport(settings);
 
       const messages = buildCompletionPrompt({
         before: doc.slice(0, pos),

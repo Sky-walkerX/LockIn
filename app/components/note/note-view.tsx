@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ListChecks, Maximize2, MessageSquareQuote, PenLine, Pencil, Trash2 } from "lucide-react";
 import { ago } from "@/lib/dates";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
@@ -17,6 +18,7 @@ import { awaitingWitness, isOwnNote, sourceLabel } from "@/lib/notes/source";
 import { MoveNoteMenu } from "./move-note-menu";
 import { NoteFullscreen } from "./note-fullscreen";
 import { pageLabel } from "@/lib/notes/page-label";
+import { PASSAGE_HIGHLIGHT_CSS, usePassageHighlight } from "@/hooks/usePassageHighlight";
 
 // One note as a page: a running head, the title, then the body on clean paper.
 // Reading is the default; the editor opens in place.
@@ -50,6 +52,12 @@ export function NoteView({
   // opens, since the full-screen sheet renders outside it.
   const [fullscreen, setFullscreen] = useState<{ color: string | null } | null>(null);
   const pageRef = useRef<HTMLElement>(null);
+  // A citation opens the note at its passage (?q=…). On a subject page `q`
+  // can also belong to the resource reader (?read=…), which handles its own.
+  const searchParams = useSearchParams();
+  const quote = searchParams.get("read") ? null : searchParams.get("q");
+  const readingRef = useRef<HTMLDivElement>(null);
+  usePassageHighlight(readingRef, draft.editing ? null : quote, note.notes);
   const pending = isTempId(note.id);
   const awaiting = awaitingWitness(note);
 
@@ -231,7 +239,8 @@ export function NoteView({
             onCancel={draft.cancel}
           />
         ) : note.notes.trim() ? (
-          <div className="lk-reading">
+          <div ref={readingRef} className="lk-reading">
+            {quote && <style>{PASSAGE_HIGHLIGHT_CSS}</style>}
             <Markdown>{note.notes}</Markdown>
           </div>
         ) : (

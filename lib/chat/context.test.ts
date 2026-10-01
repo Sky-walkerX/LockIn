@@ -270,3 +270,26 @@ describe("headings inside user notes", () => {
     expect(out).toContain("just text");
   });
 });
+
+describe("page labels", () => {
+  const paged: ContextSubject = {
+    id: "s9",
+    title: "Rust",
+    milestones: [{ id: "n1", page: 12, title: "Ownership", isCompleted: false, notes: "One owner per value." }],
+    resources: [{ id: "r1", page: 13, type: "LINK", title: "The Book", url: "https://doc.rust-lang.org/book" }],
+  };
+
+  it("labels notes and resources with their page, in the form the model cites", () => {
+    const out = buildDigest([paged], FULL_DETAIL);
+    expect(out).toContain("### Note: Ownership [p. 12]");
+    expect(out).toContain("- LINK · The Book [p. 13] — https://doc.rust-lang.org/book");
+  });
+
+  it("labels the outline's notes too", () => {
+    expect(buildOutline([paged])).toContain("- Ownership [p. 12]");
+  });
+
+  it("leaves a note without a page unlabelled", () => {
+    expect(buildDigest([osSubject], FULL_DETAIL)).not.toContain("[p.");
+  });
+});

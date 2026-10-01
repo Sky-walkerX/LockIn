@@ -10,6 +10,7 @@ import "katex/dist/katex.min.css";
 import { Check, Copy } from "lucide-react";
 import { codeText } from "@/lib/notes/code-text";
 import { guardDollars } from "@/lib/notes/math";
+import { CITE_PREFIX } from "@/lib/chat/citations";
 
 // Renders milestone/task/subtask notes. Links open in a new tab; GFM enables
 // tables, task lists, strikethrough. `rehype-highlight` adds `hljs-*` classes
@@ -21,7 +22,17 @@ import { guardDollars } from "@/lib/notes/math";
 // is exactly what the block shows.
 // `highlight={false}` skips syntax highlighting: language detection runs on
 // every fenced block and gets slow over a whole extracted book.
-export function Markdown({ children, highlight = true }: { children: string; highlight?: boolean }) {
+// `cite` draws Ask's page citations: links to `#cite-<page>`, which
+// `linkCitations` writes, become whatever it returns.
+export function Markdown({
+  children,
+  highlight = true,
+  cite,
+}: {
+  children: string;
+  highlight?: boolean;
+  cite?: (page: number) => React.ReactNode;
+}) {
   return (
     <div className="lk-prose">
       <ReactMarkdown
@@ -35,7 +46,11 @@ export function Markdown({ children, highlight = true }: { children: string; hig
             : [[rehypeKatex, { throwOnError: false }]]
         }
         components={{
-          a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+          a: ({ node, ...props }) => {
+            void node;
+            if (cite && props.href?.startsWith(CITE_PREFIX)) return cite(Number(props.href.slice(CITE_PREFIX.length)));
+            return <a {...props} target="_blank" rel="noopener noreferrer" />;
+          },
           // The button sits beside the <pre>, not in it, so it stays in the
           // corner while a long line scrolls sideways.
           pre: ({ node, children, ...props }) => (

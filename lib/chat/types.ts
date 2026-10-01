@@ -16,15 +16,21 @@ export type ContextTask = Pick<Task, "title" | "isCompleted" | "priority"> & {
 };
 
 export type ContextMilestone = Pick<Milestone, "title" | "isCompleted"> & {
+  id?: string;
+  /** Its page in the notebook, which is how the model cites it. */
+  page?: number | null;
   notes?: string | null;
   tasks?: ContextTask[];
 };
 
 export type ContextResource = Pick<Resource, "type" | "title" | "url"> & {
+  id?: string;
+  page?: number | null;
   note?: string | null;
 };
 
 export type ContextSubject = Pick<Subject, "id" | "title"> & {
+  isInbox?: boolean;
   description?: string | null;
   milestones?: ContextMilestone[];
   tasks?: ContextTask[]; // loose tasks — no milestone

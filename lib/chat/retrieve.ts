@@ -3,6 +3,7 @@ import { selectPassages, type ScoredChunk } from "@/lib/rag/select";
 import type { ScorableChunk } from "@/lib/rag/sources";
 import { assemblePrompt, clampCeiling } from "./budget";
 import { buildOutline, estimateTokens } from "./context";
+import { digestRefs, uniqueRefs, type MessageRef } from "./refs";
 import type { ContextSubject, PromptMessage } from "./types";
 
 /**
@@ -25,6 +26,8 @@ export type RetrievalBudget = {
   /** Retrieval was wanted but unavailable — no query vector arrived. */
   degraded?: boolean;
   sources: { breadcrumb: string; score: number }[];
+  /** Every page the model was shown, for turning its "[p. 12]" into links. */
+  refs: MessageRef[];
 };
 
 export type AssembleRetrievalInput = {
@@ -102,13 +105,16 @@ export function assembleRetrievalPrompt(input: AssembleRetrievalInput): {
   const fullDigestFits = digestAttempt.budget.truncated.length === 0;
 
   if (fullDigestFits || !input.ragEnabled) {
-    return { messages: digestAttempt.messages, budget: { ...digestAttempt.budget, mode: "digest", sources: [] } };
+    return {
+      messages: digestAttempt.messages,
+      budget: { ...digestAttempt.budget, mode: "digest", sources: [], refs: digestRefs(input.subjects) },
+    };
   }
 
   if (!input.queryEmbedding || input.queryEmbedding.length === 0) {
     return {
       messages: digestAttempt.messages,
-      budget: { ...digestAttempt.budget, mode: "digest", degraded: true, sources: [] },
+      budget: { ...digestAttempt.budget, mode: "digest", degraded: true, sources: [], refs: digestRefs(input.subjects) },
     };
   }
 
@@ -143,7 +149,13 @@ export function assembleRetrievalPrompt(input: AssembleRetrievalInput): {
       truncated,
       subjectCount: kept.length,
       mode: "retrieval",
-      sources: manifest,
+      sources: manifest.map(({ breadcrumb, score }) => ({ breadcrumb, score })),
+      // The passages first, so a page that's both a passage and an outline
+      // entry counts as retrieved.
+      refs: uniqueRefs([
+        ...manifest.flatMap((m) => (m.ref ? [{ ...m.ref, retrieved: true, quote: m.quote }] : [])),
+        ...digestRefs(kept),
+      ]).sort((a, b) => a.page - b.page),
     },
   };
 }

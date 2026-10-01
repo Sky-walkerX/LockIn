@@ -1,3 +1,5 @@
+import { plainText } from "@/lib/notes/plain-text";
+
 // Turns scored note chunks into palette results. A source (a milestone's notes,
 // an extracted document, …) can have many chunks; the palette shows it once,
 // at its best-scoring passage.
@@ -34,14 +36,8 @@ const KIND: Record<ChunkSource, SemanticHit["kind"]> = {
   RESOURCE_DOC: "document",
 };
 
-// Markdown markers out, whitespace collapsed: the snippet is read, not rendered.
-const plain = (md: string) =>
-  md
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/^\s{0,3}(#{1,6}|[-*+]|\d+\.|>)\s+/gm, "")
-    .replace(/[*_`~]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+// The snippet is read, not rendered.
+const plain = plainText;
 
 const SNIPPET_CHARS = 180;
 // Enough of the passage for the reader to find its section (lib/reader/sections.ts).

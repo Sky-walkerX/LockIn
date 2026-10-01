@@ -71,15 +71,16 @@ export async function loadContextSubjects(
     select: {
       id: true,
       title: true,
+      isInbox: true,
       description: true,
       milestones: {
         orderBy: { order: "asc" },
-        select: { title: true, notes: true, isCompleted: true, tasks: taskSelect },
+        select: { id: true, page: true, title: true, notes: true, isCompleted: true, tasks: taskSelect },
       },
       tasks: { where: { milestoneId: null }, ...taskSelect },
       resources: {
         orderBy: { createdAt: "desc" },
-        select: { type: true, title: true, url: true, note: true },
+        select: { id: true, page: true, type: true, title: true, url: true, note: true },
       },
     },
   });
@@ -87,8 +88,11 @@ export async function loadContextSubjects(
   const shaped: ContextSubject[] = rows.map((s) => ({
     id: s.id,
     title: s.title,
+    isInbox: s.isInbox,
     description: s.description,
     milestones: s.milestones.map((m) => ({
+      id: m.id,
+      page: m.page,
       title: m.title,
       notes: m.notes,
       isCompleted: m.isCompleted,
