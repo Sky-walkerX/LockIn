@@ -5,6 +5,7 @@ import { Check, Repeat } from "lucide-react";
 import type { Priority } from "@/app/generated/prisma/browser";
 import type { SharedNode } from "@/lib/share/tree";
 import { Markdown } from "@/app/components/subject/markdown";
+import { useClock } from "@/app/components/clock";
 
 const PRIORITY_COLOR: Record<Priority, string> = {
   HIGH: "var(--destructive)",
@@ -22,6 +23,7 @@ const PRIORITY_COLOR: Record<Priority, string> = {
  * markup: no checkbox a viewer can click, no edit affordance to hide.
  */
 export function SharedNodeView({ node, depth }: { node: SharedNode; depth: number }) {
+  const clock = useClock();
   const due = node.dueDate ? new Date(node.dueDate) : null;
   const isMilestone = node.kind === "milestone";
   const done = node.isCompleted === true;
@@ -69,7 +71,7 @@ export function SharedNodeView({ node, depth }: { node: SharedNode; depth: numbe
 
         {due && (
           <span className="lk-print flex-none pt-0.5 text-2xs uppercase text-muted-foreground">
-            {format(due, "dd MMM")}
+            {format(due, "dd MMM", { in: clock.in })}
           </span>
         )}
       </div>

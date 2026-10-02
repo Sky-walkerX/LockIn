@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { loadShare } from "@/lib/share/load";
 import { SharedView } from "@/app/components/share/shared-view";
+import { ClockProvider } from "@/app/components/clock";
+import { viewerClock } from "@/lib/prefetch";
 
 // Rendered per request: a revoked link has to stop working the moment it is
 // revoked, which a statically cached page could not honour.
@@ -38,5 +40,12 @@ export default async function SharePage({ params }: Props) {
   // read the status line, and `not-found.tsx` still renders the friendly page.
   if (!payload) notFound();
 
-  return <SharedView payload={payload} />;
+  // Due dates read in the viewer's zone when they've been here before (the
+  // lk-tz cookie), otherwise UTC until the browser sets it.
+  const clock = await viewerClock();
+  return (
+    <ClockProvider zone={clock.zone} now={clock.now}>
+      <SharedView payload={payload} />
+    </ClockProvider>
+  );
 }

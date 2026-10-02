@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { ago } from "@/lib/dates";
+import { useAgo } from "@/app/components/clock";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useCreateMilestone } from "@/hooks/useMilestones";
 import { isTempId } from "@/lib/subject-cache";
@@ -26,6 +26,7 @@ export function NoteList({
   onCreated: (noteId: string) => void;
   placeholder?: string;
 }) {
+  const ago = useAgo();
   const create = useCreateMilestone();
   const [title, setTitle] = useState("");
 

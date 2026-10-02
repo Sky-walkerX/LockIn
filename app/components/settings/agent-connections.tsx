@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMounted } from "@/hooks/useMounted";
 import { Check, Copy, KeyRound } from "lucide-react";
 import { BRAND } from "@/lib/brand";
-import { ago } from "@/lib/dates";
+import { useAgo } from "@/app/components/clock";
 import {
   useConnectedApps,
   useCreateToken,
@@ -72,6 +72,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 }
 
 function TokenRow({ token }: { token: AgentToken }) {
+  const ago = useAgo();
   const revoke = useRevokeToken();
   const [confirming, setConfirming] = useState(false);
   const revoked = !!token.revokedAt;
@@ -111,6 +112,7 @@ function TokenRow({ token }: { token: AgentToken }) {
 }
 
 function AppRow({ app }: { app: ConnectedApp }) {
+  const ago = useAgo();
   const disconnect = useDisconnectApp();
   const [confirming, setConfirming] = useState(false);
   return (

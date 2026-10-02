@@ -6,6 +6,11 @@
 
 export const ZONE_COOKIE = "lk-tz";
 
+/** The zone named in the cookie if Intl knows it, otherwise UTC. */
+export function resolveZone(value: string | undefined): string {
+  return value && todayIn(value) ? value : "UTC";
+}
+
 type Parts = { year: number; month: number; day: number; hour: number; minute: number; second: number };
 
 function partsIn(instant: Date, timeZone: string): Parts {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { useSubjects } from "@/hooks/useSubjects";
+import { useClock } from "@/app/components/clock";
 import { RuledBoxes } from "../notebook/ruled-boxes";
 import { Contents } from "./contents";
 import { TodayStrip } from "./today-strip";
@@ -14,6 +15,7 @@ import { Skeleton } from "../ui/skeleton";
 export function NotebookHome() {
   const { data: session, status } = useSession({ required: true });
   const { data: subjects, isLoading } = useSubjects();
+  const clock = useClock();
 
   if (status === "loading" || isLoading) {
     return (
@@ -36,7 +38,7 @@ export function NotebookHome() {
           { label: "Owner", value: owner, grow: 2 },
           { label: "Sections", value: list.length },
           { label: "Notes", value: noteCount },
-          { label: "Date", value: format(new Date(), "d MMM yyyy"), grow: 1.3 },
+          { label: "Date", value: format(clock.now, "d MMM yyyy", { in: clock.in }), grow: 1.3 },
         ]}
       />
 

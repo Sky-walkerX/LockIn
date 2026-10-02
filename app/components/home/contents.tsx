@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ago } from "@/lib/dates";
+import { useAgo } from "@/app/components/clock";
 import { useRecentNotes } from "@/hooks/useNotes";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { awaitingWitness, isOwnNote, sourceLabel } from "@/lib/notes/source";
@@ -10,6 +10,7 @@ import { CONTENTS_RECENT_NOTES } from "@/lib/query-keys";
 // The notebook's contents page: notes across every section, most recently
 // written first. Each row opens the note where it lives.
 export function Contents() {
+  const ago = useAgo();
   const { data: notes, isLoading, isError } = useRecentNotes(CONTENTS_RECENT_NOTES);
 
   return (

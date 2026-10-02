@@ -5,6 +5,7 @@ import { format, isBefore, startOfDay } from "date-fns";
 import { useTodayTasks } from "@/hooks/useTasks";
 import { useDueReviews } from "@/hooks/useReviews";
 import { RateButtons } from "@/app/components/review/revision";
+import { useClock } from "@/app/components/clock";
 
 const FALLBACK = "var(--muted-foreground)";
 
@@ -14,9 +15,10 @@ const FALLBACK = "var(--muted-foreground)";
 export function TodayStrip() {
   const { data: tasks = [] } = useTodayTasks();
   const { data: reviews = [] } = useDueReviews();
+  const clock = useClock();
   if (tasks.length === 0 && reviews.length === 0) return null;
 
-  const startToday = startOfDay(new Date());
+  const startToday = startOfDay(clock.now, { in: clock.in });
   return (
     <section id="today" aria-label="Due today" className="lk-hero scroll-mt-16 px-4 py-3">
       <div className="mb-1.5 flex items-baseline gap-3">
@@ -58,7 +60,7 @@ export function TodayStrip() {
               <span className="min-w-0 flex-1 truncate">{t.title}</span>
               <span className="hidden text-sm text-muted-foreground sm:inline">{t.subject.title}</span>
               <span className={`lk-print text-xs uppercase ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
-                {overdue ? "Overdue" : due ? format(due, "HH:mm") : ""}
+                {overdue ? "Overdue" : due ? format(due, "HH:mm", { in: clock.in }) : ""}
               </span>
             </li>
           );
