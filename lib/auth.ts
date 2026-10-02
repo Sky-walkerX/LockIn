@@ -13,28 +13,57 @@ export async function getUserId(request: NextRequest): Promise<string | null> {
   return token?.sub ?? null;
 }
 
-export type TokenAuth = { userId: string; tokenId: string; source: string };
+export type TokenAuth = {
+  userId: string;
+  tokenId: string;
+  source: string;
+  /** Over the rate limit: the request should be turned away. */
+  limited: boolean;
+  /** Seconds until the current window ends, for Retry-After. */
+  retryAfter: number;
+};
 
-// lastUsedAt is for the user's eyes ("used 3 minutes ago"), not an audit log,
-// so it's only written when it has gone stale. Writing it on every MCP call
-// would add a round trip to each one for no visible difference.
-const TOUCH_AFTER_MS = 10 * 60 * 1000;
+/** MCP requests one token may make per minute. Enough for a busy agent
+ *  session; a runaway loop is stopped within the minute. */
+export const MCP_REQUESTS_PER_MINUTE = 60;
 
 /**
  * Resolves a personal access token (the MCP server's bearer token) to its user,
- * or null when it's malformed, unknown or revoked.
+ * or null when it's malformed, unknown or revoked, and counts the request
+ * against the token's rate limit.
+ *
+ * One statement does all of it: find the token, count this request in its
+ * one-minute window (starting a new window once the old one has passed), and
+ * record when it was last used. It replaces the read every MCP call already
+ * made, so the limit costs no extra round trip and needs no other service.
+ * Times are UTC, as Prisma stores them.
  */
 export async function authenticateToken(bearer: string | undefined): Promise<TokenAuth | null> {
   if (!bearer || !bearer.startsWith(TOKEN_PREFIX)) return null;
-  const row = await prisma.apiToken.findUnique({
-    where: { tokenHash: hashToken(bearer) },
-    select: { id: true, userId: true, name: true, revokedAt: true, lastUsedAt: true },
-  });
-  if (!row || row.revokedAt) return null;
+  const [row] = await prisma.$queryRaw<
+    { id: string; userId: string; name: string; windowCount: number; retryAfter: number }[]
+  >`
+    UPDATE "ApiToken" SET
+      "windowCount" = CASE WHEN "windowStart" > (now() AT TIME ZONE 'UTC') - interval '1 minute' THEN "windowCount" + 1 ELSE 1 END,
+      "windowStart" = CASE WHEN "windowStart" > (now() AT TIME ZONE 'UTC') - interval '1 minute' THEN "windowStart" ELSE (now() AT TIME ZONE 'UTC') END,
+      "lastUsedAt" = (now() AT TIME ZONE 'UTC')
+    WHERE "tokenHash" = ${hashToken(bearer)} AND "revokedAt" IS NULL
+    RETURNING "id", "userId", "name", "windowCount",
+      CEIL(EXTRACT(EPOCH FROM "windowStart" + interval '1 minute' - (now() AT TIME ZONE 'UTC')))::int AS "retryAfter"`;
+  return limitedAuth(row ?? null);
+}
 
-  if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > TOUCH_AFTER_MS) {
-    // Not awaited: a failed touch must never fail the agent's request.
-    prisma.apiToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
-  }
-  return { userId: row.userId, tokenId: row.id, source: sourceFromTokenName(row.name) };
+/** A token's row as the MCP route reads it: who it is, the source stamped on
+ *  what it saves, and whether it's over the limit. */
+function limitedAuth(
+  row: { id: string; userId: string; name: string; windowCount: number; retryAfter: number } | null,
+): TokenAuth | null {
+  if (!row) return null;
+  return {
+    userId: row.userId,
+    tokenId: row.id,
+    source: sourceFromTokenName(row.name),
+    limited: row.windowCount > MCP_REQUESTS_PER_MINUTE,
+    retryAfter: Math.max(1, Number(row.retryAfter)),
+  };
 }

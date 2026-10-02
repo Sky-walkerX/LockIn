@@ -85,6 +85,10 @@ model ApiToken {
   lastUsedAt DateTime?
   // Revoked tokens stay listed (with when) rather than vanishing.
   revokedAt  DateTime?
+  // The rate limit's current one-minute window: when it started and how many
+  // MCP requests it has seen (lib/auth.ts authenticateToken).
+  windowStart DateTime?
+  windowCount Int       @default(0)
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String

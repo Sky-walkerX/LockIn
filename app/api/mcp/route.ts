@@ -3,7 +3,7 @@ import { createMcpHandler, getPublicOrigin, withMcpAuth } from "mcp-handler";
 import type { AuthInfo } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { authenticateToken } from "@/lib/auth";
+import { authenticateToken, MCP_REQUESTS_PER_MINUTE, type TokenAuth } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
 import { appendToNote, insertNote, placeNote } from "@/lib/notes/write";
 import { pagesOf } from "@/lib/notes/page";
@@ -177,10 +177,14 @@ const handler = createMcpHandler(
   },
 );
 
+// The token check made for the rate limit, reused by mcp-handler's own auth
+// step so a request is only counted once.
+const checked = new WeakMap<Request, TokenAuth | null>();
+
 const authed = withMcpAuth(
   handler,
   async (req, bearer): Promise<AuthInfo | undefined> => {
-    const auth = await authenticateToken(bearer);
+    const auth = checked.has(req) ? checked.get(req)! : await authenticateToken(bearer);
     if (!auth) return undefined;
     return {
       token: bearer!,
@@ -194,4 +198,22 @@ const authed = withMcpAuth(
   { required: true },
 );
 
-export { authed as GET, authed as POST, authed as DELETE };
+/**
+ * Turns away a token that's over its limit before the MCP machinery runs, with
+ * 429 and how long to wait. Unknown tokens go through to mcp-handler, which
+ * answers 401 with the headers MCP clients expect.
+ */
+async function rateLimited(req: Request): Promise<Response> {
+  const bearer = req.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const auth = await authenticateToken(bearer);
+  checked.set(req, auth);
+  if (auth?.limited) {
+    return Response.json(
+      { error: `Too many requests: ${MCP_REQUESTS_PER_MINUTE} a minute per token. Try again in ${auth.retryAfter}s.` },
+      { status: 429, headers: { "Retry-After": String(auth.retryAfter) } },
+    );
+  }
+  return authed(req);
+}
+
+export { rateLimited as GET, rateLimited as POST, rateLimited as DELETE };
