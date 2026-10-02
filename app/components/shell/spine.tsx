@@ -61,7 +61,10 @@ export function Spine({
   const { data: reviews = [] } = useDueReviews();
   const dueToday = today.length + reviews.length;
 
-  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  // Signed-in visits to `/` are served by /contents (a rewrite), so either can
+  // be the path the page sees.
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" || pathname === "/contents" : pathname.startsWith(href);
   const owner = session?.user?.name || session?.user?.email?.split("@")[0];
 
   const link = (href: string, icon: React.ReactNode, label: string, trailing?: React.ReactNode) => (

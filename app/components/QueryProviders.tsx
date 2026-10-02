@@ -1,7 +1,5 @@
-// app/providers.tsx
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import React from "react";
@@ -9,22 +7,11 @@ import { QuickAddProvider } from "./quick-add";
 import { CommandPaletteProvider } from "./command/command-palette";
 import { ChatProvider } from "./chat/chat-provider";
 import { FocusProvider } from "./focus/focus-provider";
-
-// Data stays fresh for 30s so navigation doesn't refetch the heavy subject
-// detail payload; mutations invalidate explicitly, so correctness holds.
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+import { QueryProvider } from "./query-provider";
 
 export function Providers({ children, session }: { children: React.ReactNode; session: Session | null }) {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <SessionProvider session={session}>
         {/* The palette sits innermost: its actions open the others. */}
         <QuickAddProvider>
@@ -35,6 +22,6 @@ export function Providers({ children, session }: { children: React.ReactNode; se
           </FocusProvider>
         </QuickAddProvider>
       </SessionProvider>
-    </QueryClientProvider>
+    </QueryProvider>
   );
 }

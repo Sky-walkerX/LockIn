@@ -8,8 +8,7 @@ import { useChromeless } from "@/hooks/useChromeless";
 import { ChatRail } from "./chat-rail";
 
 // Mirrors the quick-add provider: the panel is global, so the hotkey lives with
-// the provider rather than in any one page. Which routes render no chrome at all
-// is shared with the sidebar and quick-add — see `lib/chrome.ts`.
+// the provider rather than in any one page.
 const OPEN_KEY = "lockin.chat.open";
 
 // The panel brings the markdown renderer, KaTeX and highlight.js with it, so

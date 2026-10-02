@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, Spectral, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Providers } from "./components/QueryProviders";
 import { ThemeProvider } from "next-themes";
-import { AppShell } from "./components/shell/app-shell";
 import { BRAND } from "@/lib/brand";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 
 // Lab Book type: Barlow for the interface, Barlow Condensed for printed labels
 // and headings, Spectral for reading, JetBrains Mono for code only.
@@ -20,11 +16,9 @@ export const metadata: Metadata = {
   description: BRAND.description,
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // Read once here (a JWT decode, no database) so the client starts with the
-  // session settled: `/` is the landing page for visitors, and without this the
-  // shell couldn't tell which to draw until a /api/auth/session round trip.
-  const session = await getServerSession(authOptions);
+// Reads nothing from the request, so the pages under (public) that don't
+// either are prerendered. The notebook's frame is in app/(app)/layout.tsx.
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     // Font variables live on <html>: the --lk-font-* tokens in globals.css are
     // declared on :root, and CSS custom properties substitute var() refs at
@@ -37,9 +31,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     >
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Providers session={session}>
-            <AppShell>{children}</AppShell>
-          </Providers>
+          {children}
         </ThemeProvider>
       </body>
     </html>
