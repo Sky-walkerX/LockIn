@@ -16,7 +16,7 @@ function fmt(min: number) {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-export default function FocusPage() {
+export function FocusView() {
   const { status } = useSession({ required: true });
   const { data: tasks = [] } = useTasks();
   const { data: subjects = [] } = useSubjects();

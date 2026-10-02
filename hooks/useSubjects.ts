@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Subject, Milestone, Task, Subtask } from "@/app/generated/prisma/browser";
 import type { ResourceRow } from "./useResources";
 import { api } from "@/lib/fetcher";
+import { queryKeys } from "@/lib/query-keys";
 
 export type SubjectWithProgress = Subject & {
   _count: { milestones: number; tasks: number; resources: number };
@@ -25,14 +26,14 @@ export type SubjectDetail = Subject & {
 
 export function useSubjects() {
   return useQuery({
-    queryKey: ["subjects"],
+    queryKey: queryKeys.subjects,
     queryFn: () => api.get<SubjectWithProgress[]>("/api/subjects"),
   });
 }
 
 export function useSubject(id: string | undefined) {
   return useQuery({
-    queryKey: ["subject", id],
+    queryKey: queryKeys.subject(id),
     enabled: !!id,
     queryFn: () => api.get<SubjectDetail>(`/api/subjects/${id}`),
   });

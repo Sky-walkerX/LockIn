@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { endOfDay, format } from "date-fns";
 import type { Task, Priority, Recurrence } from "@/app/generated/prisma/browser";
 import { api } from "@/lib/fetcher";
+import { queryKeys } from "@/lib/query-keys";
 import type { SubjectDetail, TaskWithSubtasks } from "@/hooks/useSubjects";
 import {
   patchSubjectCaches,
@@ -39,7 +40,7 @@ export function useTasks(params?: { subjectId?: string; milestoneId?: string }) 
   if (params?.milestoneId) qs.set("milestoneId", params.milestoneId);
   const suffix = qs.toString() ? `?${qs}` : "";
   return useQuery({
-    queryKey: ["tasks", params ?? {}],
+    queryKey: queryKeys.tasks(params),
     queryFn: () => api.get<Task[]>(`/api/tasks${suffix}`),
   });
 }
@@ -52,7 +53,7 @@ export function useTodayTasks() {
   const now = new Date();
   const before = endOfDay(now).toISOString();
   return useQuery({
-    queryKey: ["tasks", { today: true, day: format(now, "yyyy-MM-dd") }],
+    queryKey: queryKeys.todayTasks(format(now, "yyyy-MM-dd")),
     queryFn: () =>
       api.get<TaskWithSubject[]>(`/api/tasks?today=true&before=${encodeURIComponent(before)}`),
   });

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/fetcher";
+import { queryKeys } from "@/lib/query-keys";
 
 export type AgentToken = {
   id: string;
@@ -10,7 +11,7 @@ export type AgentToken = {
   revokedAt: string | null;
 };
 
-const KEY = ["tokens"] as const;
+const KEY = queryKeys.tokens;
 
 export function useTokens() {
   return useQuery({ queryKey: KEY, queryFn: () => api.get<AgentToken[]>("/api/tokens") });
@@ -36,7 +37,7 @@ export function useRevokeToken() {
 /** An app that connected by signing in (OAuth) rather than with a token. */
 export type ConnectedApp = { id: string; name: string; createdAt: string; lastUsedAt: string | null };
 
-const APPS_KEY = ["oauth-grants"] as const;
+const APPS_KEY = queryKeys.connectedApps;
 
 export function useConnectedApps() {
   return useQuery({ queryKey: APPS_KEY, queryFn: () => api.get<ConnectedApp[]>("/api/oauth/grants") });

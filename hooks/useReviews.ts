@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { endOfDay, format } from "date-fns";
 import type { Milestone, Subject } from "@/app/generated/prisma/browser";
 import { api } from "@/lib/fetcher";
+import { queryKeys } from "@/lib/query-keys";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { patchSubjectCaches, replaceMilestone, restoreSubjectCaches } from "@/lib/subject-cache";
 import { nextReview, type ReviewRating } from "@/lib/review/schedule";
@@ -17,7 +18,7 @@ export function useDueReviews() {
   const now = new Date();
   const before = endOfDay(now).toISOString();
   return useQuery({
-    queryKey: [...REVIEWS_KEY, { day: format(now, "yyyy-MM-dd") }],
+    queryKey: queryKeys.dueReviews(format(now, "yyyy-MM-dd")),
     queryFn: () => api.get<DueReview[]>(`/api/reviews?before=${encodeURIComponent(before)}`),
   });
 }

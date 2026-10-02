@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
@@ -11,10 +11,9 @@ import { AuthShell, AuthBrand } from "@/app/components/auth-shell";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
 
-export default function SignupPage() {
+function SignupForm({ nextParam }: { nextParam: string | null }) {
   const router = useRouter();
   // Carried through to sign-in, so a new account still lands where it was going.
-  const nextParam = useSearchParams().get("next");
   const loginHref = nextParam ? `/login?next=${encodeURIComponent(safeNext(nextParam))}` : "/login";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -166,4 +165,19 @@ function PasswordInput({
       </button>
     </div>
   );
+}
+
+// Prerendered. The static HTML is the form without `?next=` (where sign-in was
+// interrupted, e.g. an app asking to connect); the copy that reads it takes
+// over in the browser.
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupForm nextParam={null} />}>
+      <SignupWithNext />
+    </Suspense>
+  );
+}
+
+function SignupWithNext() {
+  return <SignupForm nextParam={useSearchParams().get("next")} />;
 }

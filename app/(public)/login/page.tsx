@@ -2,9 +2,9 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
@@ -13,10 +13,7 @@ import { AuthShell, AuthBrand, GoogleMark } from "@/app/components/auth-shell";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
 
-export default function LoginPage() {
-  const router = useRouter();
-  // Where sign-in was interrupted, e.g. an app asking to connect.
-  const nextParam = useSearchParams().get("next");
+function LoginForm({ nextParam }: { nextParam: string | null }) {
   const next = safeNext(nextParam);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,10 +35,10 @@ export default function LoginPage() {
       }
       return result;
     },
-    onSuccess: () => {
-      router.refresh();
-      router.push(next);
-    },
+    // A full load rather than a client navigation: `/` is a different page once
+    // signed in (a rewrite on the session cookie), and the router here learned
+    // it while signed out. The notebook loads its own scripts either way.
+    onSuccess: () => window.location.assign(next),
     onError: (err: Error) => setError(err.message),
   });
 
@@ -145,4 +142,19 @@ export default function LoginPage() {
       </div>
     </AuthShell>
   );
+}
+
+// Prerendered. The static HTML is the form without `?next=` (where sign-in was
+// interrupted, e.g. an app asking to connect); the copy that reads it takes
+// over in the browser.
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginForm nextParam={null} />}>
+      <LoginWithNext />
+    </Suspense>
+  );
+}
+
+function LoginWithNext() {
+  return <LoginForm nextParam={useSearchParams().get("next")} />;
 }

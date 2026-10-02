@@ -18,7 +18,6 @@ import {
   Timer,
   X,
 } from "lucide-react";
-import { isChromeless } from "@/lib/chrome";
 import { useSearch } from "@/hooks/useSearch";
 import { useSemanticSearch } from "@/hooks/useSemanticSearch";
 import { useSubject, useSubjects } from "@/hooks/useSubjects";
@@ -37,11 +36,10 @@ const PaletteContext = createContext<{ open: () => void }>({ open: () => {} });
 export const useCommandPalette = () => useContext(PaletteContext);
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const { status } = useSession();
-  // Signed out there is nothing to act on, and on chromeless pages (a shared
-  // plan, say) ⌘P should still print.
-  const hidden = isChromeless(pathname, status === "authenticated") || status !== "authenticated";
+  // Signed out there is nothing to act on. The palette only lives in the
+  // notebook, so on a shared page ⌘P still prints.
+  const hidden = status !== "authenticated";
   const [isOpen, setIsOpen] = useState(false);
 
   const open = useCallback(() => {

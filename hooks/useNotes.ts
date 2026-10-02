@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/fetcher";
-import type { RecentNote } from "@/app/api/notes/recent/route";
+import { queryKeys } from "@/lib/query-keys";
+import type { RecentNote } from "@/lib/notes/recent";
 
 export type { RecentNote };
 
@@ -9,7 +10,7 @@ export type { RecentNote };
 // refetches on mount, so it doesn't need wiring into every note mutation.
 export function useRecentNotes(limit = 12) {
   return useQuery({
-    queryKey: ["notes", "recent", limit],
+    queryKey: queryKeys.recentNotes(limit),
     queryFn: () => api.get<RecentNote[]>(`/api/notes/recent?limit=${limit}`),
     refetchOnMount: "always",
   });

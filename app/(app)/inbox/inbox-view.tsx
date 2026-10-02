@@ -14,7 +14,7 @@ import { Skeleton } from "@/app/components/ui/skeleton";
 // Notes that aren't filed under a section yet: quick captures from "New note",
 // and whatever an agent saves without naming a subject. Same two panes as a
 // section's Notes tab, with Move doing the filing.
-export default function InboxPage() {
+export function InboxView() {
   // useSearchParams on a static route needs a boundary to render around.
   return (
     <Suspense>

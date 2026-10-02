@@ -28,7 +28,7 @@ type Tab = "notes" | "resources" | "plan";
 //   ?read=<id>[&q=…]      the resource reader, over any tab
 //   ?open=<kind>:<id>     a search result: a note opens on Notes, a task or
 //                         subtask opens Plan and is revealed in the tree
-export default function SubjectPage() {
+export function SubjectView() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();

@@ -14,7 +14,7 @@ const THEMES = [
   { value: "system", label: "System", hint: "follow the OS", icon: Monitor },
 ] as const;
 
-export default function SettingsPage() {
+export function SettingsView() {
   const { data: session, status } = useSession({ required: true });
   const { theme, setTheme } = useTheme();
   // next-themes only knows the stored theme after hydration.

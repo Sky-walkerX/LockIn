@@ -1,16 +1,19 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useLatest } from "@/hooks/useLatest";
 import { useStoredValue } from "@/hooks/useStoredValue";
 import { useChromeless } from "@/hooks/useChromeless";
-import { ChatPanel } from "./chat-panel";
 import { ChatRail } from "./chat-rail";
 
 // Mirrors the quick-add provider: the panel is global, so the hotkey lives with
-// the provider rather than in any one page. Which routes render no chrome at all
-// is shared with the sidebar and quick-add — see `lib/chrome.ts`.
+// the provider rather than in any one page.
 const OPEN_KEY = "lockin.chat.open";
+
+// The panel brings the markdown renderer, KaTeX and highlight.js with it, so
+// its code loads the first time Ask opens rather than with every page.
+const ChatPanel = dynamic(() => import("./chat-panel").then((m) => m.ChatPanel), { ssr: false });
 
 // `prompt` opens the panel with a draft already typed (the palette's "Ask").
 type OpenChat = (opts?: { prompt?: string }) => void;
