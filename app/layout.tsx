@@ -3,6 +3,7 @@ import { Barlow, Barlow_Condensed, Spectral, JetBrains_Mono } from "next/font/go
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { BRAND } from "@/lib/brand";
+import { ZoneCookie } from "./components/zone-cookie";
 
 // Lab Book type: Barlow for the interface, Barlow Condensed for printed labels
 // and headings, Spectral for reading, JetBrains Mono for code only.
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
+        <ZoneCookie />
       </body>
     </html>
   );

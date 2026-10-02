@@ -5,11 +5,12 @@ import { ago } from "@/lib/dates";
 import { useRecentNotes } from "@/hooks/useNotes";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { awaitingWitness, isOwnNote, sourceLabel } from "@/lib/notes/source";
+import { CONTENTS_RECENT_NOTES } from "@/lib/query-keys";
 
 // The notebook's contents page: notes across every section, most recently
 // written first. Each row opens the note where it lives.
 export function Contents() {
-  const { data: notes, isLoading, isError } = useRecentNotes(14);
+  const { data: notes, isLoading, isError } = useRecentNotes(CONTENTS_RECENT_NOTES);
 
   return (
     <section aria-labelledby="contents-h" className="lk-contents">

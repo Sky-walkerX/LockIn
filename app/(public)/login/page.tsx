@@ -4,7 +4,7 @@ import type React from "react";
 
 import { Suspense, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
@@ -14,7 +14,6 @@ import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
 
 function LoginForm({ nextParam }: { nextParam: string | null }) {
-  const router = useRouter();
   const next = safeNext(nextParam);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,10 +35,10 @@ function LoginForm({ nextParam }: { nextParam: string | null }) {
       }
       return result;
     },
-    onSuccess: () => {
-      router.refresh();
-      router.push(next);
-    },
+    // A full load rather than a client navigation: `/` is a different page once
+    // signed in (a rewrite on the session cookie), and the router here learned
+    // it while signed out. The notebook loads its own scripts either way.
+    onSuccess: () => window.location.assign(next),
     onError: (err: Error) => setError(err.message),
   });
 

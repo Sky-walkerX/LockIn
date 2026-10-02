@@ -24,3 +24,24 @@ export async function getOrCreateInbox(userId: string): Promise<string> {
     return created.id;
   });
 }
+
+export type InboxSummary = {
+  id: string;
+  /** Notes sitting in the Inbox. */
+  count: number;
+  /** Agents' notes anywhere in the notebook that the user hasn't witnessed. */
+  awaiting: number;
+};
+
+// The Inbox's id, how many notes it holds, and how many notes an agent wrote
+// that are still waiting to be witnessed (anywhere in the notebook).
+export async function getInboxSummary(userId: string): Promise<InboxSummary> {
+  const id = await getOrCreateInbox(userId);
+  const [row] = await prisma.$queryRaw<{ count: number; awaiting: number }[]>`
+    SELECT count(*) FILTER (WHERE m."subjectId" = ${id})::int AS count,
+           count(*) FILTER (WHERE m.source IS NOT NULL AND m.source <> 'web' AND m."witnessedAt" IS NULL)::int AS awaiting
+    FROM "Milestone" m
+    JOIN "Subject" s ON s.id = m."subjectId"
+    WHERE s."userId" = ${userId}`;
+  return { id, count: row?.count ?? 0, awaiting: row?.awaiting ?? 0 };
+}

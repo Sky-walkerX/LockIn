@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
+import { listTasks, listTasksDue } from "@/lib/tasks/list";
 import { z } from "zod";
 
 const TaskSchema = z.object({
@@ -39,23 +40,10 @@ export async function GET(request: NextRequest) {
       endOfToday.setHours(23, 59, 59, 999);
     }
 
-    const tasks = await prisma.task.findMany({
-      where: { userId, isCompleted: false, dueDate: { not: null, lte: endOfToday } },
-      orderBy: { dueDate: "asc" },
-      include: { subject: { select: { id: true, title: true, color: true } } },
-    });
-    return NextResponse.json(tasks);
+    return NextResponse.json(await listTasksDue(userId, endOfToday));
   }
 
-  const tasks = await prisma.task.findMany({
-    where: {
-      userId,
-      ...(subjectId ? { subjectId } : {}),
-      ...(milestoneId ? { milestoneId } : {}),
-    },
-    orderBy: { createdAt: "asc" },
-  });
-  return NextResponse.json(tasks);
+  return NextResponse.json(await listTasks(userId, { subjectId, milestoneId }));
 }
 
 // POST /api/tasks - create a task under a subject (milestone optional)
