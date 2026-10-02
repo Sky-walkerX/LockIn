@@ -41,7 +41,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   const { status } = useSession();
   // Signed out there is nothing to act on, and on chromeless pages (a shared
   // plan, say) ⌘P should still print.
-  const hidden = isChromeless(pathname) || status !== "authenticated";
+  const hidden = isChromeless(pathname, status === "authenticated") || status !== "authenticated";
   const [isOpen, setIsOpen] = useState(false);
 
   const open = useCallback(() => {

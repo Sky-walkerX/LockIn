@@ -1,9 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { isChromeless } from "@/lib/chrome";
 
-// Whether the current page renders without the signed-in app chrome.
+// The root layout hands the server's session to SessionProvider, so `status` is
+// settled on the first render and the landing page never flashes the chrome.
 export function useChromeless(): boolean {
-  return isChromeless(usePathname());
+  const pathname = usePathname();
+  const { status } = useSession();
+  return isChromeless(pathname, status === "authenticated");
 }

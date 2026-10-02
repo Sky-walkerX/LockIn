@@ -22,7 +22,8 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // Read once here (a JWT decode, no database) so the client starts with the
-  // session settled, instead of waiting on a /api/auth/session round trip.
+  // session settled: `/` is the landing page for visitors, and without this the
+  // shell couldn't tell which to draw until a /api/auth/session round trip.
   const session = await getServerSession(authOptions);
   return (
     // Font variables live on <html>: the --lk-font-* tokens in globals.css are
