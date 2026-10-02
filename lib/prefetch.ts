@@ -7,7 +7,7 @@ import { listSubjects } from "@/lib/subjects/list";
 import { getInboxSummary } from "@/lib/subjects/inbox";
 import { listTasksDue } from "@/lib/tasks/list";
 import { listDueReviews } from "@/lib/review/due";
-import { ZONE_COOKIE, todayIn } from "@/lib/zone";
+import { ZONE_COOKIE, resolveZone, todayIn } from "@/lib/zone";
 
 // Data the server puts in a page so it arrives with the page instead of
 // after it: each entry is a query key and the loader behind its API route.
@@ -35,23 +35,23 @@ export async function viewerId(): Promise<string | null> {
   return session?.user?.id ?? null;
 }
 
+/** The user's zone from the lk-tz cookie (UTC without one) and the time now. */
+export async function viewerClock(): Promise<{ zone: string; now: number }> {
+  return { zone: resolveZone((await cookies()).get(ZONE_COOKIE)?.value), now: Date.now() };
+}
+
 /**
  * What the spine shows on every page: subjects, the Inbox's counts, and
- * what's due today. Today and due revisions are keyed by the user's local
- * date, known from the lk-tz cookie; without it they're left to the browser.
+ * what's due today. Today is the user's date in their zone at `now`, the same
+ * values the notebook layout hands the browser's clock (app/components/clock.tsx),
+ * so these land under the keys the spine's hooks ask for.
  */
-export async function spinePrefetches(userId: string): Promise<Prefetch[]> {
-  const zone = (await cookies()).get(ZONE_COOKIE)?.value;
-  const today = zone ? todayIn(zone) : null;
-  const entries: Prefetch[] = [
+export function spinePrefetches(userId: string, zone: string, now: number): Prefetch[] {
+  const today = todayIn(zone, new Date(now))!;
+  return [
     [queryKeys.subjects, () => listSubjects(userId)],
     [queryKeys.inbox, () => getInboxSummary(userId)],
+    [queryKeys.todayTasks(today.day), () => listTasksDue(userId, today.endOfDay)],
+    [queryKeys.dueReviews(today.day), () => listDueReviews(userId, today.endOfDay)],
   ];
-  if (today) {
-    entries.push(
-      [queryKeys.todayTasks(today.day), () => listTasksDue(userId, today.endOfDay)],
-      [queryKeys.dueReviews(today.day), () => listDueReviews(userId, today.endOfDay)],
-    );
-  }
-  return entries;
 }

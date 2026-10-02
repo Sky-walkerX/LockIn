@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import type { Clock } from "@/app/components/clock";
 import type { PaceStatus } from "@/lib/pace/pace";
 
 export const PACE_META: Record<PaceStatus, { label: string; color: string }> = {
@@ -28,9 +29,9 @@ export function PaceBar({ coverage, elapsed, showMark }: { coverage: number; ela
   );
 }
 
-/** "12 Nov · 41d left", or "today" / "passed" at the edges. */
-export function countdown(target: Date | string, daysLeft: number | null): string {
+/** "12 Nov · 41d left", or "today" / "passed" at the edges, in the user's zone. */
+export function countdown(target: Date | string, daysLeft: number | null, clock: Pick<Clock, "now" | "in">): string {
   const d = new Date(target);
-  const when = daysLeft === null || daysLeft === 0 ? (d < new Date() ? "passed" : "today") : `${daysLeft}d left`;
-  return `${format(d, "d MMM")} · ${when}`;
+  const when = daysLeft === null || daysLeft === 0 ? (d.getTime() < clock.now ? "passed" : "today") : `${daysLeft}d left`;
+  return `${format(d, "d MMM", { in: clock.in })} · ${when}`;
 }

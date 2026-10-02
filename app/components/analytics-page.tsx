@@ -4,6 +4,8 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useSubjects } from "@/hooks/useSubjects";
+import { getDay } from "date-fns";
+import { useClock } from "@/app/components/clock";
 import { RuledBoxes } from "./notebook/ruled-boxes";
 import { ActivityHeatmap } from "./analytics/heatmap";
 import { Skeleton } from "@/app/components/ui/skeleton";
@@ -24,6 +26,7 @@ export default function AnalyticsPage() {
   const { status } = useSession({ required: true });
   const { data: stats, isLoading } = useAnalytics();
   const { data: subjects = [] } = useSubjects();
+  const clock = useClock();
 
   if (status === "loading" || isLoading || !stats) {
     return (
@@ -36,7 +39,7 @@ export default function AnalyticsPage() {
 
   const weekMax = Math.max(...stats.weeklyProgress, 1);
   const weekTotal = stats.weeklyProgress.reduce((a, b) => a + b, 0);
-  const todayIdx = new Date().getDay();
+  const todayIdx = getDay(clock.now, { in: clock.in });
 
   return (
     <main className="lk-page">

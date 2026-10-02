@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ListChecks, Maximize2, MessageSquareQuote, PenLine, Pencil, Trash2 } from "lucide-react";
-import { ago } from "@/lib/dates";
+import { useAgo } from "@/app/components/clock";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
@@ -41,6 +41,7 @@ export function NoteView({
   onDeleted: () => void;
   onMoved: (subjectId: string) => void;
 }) {
+  const ago = useAgo();
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
   const draft = useNoteDraft(note.id);

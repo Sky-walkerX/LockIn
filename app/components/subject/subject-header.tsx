@@ -16,10 +16,11 @@ import { PACE_META, PaceBar, countdown } from "@/app/components/pace/pace";
 import { computeCoverage, subjectPace } from "@/lib/pace/pace";
 import { endOfDay, format, startOfDay } from "date-fns";
 import { RuledBoxes } from "@/app/components/notebook/ruled-boxes";
+import { useClock, type Clock } from "@/app/components/clock";
 
 // <input type="date"> speaks yyyy-MM-dd in local time. A target counts through
 // the end of its day; a start counts from its beginning.
-const toInput = (d: Date | string | null) => (d ? format(new Date(d), "yyyy-MM-dd") : "");
+const toInput = (d: Date | string | null, clock: Pick<Clock, "in">) => (d ? format(new Date(d), "yyyy-MM-dd", { in: clock.in }) : "");
 const fromInput = (v: string, edge: "start" | "end") =>
   v ? (edge === "end" ? endOfDay(new Date(`${v}T00:00`)) : startOfDay(new Date(`${v}T00:00`))).toISOString() : null;
 
@@ -30,12 +31,13 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
   const update = useUpdateSubject();
   const del = useDeleteSubject();
 
+  const clock = useClock();
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(subject.title);
   const [description, setDescription] = useState(subject.description ?? "");
   const [color, setColor] = useState(subject.color ?? SUBJECT_PALETTE[0]);
-  const [targetDate, setTargetDate] = useState(toInput(subject.targetDate));
-  const [startDate, setStartDate] = useState(toInput(subject.startDate));
+  const [targetDate, setTargetDate] = useState(toInput(subject.targetDate, clock));
+  const [startDate, setStartDate] = useState(toInput(subject.startDate, clock));
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Re-seed the draft fields every time the popover opens so an edit started
@@ -45,8 +47,8 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
       setTitle(subject.title);
       setDescription(subject.description ?? "");
       setColor(subject.color ?? SUBJECT_PALETTE[0]);
-      setTargetDate(toInput(subject.targetDate));
-      setStartDate(toInput(subject.startDate));
+      setTargetDate(toInput(subject.targetDate, clock));
+      setStartDate(toInput(subject.startDate, clock));
     }
     setEditOpen(o);
   };
@@ -91,7 +93,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
           },
           { label: "Notes", value: subject.milestones.length },
           { label: "Resources", value: subject.resources.length },
-          { label: "Updated", value: format(new Date(subject.updatedAt), "d MMM yyyy"), grow: 1.3 },
+          { label: "Updated", value: format(new Date(subject.updatedAt), "d MMM yyyy", { in: clock.in }), grow: 1.3 },
         ]}
       />
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -203,6 +205,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
 // Task progress, or weighted syllabus coverage against the exam date when the
 // subject has one. Part of the Plan layer, so it lives on the Plan tab.
 export function SubjectProgress({ subject }: { subject: SubjectDetail }) {
+  const clock = useClock();
   const milestoneTasks = subject.milestones.flatMap((m) => m.tasks);
   const allTasks = [...milestoneTasks, ...subject.tasks];
   const total = allTasks.length;
@@ -210,7 +213,7 @@ export function SubjectProgress({ subject }: { subject: SubjectDetail }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   const complete = total > 0 && done === total;
   const weak = subject.milestones.filter((m) => m.confidence === "WEAK").length;
-  const toRevise = subject.milestones.filter((m) => m.isCompleted && isReviewDue(m.reviewDueAt)).length;
+  const toRevise = subject.milestones.filter((m) => m.isCompleted && isReviewDue(m.reviewDueAt, clock)).length;
 
   const coverage = computeCoverage(
     subject.milestones.map((m) => ({
@@ -221,7 +224,7 @@ export function SubjectProgress({ subject }: { subject: SubjectDetail }) {
     })),
     { done, total },
   );
-  const pace = subjectPace(subject, coverage);
+  const pace = subjectPace(subject, coverage, new Date(clock.now));
   // With a target date the headline number is weighted syllabus coverage;
   // without one it stays plain task progress.
   const examMode = pace.status !== "none";
@@ -247,7 +250,7 @@ export function SubjectProgress({ subject }: { subject: SubjectDetail }) {
           </div>
           {examMode && subject.targetDate && pace.status !== "none" && (
             <div className="lk-print mt-1 text-2xs uppercase tracking-wide text-muted-foreground">
-              target {countdown(subject.targetDate, pace.daysLeft)} ·{" "}
+              target {countdown(subject.targetDate, pace.daysLeft, clock)} ·{" "}
               <span style={{ color: PACE_META[pace.status].color }}>{PACE_META[pace.status].label}</span>
               {pace.status !== "done" && pace.status !== "overdue" && (
                 <>

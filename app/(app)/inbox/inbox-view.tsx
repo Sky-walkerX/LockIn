@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { useInbox } from "@/hooks/useInbox";
 import { useSubject } from "@/hooks/useSubjects";
+import { useClock } from "@/app/components/clock";
 import { RuledBoxes } from "@/app/components/notebook/ruled-boxes";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
@@ -30,6 +31,7 @@ function Inbox() {
   const { data: inbox, isError: inboxError } = useInbox(status === "authenticated");
   const { data: subject, isLoading } = useSubject(inbox?.id);
   const [justCreated, setJustCreated] = useState<string | null>(null);
+  const clock = useClock();
 
   const noteParam = searchParams.get("note");
 
@@ -77,7 +79,7 @@ function Inbox() {
           { label: "Tray", value: "Inbox", grow: 2 },
           { label: "Unfiled", value: notes.length },
           { label: "To witness", value: inbox.awaiting },
-          { label: "Date", value: format(new Date(), "d MMM yyyy"), grow: 1.3 },
+          { label: "Date", value: format(clock.now, "d MMM yyyy", { in: clock.in }), grow: 1.3 },
         ]}
       />
       <header>

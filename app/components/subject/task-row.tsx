@@ -27,6 +27,7 @@ import { SubtaskRow } from "./subtask-row";
 import { AddSubtask } from "./add-subtask";
 import { useReveal } from "./reveal";
 import { ShareButton } from "@/app/components/share/share-button";
+import { useClock } from "@/app/components/clock";
 
 const PRIORITY_COLOR: Record<Priority, string> = {
   HIGH: "var(--destructive)",
@@ -45,12 +46,13 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
     id: task.id,
   });
 
+  const clock = useClock();
   const [open, setOpen] = useState(false);
   const reveal = useReveal(task.id, setOpen);
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [priority, setPriority] = useState<Priority>(task.priority);
-  const [due, setDue] = useState(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
+  const [due, setDue] = useState(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd", { in: clock.in }) : "");
   const [recurrence, setRecurrence] = useState<"NONE" | Recurrence>(task.recurrence ?? "NONE");
   const [estimate, setEstimate] = useState(task.estimatedTime ? String(task.estimatedTime) : "");
   const [editingNotes, setEditingNotes] = useState(false);
@@ -59,7 +61,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   const [failedNotes, setFailedNotes] = useState<string | null>(null);
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-  const overdue = !task.isCompleted && dueDate ? isBefore(dueDate, startOfDay(new Date())) : false;
+  const overdue = !task.isCompleted && dueDate ? isBefore(dueDate, startOfDay(clock.now, { in: clock.in })) : false;
 
   const subtasks = task.subtasks;
   const subDone = subtasks.filter((s) => s.isCompleted).length;
@@ -84,7 +86,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
     if (o) {
       setTitle(task.title);
       setPriority(task.priority);
-      setDue(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "");
+      setDue(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd", { in: clock.in }) : "");
       setRecurrence(task.recurrence ?? "NONE");
       setEstimate(task.estimatedTime ? String(task.estimatedTime) : "");
     }
@@ -209,7 +211,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
         {dueDate && (
           <span className={`lk-print flex-none text-2xs uppercase ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
             {overdue ? "overdue · " : ""}
-            {format(dueDate, "dd MMM")}
+            {format(dueDate, "dd MMM", { in: clock.in })}
           </span>
         )}
 

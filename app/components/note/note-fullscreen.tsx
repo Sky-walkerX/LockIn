@@ -7,7 +7,7 @@ import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
-import { ago } from "@/lib/dates";
+import { useAgo } from "@/app/components/clock";
 import { isOwnNote, sourceLabel } from "@/lib/notes/source";
 import { pageLabel } from "@/lib/notes/page-label";
 
@@ -27,6 +27,7 @@ export function NoteFullscreen({
   color: string | null;
   onClose: () => void;
 }) {
+  const ago = useAgo();
   const draft = useNoteDraft(note.id);
   const sheetRef = useRef<HTMLDivElement>(null);
   // Whatever opened the sheet (its Full screen button) gets focus back. Read

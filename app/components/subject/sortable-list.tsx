@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
   DndContext,
   closestCenter,
@@ -29,6 +30,9 @@ export function SortableList({
   onReorder: (ids: string[]) => void;
   children: React.ReactNode;
 }) {
+  // dnd-kit numbers its accessibility ids from a global counter, which the
+  // server render and the browser count differently; a stable id keeps them equal.
+  const id = useId();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -43,7 +47,7 @@ export function SortableList({
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+    <DndContext id={id} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         {children}
       </SortableContext>

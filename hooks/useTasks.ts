@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { endOfDay, format } from "date-fns";
 import type { Task, Priority, Recurrence } from "@/app/generated/prisma/browser";
 import { api } from "@/lib/fetcher";
 import { queryKeys } from "@/lib/query-keys";
+import { todayIn } from "@/lib/zone";
+import { useClock } from "@/app/components/clock";
 import type { SubjectDetail, TaskWithSubtasks } from "@/hooks/useSubjects";
 import {
   patchSubjectCaches,
@@ -45,15 +46,15 @@ export function useTasks(params?: { subjectId?: string; milestoneId?: string }) 
   });
 }
 
-// Cross-subject "Today": incomplete tasks due today or overdue. The client's
-// local end-of-day goes along as ?before= so the boundary follows the user's
-// timezone (the server may run in UTC); the day in the key rolls it over at
-// local midnight.
+// Cross-subject "Today": incomplete tasks due today or overdue. The end of the
+// user's day, in their zone (the clock), goes along as ?before= so the boundary
+// isn't the server's UTC; the day in the key rolls it over at their midnight.
 export function useTodayTasks() {
-  const now = new Date();
-  const before = endOfDay(now).toISOString();
+  const { zone, now } = useClock();
+  const today = todayIn(zone, new Date(now))!;
+  const before = today.endOfDay.toISOString();
   return useQuery({
-    queryKey: queryKeys.todayTasks(format(now, "yyyy-MM-dd")),
+    queryKey: queryKeys.todayTasks(today.day),
     queryFn: () =>
       api.get<TaskWithSubject[]>(`/api/tasks?today=true&before=${encodeURIComponent(before)}`),
   });

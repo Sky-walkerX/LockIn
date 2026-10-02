@@ -6,6 +6,7 @@ import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useUpdateMilestone } from "@/hooks/useMilestones";
 import { useReviewMilestone } from "@/hooks/useReviews";
 import { firstReview, type ReviewRating } from "@/lib/review/schedule";
+import { useClock, type Clock } from "@/app/components/clock";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,9 +30,9 @@ const RATINGS: { rating: ReviewRating; label: string; hint: string }[] = [
   { rating: "SOLID", label: "Solid", hint: "Push it well out" },
 ];
 
-/** A review is due once its date falls on or before the end of today, local time. */
-export function isReviewDue(reviewDueAt: Date | string | null): boolean {
-  return reviewDueAt !== null && new Date(reviewDueAt) <= endOfDay(new Date());
+/** A review is due once its date falls on or before the end of the user's today. */
+export function isReviewDue(reviewDueAt: Date | string | null, clock: Pick<Clock, "now" | "in">): boolean {
+  return reviewDueAt !== null && new Date(reviewDueAt) <= endOfDay(clock.now, { in: clock.in });
 }
 
 export function RateButtons({ milestoneId }: { milestoneId: string }) {
@@ -113,9 +114,10 @@ export function ConfidenceMenu({ milestone }: { milestone: MilestoneWithTasks })
 
 /** Rating buttons when a review is due, otherwise when the next one comes up. */
 export function ReviewStatus({ milestone }: { milestone: MilestoneWithTasks }) {
+  const clock = useClock();
   if (!milestone.isCompleted || !milestone.reviewDueAt) return null;
-  if (isReviewDue(milestone.reviewDueAt)) return <RateButtons milestoneId={milestone.id} />;
-  const days = differenceInCalendarDays(new Date(milestone.reviewDueAt), new Date());
+  if (isReviewDue(milestone.reviewDueAt, clock)) return <RateButtons milestoneId={milestone.id} />;
+  const days = differenceInCalendarDays(new Date(milestone.reviewDueAt), clock.now, { in: clock.in });
   return (
     <span
       className="lk-print hidden flex-none text-2xs uppercase tracking-wide text-muted-foreground sm:inline"

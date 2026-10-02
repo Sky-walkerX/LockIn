@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { endOfDay, format } from "date-fns";
 import type { Milestone, Subject } from "@/app/generated/prisma/browser";
 import { api } from "@/lib/fetcher";
 import { queryKeys } from "@/lib/query-keys";
+import { todayIn } from "@/lib/zone";
+import { useClock } from "@/app/components/clock";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { patchSubjectCaches, replaceMilestone, restoreSubjectCaches } from "@/lib/subject-cache";
 import { nextReview, type ReviewRating } from "@/lib/review/schedule";
@@ -12,13 +13,14 @@ export type DueReview = Omit<Milestone, "notes"> & { subject: Pick<Subject, "id"
 const REVIEWS_KEY = ["reviews"] as const;
 
 // Milestones due for revision today or earlier, across subjects. Like
-// useTodayTasks, the local end-of-day goes along as ?before= and the day in the
-// key rolls the list over at local midnight.
+// useTodayTasks, the end of the user's day goes along as ?before= and the day
+// in the key rolls the list over at their midnight.
 export function useDueReviews() {
-  const now = new Date();
-  const before = endOfDay(now).toISOString();
+  const { zone, now } = useClock();
+  const today = todayIn(zone, new Date(now))!;
+  const before = today.endOfDay.toISOString();
   return useQuery({
-    queryKey: queryKeys.dueReviews(format(now, "yyyy-MM-dd")),
+    queryKey: queryKeys.dueReviews(today.day),
     queryFn: () => api.get<DueReview[]>(`/api/reviews?before=${encodeURIComponent(before)}`),
   });
 }
