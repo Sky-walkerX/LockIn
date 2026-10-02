@@ -2,6 +2,7 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { TOKEN_PREFIX, hashToken, sourceFromTokenName } from "@/lib/tokens";
+import { ACCESS_PREFIX, authenticateAccessToken } from "@/lib/oauth/server";
 
 /**
  * Returns the authenticated user's id (JWT `sub`) for an API route, or null.
@@ -28,9 +29,10 @@ export type TokenAuth = {
 export const MCP_REQUESTS_PER_MINUTE = 60;
 
 /**
- * Resolves a personal access token (the MCP server's bearer token) to its user,
- * or null when it's malformed, unknown or revoked, and counts the request
- * against the token's rate limit.
+ * Resolves an MCP bearer token to its user, or null when it's malformed,
+ * unknown, expired or revoked, and counts the request against its rate limit.
+ * Personal access tokens (lk_pat_) are checked here; OAuth access tokens
+ * (lk_oat_, from apps that signed in) by lib/oauth/server.ts the same way.
  *
  * One statement does all of it: find the token, count this request in its
  * one-minute window (starting a new window once the old one has passed), and
@@ -39,6 +41,7 @@ export const MCP_REQUESTS_PER_MINUTE = 60;
  * Times are UTC, as Prisma stores them.
  */
 export async function authenticateToken(bearer: string | undefined): Promise<TokenAuth | null> {
+  if (bearer?.startsWith(ACCESS_PREFIX)) return limitedAuth(await authenticateAccessToken(bearer));
   if (!bearer || !bearer.startsWith(TOKEN_PREFIX)) return null;
   const [row] = await prisma.$queryRaw<
     { id: string; userId: string; name: string; windowCount: number; retryAfter: number }[]
@@ -53,8 +56,8 @@ export async function authenticateToken(bearer: string | undefined): Promise<Tok
   return limitedAuth(row ?? null);
 }
 
-/** A token's row as the MCP route reads it: who it is, the source stamped on
- *  what it saves, and whether it's over the limit. */
+/** A token's (or an OAuth grant's) row as the MCP route reads it: who it is,
+ *  the source stamped on what it saves, and whether it's over the limit. */
 function limitedAuth(
   row: { id: string; userId: string; name: string; windowCount: number; retryAfter: number } | null,
 ): TokenAuth | null {

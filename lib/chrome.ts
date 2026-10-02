@@ -8,7 +8,7 @@
  *
  * One list rather than a copy per component, so they can't disagree.
  */
-const CHROMELESS_ROUTES = ["/login", "/signup", "/share"];
+const CHROMELESS_ROUTES = ["/login", "/signup", "/share", "/oauth"];
 
 export function isChromeless(pathname: string | null | undefined): boolean {
   return CHROMELESS_ROUTES.some((p) => pathname?.startsWith(p));

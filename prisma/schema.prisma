@@ -69,6 +69,80 @@ model User {
   noteChunks    NoteChunk[]
   shares        Share[]
   apiTokens     ApiToken[]
+  oauthGrants   OAuthGrant[]
+}
+
+// OAuth for MCP clients that sign in rather than take a pasted token (Claude.ai,
+// ChatGPT): LockIn is its own authorization server (lib/oauth). A client is
+// registered by DCR, or known by the URL of its Client ID Metadata Document,
+// which is then its id. Clients aren't tied to a user; grants are.
+model OAuthClient {
+  id           String   @id // DCR: generated; CIMD: the metadata document's URL
+  name         String
+  redirectUris String[]
+  // "dcr" or "cimd"
+  kind         String
+  // When a CIMD document was last fetched, so it's re-read now and then.
+  fetchedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  codes  OAuthCode[]
+  grants OAuthGrant[]
+}
+
+// A one-time authorization code, exchanged at the token endpoint within
+// minutes. Only its sha256 is stored.
+model OAuthCode {
+  codeHash      String    @id
+  redirectUri   String
+  codeChallenge String
+  resource      String?
+  scope         String
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  client   OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+  userId   String
+}
+
+// One app's access to one user's notebook: what Settings lists as a connected
+// app and revokes. Its name is the source stamped on notes it saves, and it
+// carries the same per-minute rate limit as a personal access token.
+model OAuthGrant {
+  id          String    @id @default(uuid())
+  name        String
+  scope       String
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  windowStart DateTime?
+  windowCount Int       @default(0)
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  client   OAuthClient  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+  tokens   OAuthToken[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// Access tokens (an hour) and refresh tokens (60 days, rotated on use), stored
+// as sha256. A refresh token used twice means it leaked, and revokes the grant.
+model OAuthToken {
+  tokenHash String    @id
+  // "access" or "refresh"
+  kind      String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  grant   OAuthGrant @relation(fields: [grantId], references: [id], onDelete: Cascade)
+  grantId String
+
+  @@index([grantId])
 }
 
 // A personal access token an agent (Claude Code, Codex, Cursor…) uses to reach

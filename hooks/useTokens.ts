@@ -33,3 +33,19 @@ export function useRevokeToken() {
   });
 }
 
+/** An app that connected by signing in (OAuth) rather than with a token. */
+export type ConnectedApp = { id: string; name: string; createdAt: string; lastUsedAt: string | null };
+
+const APPS_KEY = ["oauth-grants"] as const;
+
+export function useConnectedApps() {
+  return useQuery({ queryKey: APPS_KEY, queryFn: () => api.get<ConnectedApp[]>("/api/oauth/grants") });
+}
+
+export function useDisconnectApp() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/oauth/grants/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: APPS_KEY }),
+  });
+}

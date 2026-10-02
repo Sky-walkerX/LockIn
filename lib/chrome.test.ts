@@ -5,6 +5,7 @@ describe("isChromeless", () => {
   it("keeps the auth and share pages chromeless", () => {
     expect(isChromeless("/login")).toBe(true);
     expect(isChromeless("/share/abc")).toBe(true);
+    expect(isChromeless("/oauth/authorize")).toBe(true);
   });
 
   it("keeps the chrome on notebook pages", () => {

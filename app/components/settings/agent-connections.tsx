@@ -5,7 +5,15 @@ import { useMounted } from "@/hooks/useMounted";
 import { Check, Copy, KeyRound } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { ago } from "@/lib/dates";
-import { useCreateToken, useRevokeToken, useTokens, type AgentToken } from "@/hooks/useTokens";
+import {
+  useConnectedApps,
+  useCreateToken,
+  useDisconnectApp,
+  useRevokeToken,
+  useTokens,
+  type AgentToken,
+  type ConnectedApp,
+} from "@/hooks/useTokens";
 
 const SUGGESTED = ["Claude Code", "Codex", "Cursor", "Claude Desktop"];
 const SERVER_NAME = BRAND.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -99,6 +107,67 @@ function TokenRow({ token }: { token: AgentToken }) {
           </button>
         ))}
     </li>
+  );
+}
+
+function AppRow({ app }: { app: ConnectedApp }) {
+  const disconnect = useDisconnectApp();
+  const [confirming, setConfirming] = useState(false);
+  return (
+    <li className="lk-agent-row">
+      <div className="min-w-0">
+        <div className="truncate font-semibold">{app.name}</div>
+        <div className="text-sm text-muted-foreground">
+          connected {ago(app.createdAt)} · {app.lastUsedAt ? `last used ${ago(app.lastUsedAt)}` : "never used"}
+        </div>
+      </div>
+      {confirming ? (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => disconnect.mutate(app.id)}
+            disabled={disconnect.isPending}
+            className="lk-btn px-3 py-1.5 text-2xs"
+            style={{ background: "var(--destructive)", borderColor: "var(--destructive)", color: "#fff" }}
+          >
+            Disconnect
+          </button>
+          <button type="button" onClick={() => setConfirming(false)} className="text-sm text-muted-foreground hover:text-foreground">
+            Keep
+          </button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setConfirming(true)} className="lk-note-bar-btn">
+          Disconnect…
+        </button>
+      )}
+    </li>
+  );
+}
+
+/** Claude.ai, ChatGPT and other apps that connect by signing in: the URL to
+ *  give them, and the ones that have access. */
+function SignInApps({ url }: { url: string }) {
+  const { data: apps = [] } = useConnectedApps();
+  return (
+    <div className="grid gap-3 border-t border-border pt-5">
+      <span className="lk-sec">Claude.ai, ChatGPT and other apps</span>
+      <p className="max-w-[62ch] text-ui text-muted-foreground">
+        Apps that support MCP connectors don&apos;t need a token. Add a custom connector with this URL; the app sends you
+        here to sign in and allow it.
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 overflow-x-auto rounded-sm bg-muted px-2.5 py-1.5 font-code text-xs">{url}</code>
+        <CopyButton value={url} label="Copy URL" />
+      </div>
+      {apps.length > 0 && (
+        <ul className="lk-card grid">
+          {apps.map((a) => (
+            <AppRow key={a.id} app={a} />
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -203,6 +272,8 @@ export function AgentConnections() {
           ))}
         </ul>
       )}
+
+      <SignInApps url={url} />
     </div>
   );
 }

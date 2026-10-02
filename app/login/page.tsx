@@ -15,7 +15,7 @@ import { safeNext } from "@/lib/safe-next";
 
 export default function LoginPage() {
   const router = useRouter();
-  // Where sign-in was interrupted: a page that needed it.
+  // Where sign-in was interrupted, e.g. an app asking to connect.
   const nextParam = useSearchParams().get("next");
   const next = safeNext(nextParam);
   const [email, setEmail] = useState("");
