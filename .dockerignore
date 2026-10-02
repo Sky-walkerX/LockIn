@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.env*
+!.env.example
+storage
+.impeccable
+.claude
+.agents
+service
+coverage
+*.log

@@ -1,0 +1,76 @@
+# LockIn, self-hosted.
+#
+#   cp .env.example .env    # then set AUTH_SECRET (and INGEST_SECRET for the ingest profile)
+#   docker compose up -d    # Postgres + LockIn on http://localhost:3000
+#
+# Add PDF/link text extraction and server-side embeddings:
+#   docker compose --profile ingest up -d
+#
+# Data lives in two volumes: `db` (Postgres) and `uploads` (note images, PDFs).
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lockin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lockin}
+      POSTGRES_DB: lockin
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lockin -d lockin"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Runs `prisma migrate deploy` once, then exits; the app waits for it.
+  migrate:
+    build: { context: ., target: migrate }
+    environment: &db-env
+      DATABASE_URL: postgresql://lockin:${POSTGRES_PASSWORD:-lockin}@db:5432/lockin
+      DIRECT_URL: postgresql://lockin:${POSTGRES_PASSWORD:-lockin}@db:5432/lockin
+    depends_on:
+      db: { condition: service_healthy }
+
+  app:
+    build: { context: ., target: app }
+    restart: unless-stopped
+    ports:
+      - "${LOCKIN_PORT:-3000}:3000"
+    environment:
+      <<: *db-env
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env (openssl rand -base64 32)}
+      NEXTAUTH_SECRET: ${AUTH_SECRET}
+      NEXTAUTH_URL: ${PUBLIC_URL:-http://localhost:3000}
+      STORAGE_DRIVER: local
+      STORAGE_DIR: /data/uploads
+      # Optional: Google sign-in appears only when both are set.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Used only when the ingest profile is running.
+      INGEST_URL: ${INGEST_URL:-}
+      INGEST_SECRET: ${INGEST_SECRET:-}
+      APP_INTERNAL_URL: http://app:3000
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  # Optional: `docker compose --profile ingest up`. Then set
+  # INGEST_URL=http://ingest:8080 and INGEST_SECRET in .env.
+  ingest:
+    profiles: [ingest]
+    build: ./service
+    restart: unless-stopped
+    environment:
+      # Required for this profile; the service refuses to start without it.
+      # (Not a compose ${…:?} check: compose would demand it even when the
+      # profile isn't used.)
+      INGEST_SECRET: ${INGEST_SECRET:-}
+      # Lets the parser fetch PDFs the app stores on its own disk.
+      INGEST_ALLOWED_HOSTS: app
+
+volumes:
+  db:
+  uploads:
