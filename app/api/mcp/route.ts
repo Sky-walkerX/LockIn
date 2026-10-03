@@ -391,7 +391,7 @@ const handler = createMcpHandler(
   },
   {
     serverInfo: { name: BRAND.name, version: "1.0.0" },
-    instructions: `${BRAND.name} is the user's notebook, organised by subject. Search it before answering questions the user may have notes on. Save what's worth keeping (decisions, fixes, explanations) as a note under the right subject; the user reviews and witnesses what you save. You can edit only notes you recorded; anyone else's you can add to with append_to_note. Keep the user's plans current: tick off tasks that are done and add the ones that come up. Notes are GitHub-flavoured markdown that renders LaTeX: write maths as $e_K \\in E$ inline and $$…$$ on lines of their own for display, not as Unicode symbols.`,
+    instructions: `${BRAND.name} is the user's notebook, organised by subject. Search it before answering questions the user may have notes on. Save what's worth keeping (decisions, fixes, explanations) as a note under the right subject; the user reviews and witnesses what you save. You can edit only notes you recorded; anyone else's you can add to with append_to_note. Keep the user's plans current: tick off tasks that are done and add the ones that come up. Notes are GitHub-flavoured markdown that renders LaTeX: write maths as $e_K \\in E$ inline and $$…$$ on lines of their own for display, not as Unicode symbols. To pin something as a numbered figure (code output, a table, a key formula), quote it under a first line of "> [!FIG] caption".`,
   },
 );
 
