@@ -535,13 +535,15 @@
   .lk-fullscreen-bar {
     position: sticky; top: 0; z-index: 1;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    max-width: 880px; margin: 0 auto; padding: 14px 0 12px;
+    max-width: 1080px; margin: 0 auto; padding: 14px 0 12px;
     background: var(--card); border-bottom: 1px solid var(--border);
   }
-  .lk-fullscreen-page { max-width: 760px; margin: 0 auto; padding-top: 48px; }
+  /* The page takes the window's width up to the bar's, and the text the page's:
+     full screen is for reading one note, tables and code included. */
+  .lk-fullscreen-page { max-width: 1080px; margin: 0 auto; padding-top: 48px; }
   .lk-fullscreen-page .lk-note-title { font-size: clamp(34px, 4.6vw, 52px); margin-top: 0; }
   .lk-fullscreen-rule { height: 2px; background: var(--c-eff, var(--foreground)); margin: 6px 0 32px; }
-  .lk-reading-full .lk-prose { font-size: 20.5px; line-height: 1.7; }
+  .lk-reading.lk-reading-full .lk-prose { font-size: 20.5px; line-height: 1.7; max-width: none; }
 
   /* Reading size for a note's body; .lk-prose carries the rest. */
   .lk-reading .lk-prose { font-size: 18.5px; line-height: 1.65; max-width: 68ch; }
@@ -816,6 +818,9 @@
     color: var(--muted-foreground); font-style: italic;
   }
   .lk-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
+  /* A table wider than the column scrolls inside its own box, not off the page. */
+  .lk-prose .lk-table-wrap { overflow-x: auto; margin: 0.7em 0; }
+  .lk-prose .lk-table-wrap > table { margin: 0; }
   .lk-prose table { width: 100%; border-collapse: collapse; margin: 0.7em 0; font-size: 0.9em; font-variant-numeric: tabular-nums; }
   .lk-prose th, .lk-prose td { border: 1px solid var(--border); padding: 0.4em 0.6em; text-align: left; }
   .lk-prose th { background: var(--muted); font-family: var(--lk-font-display); font-weight: 600; letter-spacing: 0.06em; }

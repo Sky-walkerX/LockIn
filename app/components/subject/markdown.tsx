@@ -59,6 +59,14 @@ export function Markdown({
               <CopyButton text={codeText(node)} />
             </div>
           ),
+          table: ({ node, ...props }) => {
+            void node;
+            return (
+              <div className="lk-table-wrap">
+                <table {...props} />
+              </div>
+            );
+          },
           img: ({ src, alt, ...props }) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
