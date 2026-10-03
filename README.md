@@ -77,7 +77,8 @@ Tools:
 |---|---|
 | `list_subjects` | Subjects and how many notes each has, plus the Inbox. |
 | `search_notes` | By meaning when the ingest service runs, and always by keyword. Notes and resources come with their page. |
-| `get_note` | One note in full, with its subject, who wrote it and its tasks. |
+| `get_note` | One note, task or subtask in full by its id. A note comes with its plan: tasks, their notes and nested subtasks. |
+| `get_plan` | A subject's whole plan: each note's tasks and subtasks with what's done, plus tasks under no note. |
 | `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. |
 | `append_to_note` | Adds a dated "From Codex" block to the end of a note. Never replaces anything. |
 

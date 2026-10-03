@@ -5,17 +5,18 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { authenticateToken, MCP_REQUESTS_PER_MINUTE, type TokenAuth } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
-import { appendToNote, insertNote, placeNote } from "@/lib/notes/write";
+import { appendToNote, insertNote, matchSubject, placeNote } from "@/lib/notes/write";
 import { pagesOf } from "@/lib/notes/page";
 import { sourceLabel } from "@/lib/notes/source";
 import { embedOnServer } from "@/lib/rag/ingest";
 import { indexNoteOnServer } from "@/lib/rag/index-note";
 import { searchKeyword } from "@/lib/search/keyword";
 import { searchSemantic } from "@/lib/search/semantic";
-import { formatNote, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
+import { formatNote, formatPlan, formatPlanItem, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
+import { readById, readPlan } from "@/lib/mcp/read";
 
 // The notebook's MCP server: agents (Claude Code, Codex, Cursor…) list
-// subjects, search, read, save and append to the user's notes. Streamable HTTP
+// subjects, search, read notes and plans, save and append to the user's notes. Streamable HTTP
 // at /api/mcp, stateless, authenticated by a personal access token from
 // Settings. The token's name is stamped on everything an agent saves, and
 // those notes wait for the user to witness them.
@@ -37,6 +38,9 @@ const indexAfterReply = (userId: string, noteId: string) =>
 const text = (t: string) => ({ content: [{ type: "text" as const, text: t }] });
 const noteUrl = (origin: string | null, subjectId: string, isInbox: boolean, noteId: string) =>
   origin ? (isInbox ? `${origin}/inbox?note=${noteId}` : `${origin}/subjects/${subjectId}?note=${noteId}`) : null;
+// The subject page opens the Plan tab and expands the rows down to this one.
+const planItemUrl = (origin: string | null, subjectId: string, kind: "task" | "subtask", id: string) =>
+  origin ? `${origin}/subjects/${subjectId}?open=${kind}:${id}` : null;
 
 const handler = createMcpHandler(
   (server) => {
@@ -100,22 +104,48 @@ const handler = createMcpHandler(
     server.registerTool(
       "get_note",
       {
-        title: "Read a note",
-        description: "Read one of the user's notes in full (markdown), with its subject, who wrote it and its tasks.",
-        inputSchema: z.object({ id: z.string().min(1).describe("The note's id, from search_notes or save_note") }),
+        title: "Read a note, task or subtask",
+        description:
+          "Read one item in full by its id. A note comes with its markdown, subject, who wrote it and its plan: each task with its notes and nested subtasks. A task or subtask comes with its notes, where it sits and the subtasks under it.",
+        inputSchema: z.object({ id: z.string().min(1).describe("A note, task or subtask id, from search_notes, get_plan or save_note") }),
         annotations: { readOnlyHint: true },
       },
       async ({ id }, ctx) => {
         const { userId, origin } = caller(ctx.http?.authInfo);
-        const note = await prisma.milestone.findFirst({
-          where: { id, subject: { userId } },
-          include: {
-            subject: { select: { id: true, title: true, isInbox: true } },
-            tasks: { select: { title: true, isCompleted: true }, orderBy: { order: "asc" } },
-          },
+        const found = await readById(userId, id);
+        if (!found) return { ...text(`No note, task or subtask with id ${id} in this notebook.`), isError: true };
+        if (found.kind === "note") {
+          const { note } = found;
+          return text(formatNote(note, noteUrl(origin, found.subjectId, note.subject.isInbox, note.id)));
+        }
+        return text(formatPlanItem(found.item, planItemUrl(origin, found.subjectId, found.kind, found.item.id)));
+      },
+    );
+
+    server.registerTool(
+      "get_plan",
+      {
+        title: "Read a subject's plan",
+        description:
+          "Read a subject's whole plan: every note's tasks and nested subtasks with what's done, plus tasks not under any note. Long notes on an item are cut short; pass its id to get_note for the rest.",
+        inputSchema: z.object({
+          subject: z.string().trim().min(1).max(200).describe("A subject's name or id, e.g. \"Rust\", or \"Inbox\""),
+        }),
+        annotations: { readOnlyHint: true },
+      },
+      async ({ subject }, ctx) => {
+        const { userId, origin } = caller(ctx.http?.authInfo);
+        const subjects = await prisma.subject.findMany({
+          where: { userId, isArchived: false },
+          select: { id: true, title: true, isInbox: true },
         });
-        if (!note) return { ...text(`No note with id ${id} in this notebook.`), isError: true };
-        return text(formatNote(note, noteUrl(origin, note.subject.id, note.subject.isInbox, note.id)));
+        const hit = matchSubject(subjects, subject) ?? (/^inbox$/i.test(subject) ? subjects.find((s) => s.isInbox) : null);
+        const plan = hit ? await readPlan(userId, hit.id) : null;
+        if (!hit || !plan) {
+          return { ...text(`There's no subject called "${subject}". Call list_subjects to see them.`), isError: true };
+        }
+        const url = origin ? (hit.isInbox ? `${origin}/inbox` : `${origin}/subjects/${hit.id}?tab=plan`) : null;
+        return text(formatPlan(plan, url));
       },
     );
 

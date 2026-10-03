@@ -102,6 +102,7 @@ export function Landing() {
                 <pre className={s.code}>{`save_note(title, body, subject)
 search_notes(query)
 get_note(id)
+get_plan(subject)
 append_to_note(id, text)`}</pre>
               </li>
               <li className={s.step}>
