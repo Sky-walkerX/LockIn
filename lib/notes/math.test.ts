@@ -37,4 +37,23 @@ describe("guardDollars (Pandoc's inline-maths rule)", () => {
   it("doesn't let maths span a blank line", () => {
     expect(guardDollars("$a\n\nb$")).toBe("\\$a\n\nb\\$");
   });
+
+  it("reads LaTeX's \\(…\\) as inline maths", () => {
+    expect(guardDollars("the key \\( e_K \\in E \\) is secret")).toBe("the key $e_K \\in E$ is secret");
+  });
+
+  it("reads LaTeX's \\[…\\] as display maths", () => {
+    expect(guardDollars("Bayes:\n\\[P(A|B) = \\frac{P(B|A)P(A)}{P(B)}\\]\nafter")).toBe(
+      "Bayes:\n\n$$\nP(A|B) = \\frac{P(B|A)P(A)}{P(B)}\n$$\n\nafter",
+    );
+  });
+
+  it("leaves an escaped bracket with no closing partner alone", () => {
+    expect(guardDollars("a literal \\[ bracket")).toBe("a literal \\[ bracket");
+    expect(guardDollars("\\(a\n\nb\\)")).toBe("\\(a\n\nb\\)");
+  });
+
+  it("leaves LaTeX delimiters in code alone", () => {
+    expect(guardDollars("`\\(x\\)`")).toBe("`\\(x\\)`");
+  });
 });

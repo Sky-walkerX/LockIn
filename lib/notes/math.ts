@@ -5,10 +5,13 @@
  * space, and the closing `$` isn't followed by a digit. Any other `$` is
  * escaped (`\$`) before the markdown parser (remark-math) sees it.
  *
+ * LaTeX's own delimiters, which models write as often as dollars, become
+ * dollars: `\(…\)` inline and `\[…\]` display.
+ *
  * Fenced code, inline code and `$$…$$` are left exactly as written.
  */
 export function guardDollars(markdown: string): string {
-  if (!markdown.includes("$")) return markdown;
+  if (!markdown.includes("$") && !/\\[([]/.test(markdown)) return markdown;
 
   let out = "";
   let i = 0;
@@ -46,6 +49,18 @@ export function guardDollars(markdown: string): string {
       out += markdown.slice(i, end);
       i = end;
       continue;
+    }
+
+    // \(…\) and \[…\]: maths in LaTeX's delimiters, within one paragraph.
+    if (ch === "\\" && (markdown[i + 1] === "(" || markdown[i + 1] === "[")) {
+      const display = markdown[i + 1] === "[";
+      const close = markdown.indexOf(display ? "\\]" : "\\)", i + 2);
+      const inner = close === -1 ? "" : markdown.slice(i + 2, close).trim();
+      if (inner && !/\n[ \t]*\n/.test(inner)) {
+        out += display ? `\n$$\n${inner}\n$$\n` : "$" + inner + "$";
+        i = close + 2;
+        continue;
+      }
     }
 
     // An escaped character stays escaped.
