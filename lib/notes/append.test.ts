@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendNote } from "./append";
+import { appendNote, continueNote } from "./append";
 
 const now = new Date(2026, 8, 23, 14, 0); // local 23 Sep 2026
 
@@ -19,5 +19,14 @@ describe("appendNote", () => {
   it("stamps the local date, not UTC", () => {
     const lateNight = new Date(2026, 8, 23, 23, 59);
     expect(appendNote("", "x", "from chat", lateNight)).toContain("2026-09-23");
+  });
+});
+
+describe("continueNote", () => {
+  it("adds a paragraph with no label", () => {
+    expect(continueNote("## One\n\nFirst. ", " ## Two ")).toBe("## One\n\nFirst.\n\n## Two");
+  });
+  it("starts the note when it's empty", () => {
+    expect(continueNote("", "Text")).toBe("Text");
   });
 });

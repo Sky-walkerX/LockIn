@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { takePage } from "./page";
 import type { Milestone } from "@/app/generated/prisma/client";
 import { getOrCreateInbox } from "@/lib/subjects/inbox";
-import { appendNote } from "./append";
+import { appendNote, continueNote } from "./append";
 import { WEB_SOURCE } from "./source";
 
 // Writing notes, shared by the app's API routes and the MCP server so the two
@@ -80,18 +80,20 @@ export async function insertNote(
 }
 
 /**
- * Add a labelled block to the end of a note ("From Codex · 2026-10-02"), never
- * replacing what's there. Null when the note isn't the user's.
+ * Add to the end of a note, never replacing what's there. An agent adding to
+ * a note it recorded just continues it: the note already says who wrote it.
+ * Anywhere else the addition gets a labelled block ("From Codex · 2026-10-02")
+ * so it can't pass for the user's own writing. Null when the note isn't the user's.
  */
-export async function appendToNote(userId: string, noteId: string, text: string, label: string) {
+export async function appendToNote(userId: string, noteId: string, text: string, source: string, label: string) {
   const note = await prisma.milestone.findFirst({
     where: { id: noteId, subject: { userId } },
-    select: { id: true, notes: true },
+    select: { id: true, notes: true, source: true },
   });
   if (!note) return null;
   return prisma.milestone.update({
     where: { id: note.id },
-    data: { notes: appendNote(note.notes, text, label) },
+    data: { notes: note.source === source ? continueNote(note.notes, text) : appendNote(note.notes, text, label) },
     include: { subject: { select: { id: true, title: true, isInbox: true } } },
   });
 }

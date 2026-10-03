@@ -12,3 +12,8 @@ export function appendNote(existing: string, text: string, label: string, now: D
   const block = `---\n*${label} · ${stamp}*\n\n${text.trim()}`;
   return existing.trim() ? `${existing.trim()}\n\n${block}` : block;
 }
+
+/** Plain continuation, for an author adding to their own note. */
+export function continueNote(existing: string, text: string): string {
+  return existing.trim() ? `${existing.trim()}\n\n${text.trim()}` : text.trim();
+}

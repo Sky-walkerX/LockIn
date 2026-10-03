@@ -184,7 +184,7 @@ const handler = createMcpHandler(
       {
         title: "Add to a note",
         description:
-          "Add text to the end of an existing note, under a line saying it came from you and today's date. Never replaces what's there.",
+          "Add text to the end of an existing note. Never replaces what's there. On a note you recorded it simply continues the note; on anyone else's it goes under a line saying it came from you and today's date.",
         inputSchema: z.object({
           id: z.string().min(1).describe("The note's id"),
           text: z.string().trim().min(1).max(100_000).describe("What to add, in markdown"),
@@ -193,7 +193,7 @@ const handler = createMcpHandler(
       },
       async ({ id, text: addition }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
-        const note = await appendToNote(userId, id, addition, `From ${sourceLabel(source)}`);
+        const note = await appendToNote(userId, id, addition, source, `From ${sourceLabel(source)}`);
         if (!note) return { ...text(`No note with id ${id} in this notebook.`), isError: true };
         indexAfterReply(userId, note.id);
         const url = noteUrl(origin, note.subject.id, note.subject.isInbox, note.id);

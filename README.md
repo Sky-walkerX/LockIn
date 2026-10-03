@@ -80,7 +80,7 @@ Tools:
 | `get_note` | One note, task or subtask in full by its id. A note comes with its plan: tasks, their notes and nested subtasks. |
 | `get_plan` | A subject's whole plan: each note's tasks and subtasks with what's done, plus tasks under no note. |
 | `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. |
-| `append_to_note` | Adds a dated "From Codex" block to the end of a note. Never replaces anything. |
+| `append_to_note` | Adds to the end of a note. Never replaces anything. On a note the same agent recorded it just continues it; on anyone else's it goes under a dated "From Codex" line. |
 
 Each agent gets its own token. Its notes are stamped with the token's name, and you can revoke one without touching the others. Only a hash of each token is stored. A token can make 60 requests a minute; past that it gets `429` with `Retry-After`.
 
