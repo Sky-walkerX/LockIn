@@ -56,4 +56,13 @@ describe("guardDollars (Pandoc's inline-maths rule)", () => {
   it("leaves LaTeX delimiters in code alone", () => {
     expect(guardDollars("`\\(x\\)`")).toBe("`\\(x\\)`");
   });
+
+  it("keeps display maths inside a quote", () => {
+    expect(guardDollars("> [!FIG] Bayes\n> $$P(A)$$")).toBe("> [!FIG] Bayes\n> $$\n> P(A)\n> $$");
+    expect(guardDollars("> Bayes:\n> \\[P(A)\\]\n> after")).toBe("> Bayes:\n> \n> $$\n> P(A)\n> $$\n> \n> after");
+  });
+
+  it("gives \\[…\\] in the middle of a line lines of its own", () => {
+    expect(guardDollars("so \\[x^2\\] grows")).toBe("so \n\n$$\nx^2\n$$\n\n grows");
+  });
 });

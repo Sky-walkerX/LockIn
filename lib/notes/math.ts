@@ -17,6 +17,11 @@ export function guardDollars(markdown: string): string {
   let i = 0;
   const n = markdown.length;
   const atLineStart = (at: number) => at === 0 || markdown[at - 1] === "\n";
+  // A line's quote markers and indent (`> `, `  `) up to `at`, and whether
+  // that's all there is before it.
+  const lineStartOf = (at: number) => markdown.lastIndexOf("\n", at - 1) + 1;
+  const prefixOf = (at: number) => /^[ \t>]*/.exec(markdown.slice(lineStartOf(at), at))![0];
+  const onlyPrefixBefore = (at: number) => /^[ \t>]*$/.test(markdown.slice(lineStartOf(at), at));
 
   while (i < n) {
     // Fenced code block: copy through to the closing fence.
@@ -57,7 +62,16 @@ export function guardDollars(markdown: string): string {
       const close = markdown.indexOf(display ? "\\]" : "\\)", i + 2);
       const inner = close === -1 ? "" : markdown.slice(i + 2, close).trim();
       if (inner && !/\n[ \t]*\n/.test(inner)) {
-        out += display ? `\n$$\n${inner}\n$$\n` : "$" + inner + "$";
+        if (!display) out += "$" + inner + "$";
+        else {
+          // Display maths needs lines of its own, each carrying the line's
+          // quote markers or indent so it stays inside a quote or list.
+          const q = prefixOf(i);
+          const lineEnd = markdown.indexOf("\n", close + 2);
+          const more = markdown.slice(close + 2, lineEnd === -1 ? n : lineEnd).trim();
+          const lead = onlyPrefixBefore(i) ? `\n${q}` : `\n${q}\n${q}`;
+          out += `${lead}$$\n${q}${inner}\n${q}$$\n${q}${more ? `\n${q}` : ""}`;
+        }
         i = close + 2;
         continue;
       }
@@ -71,14 +85,16 @@ export function guardDollars(markdown: string): string {
     }
 
     if (ch === "$") {
-      // A line that is only $$…$$ is display maths, as in Obsidian. remark-math
-      // reads one-line $$…$$ as inline, so put the delimiters on lines of their own.
-      if (atLineStart(i) || /^[ \t]*$/.test(markdown.slice(markdown.lastIndexOf("\n", i - 1) + 1, i))) {
+      // A line that is only $$…$$ (inside a quote too) is display maths, as in
+      // Obsidian. remark-math reads one-line $$…$$ as inline, so put the
+      // delimiters on lines of their own.
+      if (onlyPrefixBefore(i)) {
         const lineEnd = markdown.indexOf("\n", i);
         const line = markdown.slice(i, lineEnd === -1 ? n : lineEnd);
         const display = /^\$\$(.+?)\$\$[ \t]*$/.exec(line);
         if (display) {
-          out += `$$\n${display[1].trim()}\n$$`;
+          const q = prefixOf(i);
+          out += `$$\n${q}${display[1].trim()}\n${q}$$`;
           i += line.length;
           continue;
         }
