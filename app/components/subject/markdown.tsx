@@ -10,6 +10,7 @@ import "katex/dist/katex.min.css";
 import { Check, Copy } from "lucide-react";
 import { codeText } from "@/lib/notes/code-text";
 import { guardDollars } from "@/lib/notes/math";
+import { remarkFigures } from "@/lib/notes/figures";
 import { CITE_PREFIX } from "@/lib/chat/citations";
 
 // Renders milestone/task/subtask notes. Links open in a new tab; GFM enables
@@ -24,19 +25,23 @@ import { CITE_PREFIX } from "@/lib/chat/citations";
 // every fenced block and gets slow over a whole extracted book.
 // `cite` draws Ask's page citations: links to `#cite-<page>`, which
 // `linkCitations` writes, become whatever it returns.
+// `page` is the note's page, which numbers its `> [!FIG]` figures (Fig. 18.1);
+// without one they're just counted.
 export function Markdown({
   children,
   highlight = true,
   cite,
+  page,
 }: {
   children: string;
   highlight?: boolean;
   cite?: (page: number) => React.ReactNode;
+  page?: number | null;
 }) {
   return (
     <div className="lk-prose">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
+        remarkPlugins={[remarkGfm, remarkMath, [remarkFigures, { page }]]}
         // KaTeX before highlighting, so a formula is typeset rather than
         // mistaken for a code block to colour. `throwOnError: false` shows a
         // malformed formula as red source instead of breaking the note.

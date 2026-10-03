@@ -27,6 +27,8 @@ export type SharedNode = {
   priority: Priority | null;
   dueDate: string | null;
   recurrence: Recurrence | null;
+  /** A note's page in the notebook, which numbers its figures. */
+  page?: number | null;
   children: SharedNode[];
 };
 

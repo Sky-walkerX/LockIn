@@ -82,7 +82,7 @@ export function SharedView({ payload }: { payload: SharedPayload }) {
               className="lk-reading mt-4 border-t-2 pt-5"
               style={{ borderColor: "var(--c-eff)" }}
             >
-              <Markdown>{root.notes}</Markdown>
+              <Markdown page={root.page}>{root.notes}</Markdown>
             </div>
           )}
 

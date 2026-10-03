@@ -79,7 +79,7 @@ export function SharedNodeView({ node, depth }: { node: SharedNode; depth: numbe
       {node.notes && (
         <div className="lk-tsub mb-1 mr-1 pb-1" data-depth={Math.min(depth + 2, 3)}>
           <div className="rounded-md bg-muted/40 p-2.5">
-            <Markdown>{node.notes}</Markdown>
+            <Markdown page={node.page}>{node.notes}</Markdown>
           </div>
         </div>
       )}

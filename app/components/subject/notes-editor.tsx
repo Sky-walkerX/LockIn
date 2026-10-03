@@ -215,6 +215,7 @@ export function NotesEditor({
   placeholder = "Notes — markdown supported…",
   autoFocus = true,
   breadcrumb = "",
+  page,
 }: {
   value: string;
   onSave: (draft: string) => void;
@@ -225,6 +226,8 @@ export function NotesEditor({
   /** What these notes are attached to, e.g. a milestone or task title. Only
    *  the model tier uses it, to keep a continuation on topic. */
   breadcrumb?: string;
+  /** The note's page, so the preview numbers figures as the note will. */
+  page?: number | null;
 }) {
   const [draft, setDraft] = useState(value);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
@@ -318,7 +321,7 @@ export function NotesEditor({
       ) : (
         <div className="rounded-md bg-muted/40 p-2.5">
           {draft.trim() ? (
-            <Markdown>{draft}</Markdown>
+            <Markdown page={page}>{draft}</Markdown>
           ) : (
             <p className="text-xs text-muted-foreground">Nothing to preview yet.</p>
           )}

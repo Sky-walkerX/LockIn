@@ -235,6 +235,7 @@ export function NoteView({
           <NotesEditor
             value={draft.failed ?? note.notes}
             breadcrumb={note.title}
+            page={note.page}
             placeholder="Write in markdown: headings, lists, code, tables, links…"
             onSave={draft.save}
             onCancel={draft.cancel}
@@ -242,7 +243,7 @@ export function NoteView({
         ) : note.notes.trim() ? (
           <div ref={readingRef} className="lk-reading">
             {quote && <style>{PASSAGE_HIGHLIGHT_CSS}</style>}
-            <Markdown>{note.notes}</Markdown>
+            <Markdown page={note.page}>{note.notes}</Markdown>
           </div>
         ) : (
           <div className="lk-note-empty">

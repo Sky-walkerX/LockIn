@@ -118,13 +118,14 @@ export function NoteFullscreen({
           <NotesEditor
             value={draft.failed ?? note.notes}
             breadcrumb={note.title}
+            page={note.page}
             placeholder="Write in markdown…"
             onSave={draft.save}
             onCancel={draft.cancel}
           />
         ) : note.notes.trim() ? (
           <div className="lk-reading lk-reading-full">
-            <Markdown>{note.notes}</Markdown>
+            <Markdown page={note.page}>{note.notes}</Markdown>
           </div>
         ) : (
           <p className="lk-note-empty">Nothing written yet. Press Edit to start.</p>

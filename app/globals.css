@@ -120,6 +120,7 @@
   --lk-cloth-ink-2: rgb(238 240 232 / 0.66);
   --lk-label: #f7f5ee;
   --lk-label-ink: #1b2a2f;
+  --lk-tape: rgb(236 228 196 / 0.75);
 
   /* Syntax: shared by .hljs (rendered notes) and CodeMirror (notes-editor.tsx) */
   --syntax-heading: #1b2a2f;
@@ -817,6 +818,33 @@
     padding-left: 1em; margin: 0.8em 0;
     color: var(--muted-foreground); font-style: italic;
   }
+  /* A figure (`> [!FIG] caption`, lib/notes/figures.ts): a printout taped
+     into the lab book, two strips over its top edge, tilted a touch, its
+     caption under a dashed rule. Code on it loses its own box. */
+  .lk-prose .lk-fig {
+    position: relative; margin: 1.6em 0 1.4em; padding: 16px 18px 10px;
+    background: var(--card); box-shadow: var(--lk-shadow);
+    transform: rotate(-0.35deg);
+  }
+  .lk-prose .lk-fig::before, .lk-prose .lk-fig::after {
+    content: ""; position: absolute; top: -9px; width: 58px; height: 18px;
+    background: var(--lk-tape); box-shadow: 0 1px 1px rgb(0 0 0 / 0.08);
+    pointer-events: none;
+  }
+  .lk-prose .lk-fig::before { left: 16px; transform: rotate(-4deg); }
+  .lk-prose .lk-fig::after { right: 18px; transform: rotate(3deg); }
+  .lk-prose .lk-fig > .lk-code, .lk-prose .lk-fig > .lk-table-wrap, .lk-prose .lk-fig > .katex-display { margin: 0.3em 0; }
+  .lk-prose .lk-fig > :first-child { margin-top: 0; }
+  .lk-prose .lk-fig pre { background: transparent; border: 0; padding: 0; max-height: none; }
+  .lk-prose .lk-fig-cap {
+    margin: 10px 0 0; padding-top: 7px; border-top: 1px dashed var(--border);
+    font-family: var(--lk-font-display); font-weight: 600; font-size: 11.5px; line-height: 1.4;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-foreground);
+  }
+  /* Full screen's sheet is card-coloured itself, so the figure steps a shade down. */
+  .lk-fullscreen .lk-prose .lk-fig { background: var(--muted); }
+  /* On a phone the tilt would clip the card's corners against the screen edge. */
+  @media (max-width: 640px) { .lk-prose .lk-fig { transform: none; } }
   .lk-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
   /* A table wider than the column scrolls inside its own box, not off the page. */
   .lk-prose .lk-table-wrap { overflow-x: auto; margin: 0.7em 0; }
