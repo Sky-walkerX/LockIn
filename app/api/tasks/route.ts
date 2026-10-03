@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { listTasks, listTasksDue } from "@/lib/tasks/list";
+import { createTask } from "@/lib/tasks/create";
 import { z } from "zod";
 
 const TaskSchema = z.object({
@@ -55,42 +55,8 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
-  const { subjectId, milestoneId, dueDate, ...rest } = parsed.data;
-
-  // Ownership: subject must be the user's; if a milestone is given it must
-  // belong to that subject. One relation-scoped lookup covers both, run in
-  // parallel with the order aggregate to keep create latency low.
-  const ownership = milestoneId
-    ? prisma.milestone.findFirst({
-        where: { id: milestoneId, subjectId, subject: { userId } },
-        select: { id: true },
-      })
-    : prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } });
-
-  // Append to the bottom of its list (the milestone's tasks, or the loose list).
-  const [owned, last] = await Promise.all([
-    ownership,
-    prisma.task.aggregate({
-      where: { userId, subjectId, milestoneId: milestoneId ?? null },
-      _max: { order: true },
-    }),
-  ]);
-  if (!owned) {
-    return NextResponse.json(
-      { error: milestoneId ? "Milestone not found" : "Subject not found" },
-      { status: 404 },
-    );
-  }
-
-  const task = await prisma.task.create({
-    data: {
-      ...rest,
-      subjectId,
-      milestoneId: milestoneId ?? null,
-      dueDate: dueDate ? new Date(dueDate) : null,
-      order: (last._max.order ?? -1) + 1,
-      userId,
-    },
-  });
+  const task = await createTask(userId, parsed.data);
+  if (task === "subject-missing") return NextResponse.json({ error: "Subject not found" }, { status: 404 });
+  if (task === "note-missing") return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
   return NextResponse.json(task, { status: 201 });
 }

@@ -3,6 +3,8 @@ import { takePage } from "./page";
 import type { Milestone } from "@/app/generated/prisma/client";
 import { getOrCreateInbox } from "@/lib/subjects/inbox";
 import { appendNote, continueNote } from "./append";
+import { chunkSourcesOf } from "./move";
+import { replaceOnce } from "./edit";
 import { WEB_SOURCE } from "./source";
 
 // Writing notes, shared by the app's API routes and the MCP server so the two
@@ -96,4 +98,70 @@ export async function appendToNote(userId: string, noteId: string, text: string,
     data: { notes: note.source === source ? continueNote(note.notes, text) : appendNote(note.notes, text, label) },
     include: { subject: { select: { id: true, title: true, isInbox: true } } },
   });
+}
+
+/**
+ * File a note under another subject (or the Inbox). Its tasks go with it, it
+ * lands at the end of the target's notes, and its indexed chunks are dropped so
+ * they rebuild under the new subject.
+ */
+export async function moveNote(
+  userId: string,
+  id: string,
+  subjectId: string,
+): Promise<Milestone | "note-missing" | "subject-missing"> {
+  const [note, target, last] = await Promise.all([
+    prisma.milestone.findFirst({
+      where: { id, subject: { userId } },
+      select: {
+        id: true,
+        subjectId: true,
+        tasks: { select: { id: true, subtasks: { select: { id: true, children: { select: { id: true } } } } } },
+      },
+    }),
+    prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } }),
+    prisma.milestone.findFirst({ where: { subjectId }, orderBy: { order: "desc" }, select: { order: true } }),
+  ]);
+  if (!note) return "note-missing";
+  if (!target) return "subject-missing";
+  if (note.subjectId === subjectId) return (await prisma.milestone.findUnique({ where: { id } }))!;
+
+  const chunks = chunkSourcesOf(note);
+  const [moved] = await prisma.$transaction([
+    prisma.milestone.update({ where: { id }, data: { subjectId, order: last ? last.order + 1 : 0 } }),
+    prisma.task.updateMany({ where: { milestoneId: id }, data: { subjectId } }),
+    prisma.noteChunk.deleteMany({
+      where: { userId, OR: chunks.map((c) => ({ source: c.source, sourceId: { in: c.ids } })) },
+    }),
+  ]);
+  return moved;
+}
+
+export type NoteEdit = { title?: string; oldText?: string; newText?: string };
+
+/**
+ * An agent's edit to a note it recorded: a new title, one passage replaced,
+ * or both. Anyone else's note is append-only for it. The edit sends the note
+ * back to the user to witness again.
+ */
+export async function editAgentNote(userId: string, noteId: string, source: string, edit: NoteEdit) {
+  const note = await prisma.milestone.findFirst({
+    where: { id: noteId, subject: { userId } },
+    select: { id: true, title: true, notes: true, source: true },
+  });
+  if (!note) return { kind: "missing" as const };
+  if (note.source !== source) return { kind: "not-yours" as const, title: note.title };
+
+  let notes = note.notes;
+  if (edit.oldText !== undefined) {
+    const replaced = replaceOnce(notes, edit.oldText, edit.newText ?? "");
+    if (!replaced.ok) return { kind: "no-match" as const, matches: replaced.matches };
+    notes = replaced.text;
+  }
+  const updated = await prisma.milestone.update({
+    where: { id: note.id },
+    data: { title: edit.title ?? note.title, notes, witnessedAt: null },
+    include: { subject: { select: { id: true, title: true, isInbox: true } } },
+  });
+  return { kind: "edited" as const, note: updated };
 }

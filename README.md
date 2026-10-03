@@ -81,6 +81,13 @@ Tools:
 | `get_plan` | A subject's whole plan: each note's tasks and subtasks with what's done, plus tasks under no note. |
 | `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. |
 | `append_to_note` | Adds to the end of a note. Never replaces anything. On a note the same agent recorded it just continues it; on anyone else's it goes under a dated "From Codex" line. |
+| `edit_note` | Retitles a note, or replaces one exact passage in it. Only notes that agent recorded; yours stay append-only. The note goes back to "To witness". |
+| `move_note` | Files a note under another subject, or the Inbox. Its tasks go with it. |
+| `add_task` | A task under a note, or in a subject's tasks that aren't under a note. |
+| `add_subtask` | A subtask under a task, or under one of its top-level subtasks. |
+| `update_plan_item` | Ticks a task or subtask done or not done, renames it, or adds to its notes. Completing a recurring task schedules the next one. |
+
+Agents can't delete anything.
 
 Each agent gets its own token. Its notes are stamped with the token's name, and you can revoke one without touching the others. Only a hash of each token is stored. A token can make 60 requests a minute; past that it gets `429` with `Retry-After`.
 
