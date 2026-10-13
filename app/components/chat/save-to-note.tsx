@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BookmarkPlus, Check, Loader2 } from "lucide-react";
 import { api } from "@/lib/fetcher";
 import { useSubject } from "@/hooks/useSubjects";
-import { appendNote } from "@/lib/notes/append";
 
 type Target =
   | { kind: "milestone"; id: string; label: string }
@@ -43,30 +42,13 @@ export function SaveToNote({ subjectId, answer }: { subjectId: string; answer: s
     }
   }
 
-  const existingNote = (target: Target): string => {
-    if (!subject) return "";
-    if (target.kind === "milestone") {
-      return subject.milestones.find((m) => m.id === target.id)?.notes ?? "";
-    }
-    const allTasks = [...subject.milestones.flatMap((m) => m.tasks), ...subject.tasks];
-    if (target.kind === "task") {
-      return allTasks.find((t) => t.id === target.id)?.description ?? "";
-    }
-    const allSubtasks = allTasks.flatMap((t) => t.subtasks.flatMap((s) => [s, ...s.children]));
-    return allSubtasks.find((s) => s.id === target.id)?.notes ?? "";
-  };
-
+  // The server adds the answer under the note's lock, so it lands on the note
+  // as it is now rather than on this page's copy of it.
   const save = async (target: Target) => {
     setSaving(target.id);
     try {
-      const body = appendNote(existingNote(target), answer, "from chat");
-      if (target.kind === "milestone") {
-        await api.put(`/api/milestones/${target.id}`, { notes: body });
-      } else if (target.kind === "task") {
-        await api.put(`/api/tasks/${target.id}`, { description: body });
-      } else {
-        await api.put(`/api/subtasks/${target.id}`, { notes: body });
-      }
+      const path = target.kind === "milestone" ? "milestones" : target.kind === "task" ? "tasks" : "subtasks";
+      await api.put(`/api/${path}/${target.id}`, { append: { text: answer, label: "from chat" } });
       await qc.invalidateQueries({ queryKey: ["subject", subjectId] });
       setSaved(true);
       setOpen(false);

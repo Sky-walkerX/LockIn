@@ -6,7 +6,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Task } from "@/app/generated/prisma/browser";
 import { api } from "@/lib/fetcher";
 import { useTaskTimer } from "@/hooks/useTasks";
-import { appendNote } from "@/lib/notes/append";
 import { phaseAfter, phaseSeconds, secondsLeft, type FocusPrefs, type Phase } from "@/lib/focus/cycle";
 import {
   IDLE_RUN,
@@ -208,14 +207,13 @@ export function FocusProvider({ children }: { children: React.ReactNode }) {
       const taskId = recapTaskId;
       setRecapTaskId(null);
       if (!taskId || !text.trim()) return;
-      // Read the description fresh rather than from cache, so a note edited
-      // during the session isn't overwritten by a stale copy.
-      const tasks = await api.get<Task[]>("/api/tasks");
-      const task = tasks.find((t) => t.id === taskId);
+      // Added by the server under the task's lock, so it goes on the end of
+      // the notes as they are now, not a copy from before the session.
+      const task = await api
+        .put<Task>(`/api/tasks/${taskId}`, { append: { text: text.trim(), label: "from focus" } })
+        .catch(() => null);
+      // The task was deleted during the session: nowhere to file the recap.
       if (!task) return;
-      await api.put(`/api/tasks/${taskId}`, {
-        description: appendNote(task.description ?? "", text, "from focus"),
-      });
       qc.invalidateQueries({ queryKey: ["tasks"] });
       qc.invalidateQueries({ queryKey: ["subject", task.subjectId] });
     },

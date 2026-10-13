@@ -78,6 +78,9 @@ export type MilestoneUpdate = Partial<{
   weight: number;
   /** Sign off on an agent's note. */
   witnessed: true;
+  /** With `notes`: the bodyRev of the text the edit started from. The save is
+   *  refused (409) if the note has changed since. */
+  base: string;
 }>;
 
 // The optimistic patch plus the server's returned row cover every field here,
@@ -90,7 +93,8 @@ export function useUpdateMilestone() {
     mutationFn: ({ id, data }: { id: string; data: MilestoneUpdate }) =>
       api.put<Milestone>(`/api/milestones/${id}`, data),
     onMutate: async ({ id, data }) => {
-      const { reviewDueAt, witnessed, ...rest } = data;
+      const { reviewDueAt, witnessed, base, ...rest } = data;
+      void base;
       const patch: Partial<Milestone> = { ...rest };
       if (reviewDueAt !== undefined) patch.reviewDueAt = reviewDueAt ? new Date(reviewDueAt) : null;
       if (witnessed) patch.witnessedAt = new Date();

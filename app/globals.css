@@ -551,6 +551,22 @@
   .lk-reading .lk-prose pre { font-size: 14px; }
   .lk-note-empty { display: grid; justify-items: start; gap: 12px; padding: 8px 0; font-family: var(--lk-font-prose); font-style: italic; color: var(--muted-foreground); font-size: 17px; }
 
+  /* A save was refused because the note changed under the edit. The newer
+     note is kept a click away, on its own sheet, while the editor holds the
+     user's text. */
+  .lk-note-conflict {
+    margin-bottom: 14px; padding: 10px 14px;
+    border: 1px solid var(--lk-stamp); border-radius: 2px; background: var(--card);
+    font-size: 14.5px; line-height: 1.45;
+  }
+  .lk-note-conflict b { font-weight: 600; }
+  .lk-note-conflict summary { margin-top: 8px; cursor: pointer; font-weight: 500; color: var(--muted-foreground); }
+  .lk-note-conflict summary:hover { color: var(--foreground); }
+  .lk-note-conflict .lk-reading {
+    margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--border);
+    max-height: 340px; overflow-y: auto;
+  }
+
   /* Subject colour, set with `style="--c: #hex"` on the element or an ancestor
      with .lk-subject. Mixed a step toward the ink so it reads on both papers. */
   .lk-subject { --c-eff: color-mix(in oklab, var(--c) 86%, var(--foreground)); }

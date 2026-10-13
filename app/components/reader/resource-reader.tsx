@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Highlighter, Loader2, Sparkles, X } from "lucide-react";
 import { api } from "@/lib/fetcher";
-import { appendNote } from "@/lib/notes/append";
 import { findSection, splitSections } from "@/lib/reader/sections";
 import { useIngestResource, useResourceContent } from "@/hooks/useResources";
 import type { SubjectDetail } from "@/hooks/useSubjects";
@@ -241,16 +240,15 @@ function HighlightToNote({
     if (!target) return;
     setState("saving");
     try {
-      // Read the note fresh, not from cache, so an edit made elsewhere since
-      // the page loaded isn't overwritten.
-      const fresh = await api.get<SubjectDetail>(`/api/subjects/${subject.id}`);
-      const existing = fresh.milestones.find((m) => m.id === target)?.notes ?? "";
       const quote = selection.text
         .split("\n")
         .map((l) => `> ${l}`)
         .join("\n");
-      const notes = appendNote(existing, `${quote}\n\n— [${source.title}](${source.url})`, "highlight");
-      await api.put(`/api/milestones/${target}`, { notes });
+      // Added by the server under the note's lock, so it goes on the end of
+      // the note as it is now, whatever was written to it since the page loaded.
+      await api.put(`/api/milestones/${target}`, {
+        append: { text: `${quote}\n\n— [${source.title}](${source.url})`, label: "highlight" },
+      });
       try {
         localStorage.setItem(lastTargetKey(subject.id), target);
       } catch {}

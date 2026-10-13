@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Minimize2, Pencil } from "lucide-react";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
+import { NoteConflict } from "./note-conflict";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
 import { useAgo } from "@/app/components/clock";
@@ -28,7 +29,7 @@ export function NoteFullscreen({
   onClose: () => void;
 }) {
   const ago = useAgo();
-  const draft = useNoteDraft(note.id);
+  const draft = useNoteDraft(note);
   const sheetRef = useRef<HTMLDivElement>(null);
   // Whatever opened the sheet (its Full screen button) gets focus back. Read
   // on the first render, before the sheet takes focus.
@@ -114,6 +115,7 @@ export function NoteFullscreen({
         </h1>
         {!isOwnNote(note.source) && <p className="lk-provenance">Recorded by {sourceLabel(note.source)}</p>}
         <div className="lk-fullscreen-rule" />
+        {draft.editing && draft.conflict && <NoteConflict note={note} />}
         {draft.editing ? (
           <NotesEditor
             value={draft.failed ?? note.notes}

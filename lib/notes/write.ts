@@ -5,6 +5,7 @@ import { getOrCreateInbox } from "@/lib/subjects/inbox";
 import { appendNote, continueNote } from "./append";
 import { chunkSourcesOf } from "./move";
 import { replaceOnce } from "./edit";
+import { bodyRev } from "./revision";
 import { WEB_SOURCE } from "./source";
 
 // Writing notes, shared by the app's API routes and the MCP server so the two
@@ -81,6 +82,38 @@ export async function insertNote(
   });
 }
 
+const WITH_SUBJECT = { subject: { select: { id: true, title: true, isInbox: true } } } as const;
+
+type HeldNote = { id: string; title: string; notes: string; source: string | null };
+type NoteChange<T> = { write: { title?: string; notes?: string; witnessedAt?: null } } | { leave: T };
+
+/**
+ * Changes one of the user's notes from what it says now, holding its row from
+ * the read to the write. A note's body is written whole, so two writers at
+ * once (two agents, or an agent and the editor) would otherwise both start
+ * from the same text and the second would erase the first. With the row held
+ * they take turns, and each builds on what the other wrote.
+ *
+ * `change` returns what to write, or `leave` with a reason to write nothing.
+ * The lock lasts for one short transaction, which the transaction pooler
+ * allows (as in lib/subjects/inbox.ts).
+ */
+async function rewriteNote<T>(userId: string, noteId: string, change: (note: HeldNote) => NoteChange<T>) {
+  return prisma.$transaction(async (tx) => {
+    const [note] = await tx.$queryRaw<HeldNote[]>`
+      SELECT m."id", m."title", m."notes", m."source"
+      FROM "Milestone" m
+      JOIN "Subject" s ON s."id" = m."subjectId"
+      WHERE m."id" = ${noteId} AND s."userId" = ${userId}
+      FOR UPDATE OF m`;
+    if (!note) return { kind: "missing" as const };
+    const next = change(note);
+    if ("leave" in next) return { kind: "left" as const, why: next.leave };
+    const written = await tx.milestone.update({ where: { id: note.id }, data: next.write, include: WITH_SUBJECT });
+    return { kind: "written" as const, note: written };
+  });
+}
+
 /**
  * Add to the end of a note, never replacing what's there. An agent adding to
  * a note it recorded just continues it: the note already says who wrote it.
@@ -88,16 +121,36 @@ export async function insertNote(
  * so it can't pass for the user's own writing. Null when the note isn't the user's.
  */
 export async function appendToNote(userId: string, noteId: string, text: string, source: string, label: string) {
-  const note = await prisma.milestone.findFirst({
-    where: { id: noteId, subject: { userId } },
-    select: { id: true, notes: true, source: true },
-  });
-  if (!note) return null;
-  return prisma.milestone.update({
-    where: { id: note.id },
-    data: { notes: note.source === source ? continueNote(note.notes, text) : appendNote(note.notes, text, label) },
-    include: { subject: { select: { id: true, title: true, isInbox: true } } },
-  });
+  const result = await rewriteNote(userId, noteId, (note) => ({
+    write: { notes: note.source === source ? continueNote(note.notes, text) : appendNote(note.notes, text, label) },
+  }));
+  return result.kind === "written" ? result.note : null;
+}
+
+/**
+ * A labelled block at the end of a note, for what the app files into one: a
+ * chat answer ("from chat · 2026-10-02"), a highlight. `day` is the user's own
+ * date. Null when the note isn't the user's.
+ */
+export async function appendBlockToNote(userId: string, noteId: string, text: string, label: string, day: string) {
+  const result = await rewriteNote(userId, noteId, (note) => ({ write: { notes: appendNote(note.notes, text, label, day) } }));
+  return result.kind === "written" ? result.note : null;
+}
+
+/**
+ * The editor's save: the whole body, written only if the note still says what
+ * the edit started from (`base`, its bodyRev). Otherwise someone added to it
+ * or changed it meanwhile, and the caller gets the note as it stands instead
+ * of overwriting them.
+ */
+export async function saveNoteBody(userId: string, noteId: string, notes: string, base: string) {
+  const result = await rewriteNote(userId, noteId, (note) =>
+    bodyRev(note.notes) === base ? { write: { notes } } : { leave: "changed" as const },
+  );
+  if (result.kind === "written") return { kind: "saved" as const, note: result.note };
+  if (result.kind === "missing") return result;
+  const current = await prisma.milestone.findFirst({ where: { id: noteId, subject: { userId } } });
+  return current ? { kind: "conflict" as const, current } : { kind: "missing" as const };
 }
 
 /**
@@ -144,24 +197,20 @@ export type NoteEdit = { title?: string; oldText?: string; newText?: string };
  * or both. Anyone else's note is append-only for it. The edit sends the note
  * back to the user to witness again.
  */
-export async function editAgentNote(userId: string, noteId: string, source: string, edit: NoteEdit) {
-  const note = await prisma.milestone.findFirst({
-    where: { id: noteId, subject: { userId } },
-    select: { id: true, title: true, notes: true, source: true },
-  });
-  if (!note) return { kind: "missing" as const };
-  if (note.source !== source) return { kind: "not-yours" as const, title: note.title };
+type EditRefused = { kind: "not-yours"; title: string } | { kind: "no-match"; matches: number };
 
-  let notes = note.notes;
-  if (edit.oldText !== undefined) {
-    const replaced = replaceOnce(notes, edit.oldText, edit.newText ?? "");
-    if (!replaced.ok) return { kind: "no-match" as const, matches: replaced.matches };
-    notes = replaced.text;
-  }
-  const updated = await prisma.milestone.update({
-    where: { id: note.id },
-    data: { title: edit.title ?? note.title, notes, witnessedAt: null },
-    include: { subject: { select: { id: true, title: true, isInbox: true } } },
+export async function editAgentNote(userId: string, noteId: string, source: string, edit: NoteEdit) {
+  const result = await rewriteNote<EditRefused>(userId, noteId, (note) => {
+    if (note.source !== source) return { leave: { kind: "not-yours", title: note.title } };
+    let notes = note.notes;
+    if (edit.oldText !== undefined) {
+      const replaced = replaceOnce(notes, edit.oldText, edit.newText ?? "");
+      if (!replaced.ok) return { leave: { kind: "no-match", matches: replaced.matches } };
+      notes = replaced.text;
+    }
+    return { write: { title: edit.title ?? note.title, notes, witnessedAt: null } };
   });
-  return { kind: "edited" as const, note: updated };
+  if (result.kind === "missing") return result;
+  if (result.kind === "left") return result.why;
+  return { kind: "edited" as const, note: result.note };
 }

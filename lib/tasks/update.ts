@@ -2,6 +2,7 @@ import { addDays, addWeeks, addMonths } from "date-fns";
 import prisma from "@/lib/prisma";
 import type { Prisma, Recurrence, Subtask, Task } from "@/app/generated/prisma/client";
 import { setClause } from "@/lib/sql";
+import { appendNote, continueNote } from "@/lib/notes/append";
 
 export type TaskPatch = {
   title?: string;
@@ -139,4 +140,37 @@ export async function updateSubtask(userId: string, id: string, patch: SubtaskPa
     userId,
   );
   return subtask ?? null;
+}
+
+/** A dated, labelled block ("from focus · 2026-10-02"); without one the text simply continues the notes. */
+export type AppendBlock = { label: string; day: string };
+
+const added = (existing: string, text: string, block?: AppendBlock) =>
+  block ? appendNote(existing, text, block.label, block.day) : continueNote(existing, text);
+
+/**
+ * Adds to the end of a task's notes with its row held from the read to the
+ * write, so two additions at once both land (as lib/notes/write.ts does for
+ * notes). Null when the task isn't the user's.
+ */
+export async function appendToTask(userId: string, id: string, text: string, block?: AppendBlock): Promise<Task | null> {
+  return prisma.$transaction(async (tx) => {
+    const [row] = await tx.$queryRaw<{ description: string | null }[]>`
+      SELECT "description" FROM "Task" WHERE "id" = ${id} AND "userId" = ${userId} FOR UPDATE`;
+    if (!row) return null;
+    return tx.task.update({ where: { id }, data: { description: added(row.description ?? "", text, block) } });
+  });
+}
+
+/** The same for a subtask, scoped through its task. */
+export async function appendToSubtask(userId: string, id: string, text: string, block?: AppendBlock): Promise<Subtask | null> {
+  return prisma.$transaction(async (tx) => {
+    const [row] = await tx.$queryRaw<{ notes: string }[]>`
+      SELECT s."notes" FROM "Subtask" s
+      JOIN "Task" t ON t."id" = s."taskId"
+      WHERE s."id" = ${id} AND t."userId" = ${userId}
+      FOR UPDATE OF s`;
+    if (!row) return null;
+    return tx.subtask.update({ where: { id }, data: { notes: added(row.notes, text, block) } });
+  });
 }

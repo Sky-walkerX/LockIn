@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
-import { updateTask } from "@/lib/tasks/update";
+import { appendToTask, updateTask } from "@/lib/tasks/update";
+import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import { z } from "zod";
 
 const UpdateTaskSchema = z.object({
@@ -14,6 +15,8 @@ const UpdateTaskSchema = z.object({
   milestoneId: z.string().nullable().optional(),
   timeSpent: z.number().int().nonnegative().nullable().optional(),
   recurrence: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
+  // A labelled block added to the end of the notes ("from focus", "from chat").
+  append: z.object({ text: z.string().trim().min(1).max(100_000), label: z.string().trim().min(1).max(40) }).optional(),
 });
 
 // PUT /api/tasks/[id]
@@ -27,7 +30,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const task = await updateTask(userId, id, parsed.data);
+  const { append, ...patch } = parsed.data;
+  // An addition builds on the notes as they are now, so it takes the row lock.
+  const appended = append
+    ? await appendToTask(userId, id, append.text, { label: append.label, day: localDay(request.cookies.get(ZONE_COOKIE)?.value) })
+    : null;
+  if (append && !appended) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const updated = await updateTask(userId, id, patch);
+  const task = updated === "empty" && appended ? appended : updated;
   if (task === "empty") return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(task);

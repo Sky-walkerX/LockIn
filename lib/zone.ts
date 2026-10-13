@@ -55,3 +55,8 @@ export function todayIn(timeZone: string, now: Date = new Date()): { day: string
   end = wallEnd - offsetAt(new Date(end), timeZone);
   return { day, endOfDay: new Date(end) };
 }
+
+/** The user's date (yyyy-MM-dd) now, from the lk-tz cookie's value; UTC's without one. */
+export function localDay(cookieZone: string | undefined, now: Date = new Date()): string {
+  return todayIn(resolveZone(cookieZone), now)!.day;
+}

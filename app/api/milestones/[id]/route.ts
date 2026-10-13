@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { setClause } from "@/lib/sql";
 import { firstReview } from "@/lib/review/schedule";
+import { appendBlockToNote, saveNoteBody } from "@/lib/notes/write";
+import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import type { Milestone } from "@/app/generated/prisma/client";
 import { z } from "zod";
 
@@ -18,6 +20,11 @@ const UpdateMilestoneSchema = z.object({
   weight: z.number().positive().max(10_000).optional(),
   // Signing off on an agent's note. Only ever set, never cleared.
   witnessed: z.literal(true).optional(),
+  // With `notes`: the bodyRev of the text the edit started from. The body is
+  // saved only if the note still says that (lib/notes/revision.ts).
+  base: z.string().max(64).optional(),
+  // A labelled block added to the end of the body ("from chat", "highlight").
+  append: z.object({ text: z.string().trim().min(1).max(100_000), label: z.string().trim().min(1).max(40) }).optional(),
 });
 
 // See the tasks route: an enum column needs its placeholder cast, or Postgres
@@ -38,7 +45,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { reviewDueAt, witnessed, ...rest } = parsed.data;
+  const { reviewDueAt, witnessed, base, append, ...rest } = parsed.data;
+
+  // Both of these build on what the note says now, so they go through the
+  // row lock in lib/notes/write.ts rather than the single statement below.
+  if (append) {
+    const day = localDay(request.cookies.get(ZONE_COOKIE)?.value);
+    const note = await appendBlockToNote(userId, id, append.text, append.label, day);
+    if (!note) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(withoutSubject(note));
+  }
+  if (base !== undefined && rest.notes !== undefined) {
+    const saved = await saveNoteBody(userId, id, rest.notes, base);
+    if (saved.kind === "missing") return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (saved.kind === "conflict") {
+      return NextResponse.json({ error: "This note changed while you were editing it", current: saved.current }, { status: 409 });
+    }
+    delete rest.notes;
+    const more = witnessed || reviewDueAt !== undefined || Object.values(rest).some((v) => v !== undefined);
+    if (!more) return NextResponse.json(withoutSubject(saved.note));
+  }
+
   const data: Record<string, unknown> = { ...rest };
   if (witnessed) data.witnessedAt = new Date();
   if (reviewDueAt !== undefined) data.reviewDueAt = reviewDueAt ? new Date(reviewDueAt) : null;
@@ -86,6 +113,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   );
   if (!milestone) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(milestone);
+}
+
+// The locked writes read the note's subject along with it; the client's note has none.
+function withoutSubject<T extends { subject: unknown }>(note: T): Omit<T, "subject"> {
+  const { subject, ...row } = note;
+  void subject;
+  return row;
 }
 
 // DELETE /api/milestones/[id] - its tasks survive, untied from any note (milestoneId set to null)

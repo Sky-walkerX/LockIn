@@ -6,9 +6,8 @@ import prisma from "@/lib/prisma";
 import { authenticateToken, MCP_REQUESTS_PER_MINUTE, type TokenAuth } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
 import { appendToNote, editAgentNote, insertNote, matchSubject, moveNote, placeNote } from "@/lib/notes/write";
-import { continueNote } from "@/lib/notes/append";
 import { createSubtask, createTask } from "@/lib/tasks/create";
-import { updateSubtask, updateTask } from "@/lib/tasks/update";
+import { appendToSubtask, appendToTask, updateSubtask, updateTask } from "@/lib/tasks/update";
 import { pagesOf } from "@/lib/notes/page";
 import { sourceLabel } from "@/lib/notes/source";
 import { embedOnServer } from "@/lib/rag/ingest";
@@ -357,31 +356,33 @@ const handler = createMcpHandler(
           return failed("Nothing to change: give done, title or add_notes.");
         }
         const [task, subtask] = await Promise.all([
-          prisma.task.findFirst({ where: { id, userId }, select: { description: true, subjectId: true } }),
-          prisma.subtask.findFirst({ where: { id, task: { userId } }, select: { notes: true, task: { select: { subjectId: true } } } }),
+          prisma.task.findFirst({ where: { id, userId }, select: { subjectId: true } }),
+          prisma.subtask.findFirst({ where: { id, task: { userId } }, select: { task: { select: { subjectId: true } } } }),
         ]);
         const changes = [
           done === true ? "ticked done" : done === false ? "unticked" : null,
           title !== undefined ? "renamed" : null,
           add_notes !== undefined ? "notes added" : null,
         ].filter(Boolean).join(", ");
+        const fields = done !== undefined || title !== undefined;
         if (task) {
-          const updated = await updateTask(userId, id, {
-            isCompleted: done,
-            title,
-            description: add_notes !== undefined ? continueNote(task.description ?? "", add_notes) : undefined,
-          });
-          if (!updated || updated === "empty") return failed(`No task or subtask with id ${id} in this notebook.`);
+          // The addition goes in under a row lock, so it can't erase one made at the same moment.
+          let updated = add_notes !== undefined ? await appendToTask(userId, id, add_notes) : null;
+          if (fields) {
+            const changed = await updateTask(userId, id, { isCompleted: done, title });
+            updated = changed && changed !== "empty" ? changed : null;
+          }
+          if (!updated) return failed(`No task or subtask with id ${id} in this notebook.`);
           const url = planItemUrl(origin, task.subjectId, "task", id);
           return text(`Task "${updated.title}": ${changes}.${url ? `\n${url}` : ""}`);
         }
         if (subtask) {
-          const updated = await updateSubtask(userId, id, {
-            isCompleted: done,
-            title,
-            notes: add_notes !== undefined ? continueNote(subtask.notes, add_notes) : undefined,
-          });
-          if (!updated || updated === "empty") return failed(`No task or subtask with id ${id} in this notebook.`);
+          let updated = add_notes !== undefined ? await appendToSubtask(userId, id, add_notes) : null;
+          if (fields) {
+            const changed = await updateSubtask(userId, id, { isCompleted: done, title });
+            updated = changed && changed !== "empty" ? changed : null;
+          }
+          if (!updated) return failed(`No task or subtask with id ${id} in this notebook.`);
           const url = planItemUrl(origin, subtask.task.subjectId, "subtask", id);
           return text(`Subtask "${updated.title}": ${changes}.${url ? `\n${url}` : ""}`);
         }

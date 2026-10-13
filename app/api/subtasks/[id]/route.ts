@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
-import { updateSubtask } from "@/lib/tasks/update";
+import { appendToSubtask, updateSubtask } from "@/lib/tasks/update";
+import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import { z } from "zod";
 
 const UpdateSubtaskSchema = z.object({
@@ -9,6 +10,8 @@ const UpdateSubtaskSchema = z.object({
   notes: z.string().optional(),
   isCompleted: z.boolean().optional(),
   order: z.number().int().optional(),
+  // A labelled block added to the end of the notes ("from focus", "from chat").
+  append: z.object({ text: z.string().trim().min(1).max(100_000), label: z.string().trim().min(1).max(40) }).optional(),
 });
 
 // PUT /api/subtasks/[id] - update title/notes/completion/order.
@@ -23,7 +26,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const subtask = await updateSubtask(userId, id, parsed.data);
+  const { append, ...patch } = parsed.data;
+  // An addition builds on the notes as they are now, so it takes the row lock.
+  const appended = append
+    ? await appendToSubtask(userId, id, append.text, { label: append.label, day: localDay(request.cookies.get(ZONE_COOKIE)?.value) })
+    : null;
+  if (append && !appended) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const updated = await updateSubtask(userId, id, patch);
+  const subtask = updated === "empty" && appended ? appended : updated;
   if (subtask === "empty") return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   if (!subtask) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(subtask);

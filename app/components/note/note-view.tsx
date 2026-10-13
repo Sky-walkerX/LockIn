@@ -8,6 +8,7 @@ import { useAgo } from "@/app/components/clock";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
+import { NoteConflict } from "./note-conflict";
 import { useChatPanel } from "@/app/components/chat/chat-provider";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
@@ -44,7 +45,7 @@ export function NoteView({
   const ago = useAgo();
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
-  const draft = useNoteDraft(note.id);
+  const draft = useNoteDraft(note);
   const { open: openChat } = useChatPanel();
   const [renaming, setRenaming] = useState(false);
   const [titleVal, setTitleVal] = useState(note.title);
@@ -231,6 +232,7 @@ export function NoteView({
       </div>
 
       <div className="lk-note-body">
+        {draft.editing && draft.conflict && <NoteConflict note={note} />}
         {draft.editing ? (
           <NotesEditor
             value={draft.failed ?? note.notes}
