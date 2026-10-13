@@ -17,9 +17,10 @@
  * same account in Firefox, and have retrieval keep working instead of
  * re-embedding the whole corpus on every browser switch.
  *
- * Changing this string invalidates every stored vector: `diffFreshness` marks
- * a chunk stale when its `embeddingModel` differs, so the corpus re-indexes
- * itself lazily and incrementally. That is the intended migration path.
+ * Changing this string invalidates every stored vector: a source counts as
+ * indexed only under the current model (`lib/rag/freshness.ts`), so the corpus
+ * re-indexes itself lazily and incrementally. That is the intended migration
+ * path.
  */
 export const EMBEDDING_MODEL = "snowflake-arctic-embed-s";
 export const EMBEDDING_DIMS = 384;

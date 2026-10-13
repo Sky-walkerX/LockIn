@@ -118,6 +118,12 @@ Limits per network go by the visitor's address, which LockIn only knows from the
 
 A request's fields are capped too (a note's body at a million characters, a title at 300). The request body itself is not: let the proxy cap it, at 60 MB or more so PDF uploads still fit (`request_body` in Caddy, `client_max_body_size` in nginx).
 
+### How big a notebook can get
+
+Search by meaning scores a question against every passage of the account's notebook, inside Postgres. Measured on a laptop with the bundled database: 12 ms for an ordinary notebook (a few hundred passages), 0.1 s for 300 notes and three textbooks (3,900 passages), 0.65 s for 2,000 notes and twenty textbooks (26,000 passages). It grows in a straight line with one account's passages and doesn't depend on how many accounts there are. Past that size the stored vectors want pgvector, which isn't used yet.
+
+A subject's page sends all of its notes at once: fine for hundreds of notes in a subject, slow in the thousands (2,000 notes is about 10 MB). Split a subject that large.
+
 ## Connect your agents (MCP)
 
 LockIn runs an MCP server at `/api/mcp` (Streamable HTTP). In LockIn, open **Settings → Connect your agents**, create a token named after the agent, and copy the setup it shows. For Claude Code:

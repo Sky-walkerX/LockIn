@@ -60,7 +60,7 @@ model User {
   // When the user proved the address is theirs: by the link sent at sign-up,
   // by resetting a password, or by signing in with Google. Null on an account
   // whose address was never proven, which Google sign-in won't attach to.
-  emailVerifiedAt DateTime?
+  emailVerifiedAt   DateTime?
   // Sessions and tokens issued before this stop working (lib/accounts/session.ts).
   passwordChangedAt DateTime?
 
@@ -69,16 +69,17 @@ model User {
   // pointing at the same note after others are moved or deleted.
   nextPage Int @default(1)
 
-  subjects      Subject[]
-  tasks         Task[]
-  resources     Resource[]
-  conversations Conversation[]
-  noteChunks    NoteChunk[]
-  shares        Share[]
-  apiTokens     ApiToken[]
-  oauthGrants   OAuthGrant[]
-  emailTokens   EmailToken[]
-  storedFiles   StoredFile[]
+  subjects       Subject[]
+  tasks          Task[]
+  resources      Resource[]
+  conversations  Conversation[]
+  noteChunks     NoteChunk[]
+  shares         Share[]
+  apiTokens      ApiToken[]
+  oauthGrants    OAuthGrant[]
+  emailTokens    EmailToken[]
+  storedFiles    StoredFile[]
+  indexedSources IndexedSource[]
 }
 
 // How many times something was done lately, for the limits in lib/limits: one
@@ -127,14 +128,14 @@ model EmailToken {
 // registered by DCR, or known by the URL of its Client ID Metadata Document,
 // which is then its id. Clients aren't tied to a user; grants are.
 model OAuthClient {
-  id           String   @id // DCR: generated; CIMD: the metadata document's URL
+  id           String    @id // DCR: generated; CIMD: the metadata document's URL
   name         String
   redirectUris String[]
   // "dcr" or "cimd"
   kind         String
   // When a CIMD document was last fetched, so it's re-read now and then.
   fetchedAt    DateTime?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 
   codes  OAuthCode[]
   grants OAuthGrant[]
@@ -200,15 +201,15 @@ model OAuthToken {
 // shown once, when it's created. The name doubles as the source stamped on the
 // notes the agent saves ("Claude Code" -> "claude-code").
 model ApiToken {
-  id         String    @id @default(uuid())
-  name       String
-  tokenHash  String    @unique
+  id          String    @id @default(uuid())
+  name        String
+  tokenHash   String    @unique
   // The first characters of the secret, so a list can tell tokens apart.
-  preview    String
-  createdAt  DateTime  @default(now())
-  lastUsedAt DateTime?
+  preview     String
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
   // Revoked tokens stay listed (with when) rather than vanishing.
-  revokedAt  DateTime?
+  revokedAt   DateTime?
   // The rate limit's current one-minute window: when it started and how many
   // MCP requests it has seen (lib/auth.ts authenticateToken).
   windowStart DateTime?
@@ -535,13 +536,36 @@ model NoteChunk {
 
   createdAt DateTime @default(now())
 
-  // Identifies a row within its source. Re-indexing deletes every row for a
-  // source and reinserts, rather than upserting per ordinal: edited text often
-  // chunks into fewer pieces than before, and upserting would leave the surplus
-  // high-ordinal rows behind as stale passages that still score and still get
-  // retrieved.
+  // Identifies a row within its source. A long document is written a batch of
+  // passages at a time, so rows of one source arrive across several writes;
+  // what makes them one generation is `contentHash`. Writing a passage deletes
+  // the source's rows that carry any other hash first: edited text often
+  // chunks into fewer pieces than before, and the surplus high-ordinal rows
+  // would otherwise stay behind as stale passages that still get retrieved.
   @@unique([source, sourceId, ordinal])
   @@index([userId, subjectId])
   // A model change invalidates every vector; this finds them.
   @@index([userId, embeddingModel])
+}
+
+// What the indexer found the last time it chunked a source: the text it saw
+// (as a hash), the model it was for, and how many passages that text makes.
+// A source is indexed when NoteChunk holds that many rows with that hash, so
+// the check is a join in SQL and no text has to be read to make it. It's also
+// the only place a source that chunks to nothing can be remembered: "Read
+// chapter 3" yields no passage, and without a row here it would be looked at
+// again on every pass and counted as outstanding forever.
+model IndexedSource {
+  source   ChunkSource
+  sourceId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  contentHash    String
+  embeddingModel String
+  chunkCount     Int
+
+  @@id([source, sourceId])
+  @@index([userId])
 }

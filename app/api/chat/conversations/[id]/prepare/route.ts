@@ -6,7 +6,8 @@ import { assembleRetrievalPrompt } from "@/lib/chat/retrieve";
 import { loadContextSubjects } from "@/lib/chat/subjects";
 import { RETRIEVAL_SYSTEM_PROMPT, SYSTEM_PROMPT } from "@/lib/chat/prompt";
 import type { PromptMessage } from "@/lib/chat/types";
-import { EMBEDDING_DIMS, listScorableChunks } from "@/lib/rag/sources";
+import { EMBEDDING_DIMS, rankChunks } from "@/lib/rag/sources";
+import { MAX_PER_SOURCE, MAX_TOTAL } from "@/lib/rag/select";
 import { z } from "zod";
 
 const PrepareSchema = z.object({
@@ -71,16 +72,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const isFirstTurn = history.length === 0;
   const shouldTitle = isFirstTurn && conversation.title === "New chat";
 
-  // Retrieval can't run without a query vector, and `assembleRetrievalPrompt`
-  // discards the chunks entirely in digest mode. Reading every embedding to
-  // throw it away costs nothing at a typical 60–80 chunks per user and
-  // megabytes per turn once a corpus grows, so the read is conditional.
+  // Retrieval can't run without a query vector. The database ranks the
+  // passages and returns the few that could be selected, so this costs a
+  // scan there and a dozen rows here, whatever the notebook's size.
   const canRetrieve = ragEnabled && !!queryEmbedding?.length;
 
   // The subject and chunk reads don't depend on the write, so they overlap.
   const [subjects, chunks] = await Promise.all([
     loadContextSubjects(userId, conversation.contextSubjectIds, conversation.subjectId),
-    canRetrieve ? listScorableChunks(userId, conversation.contextSubjectIds) : Promise.resolve([]),
+    canRetrieve
+      ? rankChunks(userId, queryEmbedding, { subjectIds: conversation.contextSubjectIds, limit: MAX_TOTAL, perSource: MAX_PER_SOURCE })
+      : Promise.resolve([]),
     prisma.$transaction([
       isRetry
         ? prisma.chatMessage.update({ where: { id: last.id }, data: { content } })

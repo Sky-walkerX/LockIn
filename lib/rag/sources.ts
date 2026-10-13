@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma/client";
 import { chunkSource, hashContent, type Chunk, type ChunkSourceType } from "./chunk";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "./embedding-model";
 import type { PageRef } from "@/lib/chat/refs";
@@ -6,9 +7,9 @@ import type { PageRef } from "@/lib/chat/refs";
 export { EMBEDDING_DIMS, EMBEDDING_MODEL };
 
 /**
- * Reads the five source tables that get chunked and embedded, and compares
- * what's live against what's stored: the freshness check. Every read is
- * filtered by `userId`, mirroring `subjects.ts`.
+ * The records that get chunked and embedded, read for indexing, and the
+ * passages ranked for a query. Every read is filtered by `userId`. Which
+ * sources need indexing is decided in `freshness.ts`, without reading them.
  */
 
 export type LiveSource = {
@@ -22,8 +23,8 @@ export type LiveSource = {
   resourceTitle?: string | null;
   text: string;
   contentHash: string;
-  /** Chunked here rather than in `/api/rag/pending`, because whether a source
-   *  chunks to anything at all decides if it belongs in this list. */
+  /** What the text chunks into. Empty when it's too short to index: "Read
+   *  chapter 3" is an ordinary task description that makes no passage. */
   chunks: Chunk[];
 };
 
@@ -31,216 +32,123 @@ export function sourceKey(source: ChunkSourceType, sourceId: string): string {
   return `${source}:${sourceId}`;
 }
 
+const SUBJECT_TITLE = { select: { id: true, title: true } } as const;
+
 /**
- * Every live source record that actually yields chunks, for this user.
- *
- * Titles aren't chunked, so a record with an empty note body has
- * nothing to be stale about. Neither does one whose text is too short to
- * survive the chunker's minimum — "Read chapter 3" is a perfectly ordinary
- * task description that produces zero passages. Counting those as sources
- * left them permanently stale: never indexable, never indexed, and reported
- * forever as outstanding work by `/api/rag/status`. The chunker is the only
- * thing that can answer whether a source yields anything, so it runs here and
- * the result rides along on `chunks` for `/api/rag/pending` to reuse.
+ * These sources with their text, chunked: the ones named that still exist,
+ * are the user's, and have something written in them. Reading text is the
+ * expensive part of indexing (a source can be a whole textbook), so this is
+ * called for the few sources about to be embedded and never for the notebook.
  */
-export async function listLiveSources(userId: string): Promise<LiveSource[]> {
-  const subjects = await prisma.subject.findMany({
-    where: { userId },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      milestones: {
-        select: {
-          id: true,
-          title: true,
-          notes: true,
-          tasks: {
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              subtasks: {
-                select: { id: true, title: true, notes: true },
-              },
-            },
+export async function loadSources(userId: string, keys: { source: ChunkSourceType; sourceId: string }[]): Promise<LiveSource[]> {
+  const ids = (source: ChunkSourceType) => [...new Set(keys.filter((k) => k.source === source).map((k) => k.sourceId))];
+  const [subjectIds, noteIds, taskIds, subtaskIds, resourceIds, documentIds] = [
+    ids("SUBJECT"),
+    ids("MILESTONE"),
+    ids("TASK"),
+    ids("SUBTASK"),
+    ids("RESOURCE"),
+    ids("RESOURCE_DOC"),
+  ];
+
+  const [subjects, notes, tasks, subtasks, resources, documents] = await Promise.all([
+    subjectIds.length
+      ? prisma.subject.findMany({ where: { id: { in: subjectIds }, userId }, select: { id: true, title: true, description: true } })
+      : [],
+    noteIds.length
+      ? prisma.milestone.findMany({
+          where: { id: { in: noteIds }, subject: { userId } },
+          select: { id: true, title: true, notes: true, subject: SUBJECT_TITLE },
+        })
+      : [],
+    taskIds.length
+      ? prisma.task.findMany({
+          where: { id: { in: taskIds }, subject: { userId } },
+          select: { id: true, title: true, description: true, subject: SUBJECT_TITLE, milestone: { select: { title: true } } },
+        })
+      : [],
+    subtaskIds.length
+      ? prisma.subtask.findMany({
+          where: { id: { in: subtaskIds }, task: { subject: { userId } } },
+          select: {
+            id: true,
+            title: true,
+            notes: true,
+            task: { select: { title: true, subject: SUBJECT_TITLE, milestone: { select: { title: true } } } },
           },
-        },
-      },
-      tasks: {
-        where: { milestoneId: null },
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          subtasks: { select: { id: true, title: true, notes: true } },
-        },
-      },
-      resources: { select: { id: true, title: true, note: true, extracted: true } },
-    },
-  });
+        })
+      : [],
+    resourceIds.length
+      ? prisma.resource.findMany({
+          where: { id: { in: resourceIds }, subject: { userId } },
+          select: { id: true, title: true, note: true, subject: SUBJECT_TITLE },
+        })
+      : [],
+    documentIds.length
+      ? prisma.resource.findMany({
+          where: { id: { in: documentIds }, subject: { userId } },
+          select: { id: true, title: true, extracted: true, subject: SUBJECT_TITLE },
+        })
+      : [],
+  ]);
 
   const out: LiveSource[] = [];
-
-  const push = (entry: Omit<LiveSource, "contentHash" | "chunks">) => {
-    if (!entry.text.trim()) return;
-    const chunks = chunkSource(entry);
-    if (chunks.length === 0) return;
-    out.push({ ...entry, contentHash: hashContent(entry.text), chunks });
+  const push = (entry: Omit<LiveSource, "contentHash" | "chunks" | "text"> & { text: string | null }) => {
+    if (!entry.text?.trim()) return;
+    const source = { ...entry, text: entry.text };
+    out.push({ ...source, contentHash: hashContent(source.text), chunks: chunkSource(source) });
   };
 
-  for (const subject of subjects) {
-    if (subject.description) {
-      push({
-        source: "SUBJECT",
-        sourceId: subject.id,
-        subjectId: subject.id,
-        subjectTitle: subject.title,
-        text: subject.description,
-      });
-    }
-
-    for (const milestone of subject.milestones) {
-      if (milestone.notes) {
-        push({
-          source: "MILESTONE",
-          sourceId: milestone.id,
-          subjectId: subject.id,
-          subjectTitle: subject.title,
-          milestoneTitle: milestone.title,
-          text: milestone.notes,
-        });
-      }
-      for (const task of milestone.tasks) {
-        pushTask(push, subject.id, subject.title, milestone.title, task);
-      }
-    }
-
-    for (const task of subject.tasks) {
-      pushTask(push, subject.id, subject.title, null, task);
-    }
-
-    for (const resource of subject.resources) {
-      if (resource.note) {
-        push({
-          source: "RESOURCE",
-          sourceId: resource.id,
-          subjectId: subject.id,
-          subjectTitle: subject.title,
-          resourceTitle: resource.title,
-          text: resource.note,
-        });
-      }
-      // The extracted document is a separate source from the note above (see
-      // the schema comment on `Resource.extracted`): same resourceId, but a
-      // different `source` value, so they hash and re-index independently.
-      if (resource.extracted) {
-        push({
-          source: "RESOURCE_DOC",
-          sourceId: resource.id,
-          subjectId: subject.id,
-          subjectTitle: subject.title,
-          resourceTitle: resource.title,
-          text: resource.extracted,
-        });
-      }
-    }
+  for (const s of subjects) {
+    push({ source: "SUBJECT", sourceId: s.id, subjectId: s.id, subjectTitle: s.title, text: s.description });
+  }
+  for (const n of notes) {
+    push({ source: "MILESTONE", sourceId: n.id, subjectId: n.subject.id, subjectTitle: n.subject.title, milestoneTitle: n.title, text: n.notes });
+  }
+  for (const t of tasks) {
+    push({
+      source: "TASK",
+      sourceId: t.id,
+      subjectId: t.subject.id,
+      subjectTitle: t.subject.title,
+      milestoneTitle: t.milestone?.title ?? null,
+      taskTitle: t.title,
+      text: t.description,
+    });
+  }
+  for (const st of subtasks) {
+    push({
+      source: "SUBTASK",
+      sourceId: st.id,
+      subjectId: st.task.subject.id,
+      subjectTitle: st.task.subject.title,
+      milestoneTitle: st.task.milestone?.title ?? null,
+      taskTitle: st.task.title,
+      subtaskTitle: st.title,
+      text: st.notes,
+    });
+  }
+  for (const r of resources) {
+    push({ source: "RESOURCE", sourceId: r.id, subjectId: r.subject.id, subjectTitle: r.subject.title, resourceTitle: r.title, text: r.note });
+  }
+  // The extracted document is a separate source from the note above (see the
+  // schema comment on `Resource.extracted`): the same resource id under a
+  // different `source`, so the two hash and re-index independently.
+  for (const d of documents) {
+    push({
+      source: "RESOURCE_DOC",
+      sourceId: d.id,
+      subjectId: d.subject.id,
+      subjectTitle: d.subject.title,
+      resourceTitle: d.title,
+      text: d.extracted,
+    });
   }
 
   return out;
 }
 
-type TaskWithSubtasks = {
-  id: string;
-  title: string;
-  description: string | null;
-  subtasks: { id: string; title: string; notes: string }[];
-};
-
-function pushTask(
-  push: (entry: Omit<LiveSource, "contentHash" | "chunks">) => void,
-  subjectId: string,
-  subjectTitle: string,
-  milestoneTitle: string | null,
-  task: TaskWithSubtasks,
-): void {
-  if (task.description) {
-    push({
-      source: "TASK",
-      sourceId: task.id,
-      subjectId,
-      subjectTitle,
-      milestoneTitle,
-      taskTitle: task.title,
-      text: task.description,
-    });
-  }
-  for (const subtask of task.subtasks) {
-    if (subtask.notes) {
-      push({
-        source: "SUBTASK",
-        sourceId: subtask.id,
-        subjectId,
-        subjectTitle,
-        milestoneTitle,
-        taskTitle: task.title,
-        subtaskTitle: subtask.title,
-        text: subtask.notes,
-      });
-    }
-  }
-}
-
-export type StoredChunkMeta = {
-  source: ChunkSourceType;
-  sourceId: string;
-  contentHash: string;
-  embeddingModel: string;
-};
-
-/** One row per distinct (source, sourceId) — every chunk of a source shares
- *  the same hash and model, since they're written together in one batch. */
-export async function listStoredChunkMeta(userId: string): Promise<StoredChunkMeta[]> {
-  const rows = await prisma.noteChunk.findMany({
-    where: { userId },
-    select: { source: true, sourceId: true, contentHash: true, embeddingModel: true },
-    distinct: ["source", "sourceId"],
-  });
-  return rows;
-}
-
-export type FreshnessDiff = {
-  /** Live sources already indexed under the current model with a matching hash. */
-  indexed: LiveSource[];
-  /** Live sources needing (re-)embedding: missing, hash changed, or model changed. */
-  stale: LiveSource[];
-  /** Stored (source, sourceId) keys with no matching live record — safe to delete. */
-  orphanedKeys: { source: ChunkSourceType; sourceId: string }[];
-};
-
-/** Pure comparison between what's live and what's stored. Kept separate from
- *  the Prisma reads above so the decision logic is easy to reason about. */
-export function diffFreshness(live: LiveSource[], stored: StoredChunkMeta[], currentModel: string): FreshnessDiff {
-  const storedByKey = new Map(stored.map((s) => [sourceKey(s.source, s.sourceId), s]));
-  const liveKeys = new Set(live.map((l) => sourceKey(l.source, l.sourceId)));
-
-  const indexed: LiveSource[] = [];
-  const stale: LiveSource[] = [];
-
-  for (const entry of live) {
-    const found = storedByKey.get(sourceKey(entry.source, entry.sourceId));
-    const fresh = found && found.contentHash === entry.contentHash && found.embeddingModel === currentModel;
-    (fresh ? indexed : stale).push(entry);
-  }
-
-  const orphanedKeys = stored
-    .filter((s) => !liveKeys.has(sourceKey(s.source, s.sourceId)))
-    .map((s) => ({ source: s.source, sourceId: s.sourceId }));
-
-  return { indexed, stale, orphanedKeys };
-}
-
-export type ScorableChunk = {
+export type RankedChunk = {
   subjectId: string;
   subjectTitle: string;
   subjectColor: string | null;
@@ -249,7 +157,8 @@ export type ScorableChunk = {
   ordinal: number;
   breadcrumb: string;
   content: string;
-  embedding: number[];
+  /** Dot product with the query; vectors are normalised, so it's the cosine. */
+  score: number;
   /** The page a passage is cited by: its note's or resource's. A plan task's
    *  passage cites the note it sits under; one with no note has no page. */
   ref?: PageRef | null;
@@ -317,42 +226,60 @@ async function pageRefs(userId: string, rows: { source: ChunkSourceType; sourceI
   return out;
 }
 
-/** Chunks eligible for retrieval — current embedding model only, so a stale
- *  vector space is never scored alongside the current one. */
-export async function listScorableChunks(
+/**
+ * The user's passages closest in meaning to an embedded query, best first.
+ *
+ * Postgres does the scoring and hands back only the winners. Reading every
+ * vector into this process to score it here cost 3 KB a passage per query and
+ * held the event loop while it ran: 4 seconds, for every user of the
+ * instance, on a notebook of 26,000 passages. The same scan in SQL is a sixth
+ * of that and runs in the database. Past a few hundred thousand passages per
+ * user this wants pgvector, which the stored vectors can move to as they are.
+ *
+ * Only the current embedding model's rows are scored, so a stale vector space
+ * is never ranked alongside the current one. `perSource` caps how many
+ * passages one note or document may contribute, so a long PDF can't fill the
+ * whole answer. Ties fall back to a fixed order, so a query always returns
+ * the same passages.
+ */
+export async function rankChunks(
   userId: string,
-  subjectIds: string[],
-): Promise<ScorableChunk[]> {
-  const rows = await prisma.noteChunk.findMany({
-    where: {
-      userId,
-      embeddingModel: EMBEDDING_MODEL,
-      ...(subjectIds.length > 0 ? { subjectId: { in: subjectIds } } : {}),
-    },
-    select: {
-      subjectId: true,
-      subject: { select: { title: true, color: true } },
-      source: true,
-      sourceId: true,
-      ordinal: true,
-      breadcrumb: true,
-      content: true,
-      embedding: true,
-    },
-  });
+  queryEmbedding: number[],
+  { subjectIds = [], limit, perSource }: { subjectIds?: string[]; limit: number; perSource: number },
+): Promise<RankedChunk[]> {
+  // A vector of any other size was made by another model: nothing to compare.
+  if (queryEmbedding.length !== EMBEDDING_DIMS) return [];
+
+  const inSubjects = subjectIds.length > 0 ? Prisma.sql`AND c."subjectId" = ANY(${subjectIds}::text[])` : Prisma.empty;
+  const rows = await prisma.$queryRaw<
+    (Omit<RankedChunk, "ref" | "source"> & { source: ChunkSourceType })[]
+  >`
+    WITH scored AS (
+      SELECT c."id", c."source", c."sourceId", c."ordinal",
+             (SELECT sum(a * b) FROM unnest(c."embedding", ${queryEmbedding}::float8[]) AS pair(a, b)) AS score
+      FROM "NoteChunk" c
+      WHERE c."userId" = ${userId}
+        AND c."embeddingModel" = ${EMBEDDING_MODEL}
+        AND c."dims" = ${EMBEDDING_DIMS}
+        ${inSubjects}
+    ),
+    ranked AS (
+      SELECT *, row_number() OVER (PARTITION BY "source", "sourceId" ORDER BY score DESC, "ordinal") AS nth
+      FROM scored
+    ),
+    best AS (
+      SELECT "id", score FROM ranked
+      WHERE nth <= ${perSource}
+      ORDER BY score DESC, "source", "sourceId", "ordinal"
+      LIMIT ${limit}
+    )
+    SELECT c."subjectId", s."title" AS "subjectTitle", s."color" AS "subjectColor",
+           c."source"::text AS "source", c."sourceId", c."ordinal", c."breadcrumb", c."content", best.score
+    FROM best
+    JOIN "NoteChunk" c ON c."id" = best."id"
+    JOIN "Subject" s ON s."id" = c."subjectId"
+    ORDER BY best.score DESC, c."source", c."sourceId", c."ordinal"`;
 
   const refs = await pageRefs(userId, rows);
-
-  return rows.map((r) => ({
-    ref: refs.get(sourceKey(r.source, r.sourceId)) ?? null,
-    subjectId: r.subjectId,
-    subjectTitle: r.subject.title,
-    subjectColor: r.subject.color,
-    source: r.source,
-    sourceId: r.sourceId,
-    ordinal: r.ordinal,
-    breadcrumb: r.breadcrumb,
-    content: r.content,
-    embedding: r.embedding,
-  }));
+  return rows.map((r) => ({ ...r, ref: refs.get(sourceKey(r.source, r.sourceId)) ?? null }));
 }

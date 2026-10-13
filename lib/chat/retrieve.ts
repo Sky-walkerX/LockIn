@@ -1,6 +1,4 @@
-import { dotProduct } from "@/lib/rag/similarity";
 import { selectPassages, type ScoredChunk } from "@/lib/rag/select";
-import type { ScorableChunk } from "@/lib/rag/sources";
 import { assemblePrompt, clampCeiling } from "./budget";
 import { buildOutline, estimateTokens } from "./context";
 import { digestRefs, uniqueRefs, type MessageRef } from "./refs";
@@ -10,9 +8,9 @@ import type { ContextSubject, PromptMessage } from "./types";
  * Decides digest vs. retrieval mode and assembles the prompt for whichever
  * one applies.
  *
- * Pure — scoring is a dot product against already-loaded vectors, no I/O.
- * The caller (`prepare`'s route handler) does the two Prisma reads —
- * subjects and scorable chunks — and hands both in already loaded.
+ * Pure — no I/O. The caller (`prepare`'s route handler) does the two reads,
+ * the subjects and the passages ranked against the question, and hands both
+ * in already loaded.
  */
 
 const OUTLINE_SHARE = 0.4;
@@ -34,7 +32,8 @@ export type AssembleRetrievalInput = {
   digestSystemPrompt: string;
   retrievalSystemPrompt: string;
   subjects: ContextSubject[];
-  chunks: ScorableChunk[];
+  /** Passages already ranked against the question (`rankChunks`). */
+  chunks: ScoredChunk[];
   contextSubjectIds: string[];
   history: PromptMessage[];
   question: string;
@@ -42,15 +41,6 @@ export type AssembleRetrievalInput = {
   queryEmbedding?: number[];
   ragEnabled: boolean;
 };
-
-function scoreChunks(chunks: ScorableChunk[], queryEmbedding: number[]): ScoredChunk[] {
-  const scored: ScoredChunk[] = [];
-  for (const chunk of chunks) {
-    if (chunk.embedding.length !== queryEmbedding.length) continue;
-    scored.push({ ...chunk, score: dotProduct(queryEmbedding, chunk.embedding) });
-  }
-  return scored;
-}
 
 /** Drops subjects from the tail until the outline fits its share of the
  *  budget, or until nothing is left. Titles are never dropped outright —
@@ -125,8 +115,7 @@ export function assembleRetrievalPrompt(input: AssembleRetrievalInput): {
   const { outline, kept, truncated } = fitOutline(input.subjects, outlineBudget);
 
   const passageBudget = Math.max(0, ceiling - fixedCost - estimateTokens(outline));
-  const scored = scoreChunks(input.chunks, input.queryEmbedding);
-  const { block, manifest } = selectPassages(scored, input.contextSubjectIds, passageBudget);
+  const { block, manifest } = selectPassages(input.chunks, input.contextSubjectIds, passageBudget);
 
   const contextBlock = [outline, block].filter(Boolean).join("\n\n");
   const system = contextBlock ? `${input.retrievalSystemPrompt}\n\n${contextBlock}` : input.retrievalSystemPrompt;

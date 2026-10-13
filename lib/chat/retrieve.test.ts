@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assembleRetrievalPrompt } from "./retrieve";
 import { RETRIEVAL_SYSTEM_PROMPT, SYSTEM_PROMPT } from "./prompt";
 import type { ContextSubject } from "./types";
-import type { ScorableChunk } from "@/lib/rag/sources";
+import type { ScoredChunk } from "@/lib/rag/select";
 
 const smallSubject: ContextSubject = {
   id: "s1",
@@ -30,11 +30,11 @@ function bigSubject(id: string, title: string): ContextSubject {
   };
 }
 
-function chunk(over: Partial<ScorableChunk> & { embedding: number[] }): ScorableChunk {
+// A passage as the database ranks it: already scored against the question.
+function chunk(over: Partial<ScoredChunk> & { score: number }): ScoredChunk {
   return {
     subjectId: "s1",
     subjectTitle: "Operating Systems",
-    subjectColor: null,
     source: "MILESTONE",
     sourceId: "m1",
     ordinal: 0,
@@ -105,8 +105,8 @@ describe("assembleRetrievalPrompt", () => {
 
   it("switches to retrieval mode and reports selected sources when the digest overflows and a query vector is present", () => {
     const chunks = [
-      chunk({ sourceId: "m1", embedding: [1, 0] }),
-      chunk({ sourceId: "m2", breadcrumb: "Operating Systems > Read Ch. 8", content: "Silberschatz notes.", embedding: [0, 1] }),
+      chunk({ sourceId: "m1", score: 0.9 }),
+      chunk({ sourceId: "m2", breadcrumb: "Operating Systems > Read Ch. 8", content: "Silberschatz notes.", score: 0.4 }),
     ];
     const { messages, budget } = assembleRetrievalPrompt({
       ...baseInput,
@@ -125,10 +125,10 @@ describe("assembleRetrievalPrompt", () => {
     expect(system).toContain("### Operating Systems");
   });
 
-  it("scores chunks by dot product and excludes chunks with mismatched dimensions", () => {
+  it("leaves out a passage that has little to do with the question", () => {
     const chunks = [
-      chunk({ sourceId: "m1", embedding: [1, 0] }), // matches query, scores 1
-      chunk({ sourceId: "m2", embedding: [1, 0, 0] }), // dimension mismatch, excluded
+      chunk({ sourceId: "m1", score: 0.9 }),
+      chunk({ sourceId: "m2", score: 0.1 }),
     ];
     const { budget } = assembleRetrievalPrompt({
       ...baseInput,
@@ -178,7 +178,7 @@ describe("assembleRetrievalPrompt page refs", () => {
     const { messages, budget } = assembleRetrievalPrompt({
       ...baseInput,
       subjects: [bigSubject("s1", "Operating Systems")],
-      chunks: [chunk({ embedding: [1, 0], ref: ref(12, "m1") }), chunk({ embedding: [1, 0], sourceId: "m2", ref: null })],
+      chunks: [chunk({ score: 0.9, ref: ref(12, "m1") }), chunk({ score: 0.9, sourceId: "m2", ref: null })],
       ceiling: 500,
       queryEmbedding: [1, 0],
     });

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
 import type { ChunkSourceType } from "./chunk";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "./embedding-model";
-import { sourceKey, type LiveSource } from "./sources";
+import { sourceKey } from "./sources";
 
 /** A chunk with its vector, as the browser posts it to `/api/rag/chunks` or
  *  the server's own indexer (`index-note.ts`) produces it. */
@@ -16,17 +16,19 @@ export type EmbeddedChunk = {
   embedding: number[];
 };
 
-export type ChunkGroup = { live: LiveSource; chunks: EmbeddedChunk[] };
+/** A source as it stands now: where it files, and what its text hashes to. */
+export type LiveRef = { source: ChunkSourceType; sourceId: string; subjectId: string; contentHash: string };
+
+export type ChunkGroup = { live: LiveRef; chunks: EmbeddedChunk[] };
 
 /**
  * Groups chunks by (source, sourceId) and keeps the groups that may be
  * written. A group is dropped when its source record no longer exists, or when
  * its `contentHash` no longer matches the live text: the note was edited while
- * the batch was being embedded, and writing it would mark stale content as
- * indexed so it would never be corrected. Dropping leaves it stale, and the
- * next status check picks it up.
+ * the batch was being embedded, and writing it would store passages of text
+ * that's gone. Dropping leaves it stale, and the next pass picks it up.
  */
-export function acceptedGroups(chunks: EmbeddedChunk[], live: LiveSource[]): ChunkGroup[] {
+export function acceptedGroups(chunks: EmbeddedChunk[], live: LiveRef[]): ChunkGroup[] {
   const liveByKey = new Map(live.map((l) => [sourceKey(l.source, l.sourceId), l]));
   const groups = new Map<string, EmbeddedChunk[]>();
   for (const chunk of chunks) {
@@ -35,7 +37,6 @@ export function acceptedGroups(chunks: EmbeddedChunk[], live: LiveSource[]): Chu
     if (group) group.push(chunk);
     else groups.set(key, [chunk]);
   }
-
   const out: ChunkGroup[] = [];
   for (const [key, group] of groups) {
     const entry = liveByKey.get(key);
@@ -47,17 +48,31 @@ export function acceptedGroups(chunks: EmbeddedChunk[], live: LiveSource[]): Chu
 }
 
 /**
- * Writes the accepted groups, each one's existing rows deleted and replaced in
- * one transaction (re-indexing never upserts by ordinal, since a shorter
- * re-chunk would leave surplus high-ordinal rows behind). Returns how many
- * chunks were written.
+ * Writes the accepted groups in one transaction. A group needn't be a whole
+ * source: a long document arrives a batch at a time. So a write clears what
+ * it replaces and nothing else: the source's passages from any earlier text
+ * or model (a shorter re-chunk would otherwise leave its surplus high-ordinal
+ * rows behind), and the ordinals in this batch, so sending one twice is
+ * harmless. Returns how many chunks were written.
  */
-export async function storeChunks(userId: string, chunks: EmbeddedChunk[], live: LiveSource[]): Promise<number> {
+export async function storeChunks(userId: string, chunks: EmbeddedChunk[], live: LiveRef[]): Promise<number> {
   const ops: Prisma.PrismaPromise<unknown>[] = [];
   let written = 0;
-
   for (const { live: entry, chunks: group } of acceptedGroups(chunks, live)) {
-    ops.push(prisma.noteChunk.deleteMany({ where: { userId, source: entry.source, sourceId: entry.sourceId } }));
+    ops.push(
+      prisma.noteChunk.deleteMany({
+        where: {
+          userId,
+          source: entry.source,
+          sourceId: entry.sourceId,
+          OR: [
+            { contentHash: { not: entry.contentHash } },
+            { embeddingModel: { not: EMBEDDING_MODEL } },
+            { ordinal: { in: group.map((c) => c.ordinal) } },
+          ],
+        },
+      }),
+    );
     ops.push(
       prisma.noteChunk.createMany({
         data: group.map((c) => ({
@@ -73,11 +88,12 @@ export async function storeChunks(userId: string, chunks: EmbeddedChunk[], live:
           embeddingModel: EMBEDDING_MODEL,
           dims: EMBEDDING_DIMS,
         })),
+        // Two tabs indexing at once may send the same passage.
+        skipDuplicates: true,
       }),
     );
     written += group.length;
   }
-
   if (ops.length > 0) await prisma.$transaction(ops);
   return written;
 }

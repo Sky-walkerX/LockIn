@@ -8,8 +8,9 @@ import { passageQuote } from "@/lib/notes/plain-text";
  * alongside the plan skeleton (`lib/chat/context.ts`'s outline mode).
  *
  * Pure — takes already-scored chunks in, returns markdown and a manifest out.
- * Scoring itself is `lib/rag/similarity.ts`'s job; this module only decides
- * which of the already-scored chunks survive and in what order they're shown.
+ * Scoring is the database's job (`rankChunks` in `lib/rag/sources.ts`); this
+ * module only decides which of the scored chunks survive and in what order
+ * they're shown.
  */
 
 export type ScoredChunk = {
@@ -41,9 +42,11 @@ export type SelectResult = {
 // When a question has nothing to do with the notes, injecting the twelve
 // least-irrelevant passages is worse than injecting none.
 const SCORE_FLOOR = 0.25;
-// One long note can't crowd out every other subject.
-const MAX_PER_SOURCE = 3;
-const MAX_TOTAL = 12;
+// One long note can't crowd out every other subject. Exported because the
+// query that ranks passages (rankChunks) applies the same two limits, so it
+// returns exactly the candidates this could ever pick from.
+export const MAX_PER_SOURCE = 3;
+export const MAX_TOTAL = 12;
 
 // A passage is the user's own markdown, and it now arrives by a different
 // route than the digest — but a stray `##` in a note would still read as a

@@ -1,32 +1,16 @@
-import prisma from "@/lib/prisma";
-import { chunkSource, hashContent } from "./chunk";
 import { embedOnServer } from "./ingest";
-import type { LiveSource } from "./sources";
+import { recordSource } from "./freshness";
+import { loadSources, type LiveSource } from "./sources";
 import { storeChunks } from "./store";
 
 // Under the ingest service's MAX_EMBED_BATCH (128), with room to spare.
 const EMBED_BATCH = 64;
 
-/** One note as a live source, built the way `listLiveSources` builds it, or
- *  null when the note is gone or has nothing to index. */
+/** One note as a live source, or null when the note is gone or has nothing
+ *  to index. */
 async function liveNoteSource(userId: string, noteId: string): Promise<LiveSource | null> {
-  const note = await prisma.milestone.findFirst({
-    where: { id: noteId, subject: { userId } },
-    select: { id: true, title: true, notes: true, subject: { select: { id: true, title: true } } },
-  });
-  if (!note || !note.notes.trim()) return null;
-
-  const entry = {
-    source: "MILESTONE" as const,
-    sourceId: note.id,
-    subjectId: note.subject.id,
-    subjectTitle: note.subject.title,
-    milestoneTitle: note.title,
-    text: note.notes,
-  };
-  const chunks = chunkSource(entry);
-  if (chunks.length === 0) return null;
-  return { ...entry, contentHash: hashContent(entry.text), chunks };
+  const [note] = await loadSources(userId, [{ source: "MILESTONE", sourceId: noteId }]);
+  return note && note.chunks.length > 0 ? note : null;
 }
 
 /**
@@ -63,5 +47,7 @@ export async function indexNoteOnServer(userId: string, noteId: string): Promise
   // Read the note again: if it changed or went while we were embedding,
   // storeChunks sees a different hash (or nothing) and writes nothing.
   const now = await liveNoteSource(userId, noteId);
-  return storeChunks(userId, chunks, now ? [now] : []);
+  if (!now) return 0;
+  await recordSource(userId, now);
+  return storeChunks(userId, chunks, [now]);
 }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { LiveSource } from "./sources";
+import type { LiveRef } from "./store";
 
 // storeChunks only builds Prisma operations and runs them in one transaction;
 // a recording stand-in is enough to see what it would write.
@@ -16,15 +16,11 @@ vi.mock("@/lib/prisma", () => ({
 
 const { acceptedGroups, storeChunks } = await import("./store");
 
-const live = (sourceId: string, contentHash: string): LiveSource => ({
+const live = (sourceId: string, contentHash: string): LiveRef => ({
   source: "MILESTONE",
   sourceId,
   subjectId: "subject-1",
-  subjectTitle: "Rust",
-  milestoneTitle: "Ownership",
-  text: "…",
   contentHash,
-  chunks: [],
 });
 
 const chunk = (sourceId: string, ordinal: number, contentHash: string) => ({
@@ -61,12 +57,20 @@ describe("acceptedGroups", () => {
 });
 
 describe("storeChunks", () => {
-  it("replaces a source's old chunks rather than adding to them", async () => {
+  it("clears a source's earlier passages and the ones being rewritten, and nothing else", async () => {
     const written = await storeChunks("user-1", [chunk("a", 0, "h1"), chunk("a", 1, "h1")], [live("a", "h1")]);
 
     expect(written).toBe(2);
     expect(calls.map((c) => c.op)).toEqual(["deleteMany", "createMany"]);
-    expect(calls[0].args).toEqual({ where: { userId: "user-1", source: "MILESTONE", sourceId: "a" } });
+    // Passages 2 and up of the same text, written by an earlier batch, stay.
+    expect(calls[0].args).toEqual({
+      where: {
+        userId: "user-1",
+        source: "MILESTONE",
+        sourceId: "a",
+        OR: [{ contentHash: { not: "h1" } }, { embeddingModel: { not: "snowflake-arctic-embed-s" } }, { ordinal: { in: [0, 1] } }],
+      },
+    });
     const rows = (calls[1].args as { data: { userId: string; subjectId: string; ordinal: number }[] }).data;
     expect(rows.map((r) => [r.userId, r.subjectId, r.ordinal])).toEqual([
       ["user-1", "subject-1", 0],
