@@ -41,7 +41,7 @@ docker compose --profile ingest up -d
 
 The ingest image carries its embedding model, so it's about 1 GB. Without it, keyword search works, and the browser does embeddings itself.
 
-To update, pull the new release. Migrations run on start:
+To update, pull the new release. The compose file names the version it goes with, so the images always match the checkout. Migrations run on start:
 
 ```bash
 git pull && docker compose pull && docker compose up -d
@@ -75,7 +75,7 @@ Settings in `.env`:
 | `AUTH_SECRET` | Required. Signs sessions and upload links. |
 | `PUBLIC_URL` | The address people open LockIn at. Default `http://localhost:3000`. |
 | `LOCKIN_PORT` | Host port. Default `3000`. |
-| `LOCKIN_VERSION` | The release to run, such as `1.0.0`. Default `latest`. |
+| `LOCKIN_VERSION` | The release to run, such as `1.0.0`. Default: the release your checkout is. |
 | `POSTGRES_PASSWORD` | Password for the bundled Postgres. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. "Continue with Google" appears only when both are set. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |

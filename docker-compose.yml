@@ -4,8 +4,9 @@
 #   docker compose up -d    # Postgres + LockIn on http://localhost:3000
 #
 # Each service names a published image and how to build it. `up` pulls the
-# image for LOCKIN_VERSION (the latest release by default) and builds from
-# this checkout when there isn't one; `up --build` always builds.
+# image for the release this checkout is (the version below, bumped with each
+# release; LOCKIN_VERSION overrides it) and builds from the checkout when
+# there isn't one; `up --build` always builds.
 #
 # Add PDF/link text extraction and server-side embeddings:
 #   docker compose --profile ingest up -d
@@ -30,7 +31,7 @@ services:
 
   # Runs `prisma migrate deploy` once, then exits; the app waits for it.
   migrate:
-    image: ghcr.io/sky-walkerx/lockin-migrate:${LOCKIN_VERSION:-latest}
+    image: ghcr.io/sky-walkerx/lockin-migrate:${LOCKIN_VERSION:-0.1.0}
     build: { context: ., target: migrate }
     environment: &db-env
       DATABASE_URL: postgresql://lockin:${POSTGRES_PASSWORD:-lockin}@db:5432/lockin
@@ -39,7 +40,7 @@ services:
       db: { condition: service_healthy }
 
   app:
-    image: ghcr.io/sky-walkerx/lockin:${LOCKIN_VERSION:-latest}
+    image: ghcr.io/sky-walkerx/lockin:${LOCKIN_VERSION:-0.1.0}
     build: { context: ., target: app }
     restart: unless-stopped
     ports:
@@ -76,7 +77,7 @@ services:
   # INGEST_URL=http://ingest:8080 and INGEST_SECRET in .env.
   ingest:
     profiles: [ingest]
-    image: ghcr.io/sky-walkerx/lockin-ingest:${LOCKIN_VERSION:-latest}
+    image: ghcr.io/sky-walkerx/lockin-ingest:${LOCKIN_VERSION:-0.1.0}
     build: ./service
     restart: unless-stopped
     environment:

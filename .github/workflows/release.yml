@@ -37,6 +37,13 @@ jobs:
       # Only what's on main is released: a tag put on any other commit stops here.
       - run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
+      # The tag, package.json and the version docker-compose.yml pulls must agree,
+      # or a checkout of this release would run some other release's images.
+      - run: |
+          version="${TAG#v}"
+          test "$(node -p "require('./package.json').version")" = "$version"
+          test "$(grep -c "LOCKIN_VERSION:-$version}" docker-compose.yml)" = 3
+
       - run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
