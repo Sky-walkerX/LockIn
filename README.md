@@ -85,7 +85,7 @@ Settings in `.env`:
 | `TRUSTED_PROXY_HOPS` | How many reverse proxies stand in front of LockIn. Default `1`. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |
 
-Put a reverse proxy (Caddy, nginx, Traefik) in front for HTTPS, and set `PUBLIC_URL` to the public address.
+Put a reverse proxy (Caddy, nginx, Traefik) in front for HTTPS, and set `PUBLIC_URL` to the public address. LockIn sends its own security headers (a content security policy, no framing by other sites, no content sniffing); the one it leaves to the proxy is `Strict-Transport-Security`, since only the proxy knows the site is served over HTTPS.
 
 ### Accounts
 

@@ -17,8 +17,12 @@ export const body = z.string().max(1_000_000);
 /** A short description: a subject's, or a resource's own note. */
 export const blurb = z.string().max(20_000);
 
-/** A link. */
-export const url = z.url().max(2_000);
+/**
+ * A link, to a web page only. It ends up in an href, on a shared page too, so
+ * `javascript:` and `data:` addresses are refused here and not left to the
+ * browser.
+ */
+export const url = z.url({ protocol: /^https?$/ }).max(2_000);
 
 /** A colour as the picker gives it. */
 export const color = z.string().max(32);
