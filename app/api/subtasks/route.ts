@@ -2,12 +2,13 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
 import { createSubtask } from "@/lib/tasks/create";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const SubtaskSchema = z.object({
-  taskId: z.string().min(1),
-  parentId: z.string().min(1).optional(),
-  title: z.string().min(1),
-  notes: z.string().optional(),
+  taskId: f.id,
+  parentId: f.id.optional(),
+  title: f.title,
+  notes: f.body.optional(),
 });
 
 // POST /api/subtasks - create a subtask under a task the user owns.

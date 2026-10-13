@@ -122,7 +122,7 @@ const handler = createMcpHandler(
         title: "Read a note, task or subtask",
         description:
           "Read one item in full by its id. A note comes with its markdown, subject, who wrote it and its plan: each task with its notes and nested subtasks. A task or subtask comes with its notes, where it sits and the subtasks under it.",
-        inputSchema: z.object({ id: z.string().min(1).describe("A note, task or subtask id, from search_notes, get_plan or save_note") }),
+        inputSchema: z.object({ id: z.string().min(1).max(64).describe("A note, task or subtask id, from search_notes, get_plan or save_note") }),
         annotations: { readOnlyHint: true },
       },
       async ({ id }, ctx) => {
@@ -195,7 +195,7 @@ const handler = createMcpHandler(
         description:
           "Add text to the end of an existing note. Never replaces what's there. On a note you recorded it simply continues the note; on anyone else's it goes under a line saying it came from you and today's date.",
         inputSchema: z.object({
-          id: z.string().min(1).describe("The note's id"),
+          id: z.string().min(1).max(64).describe("The note's id"),
           text: z.string().trim().min(1).max(100_000).describe("What to add, in markdown. Maths in LaTeX: $…$ inline, $$…$$ on lines of their own"),
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
@@ -217,7 +217,7 @@ const handler = createMcpHandler(
         description:
           "Change a note you recorded yourself: give it a new title, or replace one passage with new text (copy old_text exactly from get_note; it must appear once). Notes written by the user or another agent can't be edited, only added to with append_to_note. The user witnesses the note again after an edit.",
         inputSchema: z.object({
-          id: z.string().min(1).describe("The note's id"),
+          id: z.string().min(1).max(64).describe("The note's id"),
           old_text: z.string().min(1).max(100_000).optional().describe("The exact passage to replace, as it is in the note now"),
           new_text: z.string().max(100_000).optional().describe("What replaces it, in markdown. Empty to delete the passage"),
           title: z.string().trim().min(1).max(200).optional().describe("A new title"),
@@ -254,7 +254,7 @@ const handler = createMcpHandler(
         title: "Move a note",
         description: "File a note under another subject, e.g. out of the Inbox. Its tasks go with it. The subject must already exist.",
         inputSchema: z.object({
-          id: z.string().min(1).describe("The note's id"),
+          id: z.string().min(1).max(64).describe("The note's id"),
           subject: z.string().trim().min(1).max(200).describe("The subject's name or id, or \"Inbox\""),
         }),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
@@ -281,7 +281,7 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           title: z.string().trim().min(1).max(200).describe("What to do, short"),
           notes: z.string().max(100_000).optional().describe("Notes on the task, in markdown"),
-          note_id: z.string().min(1).optional().describe("The note to put it under"),
+          note_id: z.string().min(1).max(64).optional().describe("The note to put it under"),
           subject: z.string().trim().min(1).max(200).optional().describe("A subject's name or id, when it isn't under a note"),
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
@@ -317,10 +317,10 @@ const handler = createMcpHandler(
         description:
           "Add a subtask to a task, at the end of its list. Give parent_id to put it under another subtask instead; nesting goes one level deep.",
         inputSchema: z.object({
-          task_id: z.string().min(1).describe("The task's id"),
+          task_id: z.string().min(1).max(64).describe("The task's id"),
           title: z.string().trim().min(1).max(200).describe("What to do, short"),
           notes: z.string().max(100_000).optional().describe("Notes on the subtask, in markdown"),
-          parent_id: z.string().min(1).optional().describe("A top-level subtask of the same task to nest it under"),
+          parent_id: z.string().min(1).max(64).optional().describe("A top-level subtask of the same task to nest it under"),
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
@@ -343,7 +343,7 @@ const handler = createMcpHandler(
         description:
           "Change a task or subtask: tick it done or not done, rename it, or add to its notes (added at the end; what's there stays). Completing a recurring task schedules its next one.",
         inputSchema: z.object({
-          id: z.string().min(1).describe("A task or subtask id, from get_plan, get_note or search_notes"),
+          id: z.string().min(1).max(64).describe("A task or subtask id, from get_plan, get_note or search_notes"),
           done: z.boolean().optional().describe("true to tick it, false to untick it"),
           title: z.string().trim().min(1).max(200).optional().describe("A new title"),
           add_notes: z.string().trim().min(1).max(100_000).optional().describe("Text to add to the end of its notes, in markdown"),

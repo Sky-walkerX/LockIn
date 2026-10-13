@@ -6,17 +6,17 @@ import { assembleRetrievalPrompt } from "@/lib/chat/retrieve";
 import { loadContextSubjects } from "@/lib/chat/subjects";
 import { RETRIEVAL_SYSTEM_PROMPT, SYSTEM_PROMPT } from "@/lib/chat/prompt";
 import type { PromptMessage } from "@/lib/chat/types";
-import { listScorableChunks } from "@/lib/rag/sources";
+import { EMBEDDING_DIMS, listScorableChunks } from "@/lib/rag/sources";
 import { z } from "zod";
 
 const PrepareSchema = z.object({
-  content: z.string().min(1),
+  content: z.string().min(1).max(100_000),
   // The ceiling lives in the browser's localStorage, so it arrives untrusted
   // and is clamped by `clampCeiling` before it can size a query.
   contextTokens: z.number().optional(),
   // Sent whenever the browser has an embedder ready; the server ignores it in
   // digest mode rather than making the client ask twice which mode applies.
-  queryEmbedding: z.array(z.number()).optional(),
+  queryEmbedding: z.array(z.number().finite()).max(EMBEDDING_DIMS).optional(),
   ragEnabled: z.boolean().optional(),
 });
 

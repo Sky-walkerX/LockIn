@@ -3,13 +3,14 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { takePage } from "@/lib/notes/page";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const ResourceSchema = z.object({
-  subjectId: z.string().min(1),
+  subjectId: f.id,
   type: z.enum(["LINK", "AI_CHAT", "PDF", "BOOK"]),
-  url: z.url(),
-  title: z.string().min(1),
-  note: z.string().optional(),
+  url: f.url,
+  title: f.title,
+  note: f.blurb.optional(),
 });
 
 // GET /api/resources?subjectId=... - resources for a subject (or all the user's)

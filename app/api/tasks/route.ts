@@ -3,12 +3,13 @@ import { getUserId } from "@/lib/auth";
 import { listTasks, listTasksDue } from "@/lib/tasks/list";
 import { createTask } from "@/lib/tasks/create";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const TaskSchema = z.object({
-  subjectId: z.string().min(1),
-  milestoneId: z.string().nullable().optional(),
-  title: z.string().min(1),
-  description: z.string().optional(),
+  subjectId: f.id,
+  milestoneId: f.id.nullable().optional(),
+  title: f.title,
+  description: f.body.optional(),
   dueDate: z.iso.datetime().nullable().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   estimatedTime: z.number().int().positive().optional(),

@@ -1,6 +1,8 @@
+import { after } from "next/server";
 import { getPublicOrigin } from "mcp-handler";
 import { json, preflight } from "@/lib/oauth/http";
-import { exchangeCode, refreshTokens, resourceFor } from "@/lib/oauth/server";
+import { exchangeCode, refreshTokens, resourceFor, sweepExpired } from "@/lib/oauth/server";
+import { clientAddress, countAgainst } from "@/lib/limits/rate";
 
 /**
  * POST /api/oauth/token: the authorization_code and refresh_token grants, as
@@ -9,6 +11,18 @@ import { exchangeCode, refreshTokens, resourceFor } from "@/lib/oauth/server";
  * client to sign in again.
  */
 export async function POST(req: Request) {
+  const limit = await countAgainst(`oauth-token:${clientAddress(req.headers)}`, 120, 60);
+  if (!limit.ok) {
+    return json({ error: "slow_down", error_description: "Too many token requests from here" }, 429, {
+      "Retry-After": String(limit.retryAfter),
+    });
+  }
+  // Codes and tokens that have expired are cleared out about once an hour,
+  // after the reply, by whichever request finds the hour is up.
+  after(async () => {
+    if ((await countAgainst("oauth-sweep", 1, 60 * 60)).ok) await sweepExpired();
+  });
+
   const form = await req.formData().catch(() => null);
   const get = (k: string) => {
     const v = form?.get(k);

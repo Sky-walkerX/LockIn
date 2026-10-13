@@ -2,14 +2,15 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 import { getOrCreateInbox } from "@/lib/subjects/inbox";
 import { insertNote, nextOrder } from "@/lib/notes/write";
 
 const MilestoneSchema = z.object({
   // Left out, the note is filed in the user's Inbox.
-  subjectId: z.string().min(1).optional(),
-  title: z.string().min(1),
-  notes: z.string().optional(),
+  subjectId: f.id.optional(),
+  title: f.title,
+  notes: f.body.optional(),
   order: z.number().int().optional(),
   // Who's writing: "web" from the app, an agent's id over MCP.
   source: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9_-]{0,39}$/).optional(),

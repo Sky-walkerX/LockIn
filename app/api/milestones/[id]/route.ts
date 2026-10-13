@@ -7,10 +7,11 @@ import { appendBlockToNote, saveNoteBody } from "@/lib/notes/write";
 import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import type { Milestone } from "@/app/generated/prisma/client";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const UpdateMilestoneSchema = z.object({
-  title: z.string().min(1).optional(),
-  notes: z.string().optional(),
+  title: f.title.optional(),
+  notes: f.body.optional(),
   order: z.number().int().optional(),
   isCompleted: z.boolean().optional(),
   confidence: z.enum(["WEAK", "OK", "STRONG"]).nullable().optional(),

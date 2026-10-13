@@ -3,11 +3,12 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { loadSubjectTree } from "@/lib/subjects/load-tree";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const UpdateSubjectSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().nullable().optional(),
-  color: z.string().nullable().optional(),
+  title: f.title.optional(),
+  description: f.blurb.nullable().optional(),
+  color: f.color.nullable().optional(),
   isArchived: z.boolean().optional(),
   targetDate: z.iso.datetime().nullable().optional(),
   startDate: z.iso.datetime().nullable().optional(),

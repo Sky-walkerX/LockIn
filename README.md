@@ -80,6 +80,9 @@ Settings in `.env`:
 | `SIGNUP` | `open` (the default) lets anyone who can reach the address make an account. `closed` stops new accounts once the first one exists. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. "Continue with Google" appears only when both are set. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Optional. Outgoing email, see Accounts below. |
+| `STORAGE_QUOTA_MB` | Megabytes of images and PDFs each account may store. Default `1024`; `0` for no ceiling. |
+| `RATE_LIMITS` | `off` drops the limits below. Default `on`. |
+| `TRUSTED_PROXY_HOPS` | How many reverse proxies stand in front of LockIn. Default `1`. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |
 
 Put a reverse proxy (Caddy, nginx, Traefik) in front for HTTPS, and set `PUBLIC_URL` to the public address.
@@ -97,6 +100,23 @@ scripts/set-password.sh someone@example.com
 Changing or resetting a password signs that account out everywhere. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access.
 
 "Continue with Google" makes a new account, or opens the existing one with that address if the address was confirmed. It won't attach to an account made with a password whose address was never confirmed, so nobody can claim an address ahead of its owner.
+
+### Limits
+
+LockIn counts a few things so one caller can't wear the instance out, and answers `429` with `Retry-After` past the limit:
+
+| | Limit |
+|---|---|
+| Sign-in tries | 10 in ten minutes for one address from one network |
+| Sign-ups | 10 an hour from one network |
+| Reset and confirmation emails | 10 and 20 an hour from one network, and one a minute per account |
+| Uploads | 60 a minute per account, within `STORAGE_QUOTA_MB` |
+| Document extraction | 30 an hour per account |
+| Agents (MCP) | 60 requests a minute per token |
+
+Limits per network go by the visitor's address, which LockIn only knows from the `X-Forwarded-For` header its proxy sets. That's another reason to run it behind one. With a CDN in front of the proxy as well, set `TRUSTED_PROXY_HOPS=2`, or everyone behind the CDN is counted as one visitor.
+
+A request's fields are capped too (a note's body at a million characters, a title at 300). The request body itself is not: let the proxy cap it, at 60 MB or more so PDF uploads still fit (`request_body` in Caddy, `client_max_body_size` in nginx).
 
 ## Connect your agents (MCP)
 

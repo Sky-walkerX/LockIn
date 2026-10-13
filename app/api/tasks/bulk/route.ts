@@ -2,20 +2,22 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const BulkSchema = z.object({
-  subjectId: z.string().min(1),
-  milestoneId: z.string().nullable().optional(),
+  subjectId: f.id,
+  milestoneId: f.id.nullable().optional(),
   tasks: z
     .array(
       z.object({
-        title: z.string().min(1),
+        title: f.title,
         priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
         dueDate: z.iso.datetime().optional(),
         estimatedTime: z.number().int().positive().optional(),
       }),
     )
-    .min(1),
+    .min(1)
+    .max(500),
 });
 
 // POST /api/tasks/bulk - create several tasks at once under one subject/milestone

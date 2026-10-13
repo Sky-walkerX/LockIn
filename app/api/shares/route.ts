@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { mintToken, ownsEntity } from "@/lib/share/load";
 
 const TargetSchema = z.object({
   type: z.enum(["SUBJECT", "MILESTONE", "TASK", "SUBTASK"]),
-  entityId: z.string().min(1),
+  entityId: f.id,
 });
 
 /** Read `?type=&entityId=` into the same shape the POST body uses. */

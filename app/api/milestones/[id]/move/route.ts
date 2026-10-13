@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 import { getUserId } from "@/lib/auth";
 import { moveNote } from "@/lib/notes/write";
 
-const MoveSchema = z.object({ subjectId: z.string().min(1) });
+const MoveSchema = z.object({ subjectId: f.id });
 
 // POST /api/milestones/[id]/move - file a note under another subject (or the
 // Inbox). Its tasks go with it, it lands at the end of the target's notes, and

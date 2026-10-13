@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
 import { publicOrigin } from "@/lib/http/origin";
-import { putObject } from "@/lib/storage";
+import { BUCKETS, putObject } from "@/lib/storage";
+import { fitsQuota, quotaMessage, recordFile } from "@/lib/storage/quota";
+import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 // POST /api/uploads — store a pasted/dropped notes image. Where it goes
 // (Supabase Storage, or local disk when self-hosted) is lib/storage's call.
@@ -21,6 +23,9 @@ export async function POST(request: NextRequest) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const limit = await countAgainst(`upload:${userId}`, 60, 60);
+  if (!limit.ok) return tooMany(limit, "Too many uploads");
+
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "No file" }, { status: 400 });
@@ -31,8 +36,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Image too large (max 4MB)" }, { status: 413 });
   }
 
+  if (!(await fitsQuota(userId, file.size))) return NextResponse.json({ error: quotaMessage() }, { status: 413 });
+
   try {
-    const url = await putObject("notes", `${userId}/${crypto.randomUUID()}.${ext}`, file, publicOrigin(request));
+    const objectPath = `${userId}/${crypto.randomUUID()}.${ext}`;
+    const url = await putObject("notes", objectPath, file, publicOrigin(request));
+    await recordFile(userId, `${BUCKETS.notes}/${objectPath}`, file.size);
     return NextResponse.json({ url }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Upload to storage failed" }, { status: 502 });

@@ -2,9 +2,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const ReorderSchema = z.object({
-  ids: z.array(z.string().min(1)).min(1),
+  ids: f.ids,
 });
 
 // POST /api/milestones/reorder - persist a new manual order for a subject's

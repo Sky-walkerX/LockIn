@@ -78,6 +78,7 @@ model User {
   apiTokens     ApiToken[]
   oauthGrants   OAuthGrant[]
   emailTokens   EmailToken[]
+  storedFiles   StoredFile[]
 }
 
 // How many times something was done lately, for the limits in lib/limits: one
@@ -88,6 +89,21 @@ model RateLimit {
   key         String   @id
   windowStart DateTime
   count       Int
+}
+
+// A file a user stored (a note image, an uploaded PDF) and its size, so a
+// notebook's storage can be added up against its quota and a file can be
+// removed when what pointed at it is deleted. `key` is the storage key,
+// "<bucket>/<userId>/<uuid>.<ext>".
+model StoredFile {
+  key       String   @id
+  bytes     Int
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId])
 }
 
 // A one-time link sent by email: to prove an address at sign-up ("verify") or

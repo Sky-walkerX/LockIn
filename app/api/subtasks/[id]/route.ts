@@ -4,10 +4,11 @@ import { getUserId } from "@/lib/auth";
 import { appendToSubtask, updateSubtask } from "@/lib/tasks/update";
 import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const UpdateSubtaskSchema = z.object({
-  title: z.string().min(1).optional(),
-  notes: z.string().optional(),
+  title: f.title.optional(),
+  notes: f.body.optional(),
   isCompleted: z.boolean().optional(),
   order: z.number().int().optional(),
   // A labelled block added to the end of the notes ("from focus", "from chat").

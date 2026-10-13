@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
+import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 /**
  * POST /api/resources/[id]/ingest
@@ -22,6 +23,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+
+  // Reading a document takes the extraction service seconds of CPU each time.
+  const limit = await countAgainst(`ingest:${userId}`, 30, 60 * 60);
+  if (!limit.ok) return tooMany(limit, "Too many documents at once");
 
   const resource = await prisma.resource.findFirst({ where: { id, userId } });
   if (!resource) return NextResponse.json({ error: "Not found" }, { status: 404 });

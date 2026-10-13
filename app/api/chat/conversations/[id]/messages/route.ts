@@ -2,13 +2,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const MessageSchema = z.object({
-  content: z.string().min(1),
-  model: z.string().optional(),
+  content: f.body.min(1),
+  model: z.string().max(200).optional(),
   // Breadcrumbs of the passages retrieval selected for this reply, so history
   // shows what an old answer cited. Empty on digest-mode replies.
-  sources: z.array(z.string()).optional(),
+  sources: z.array(z.string().max(2_000)).max(500).optional(),
   // The pages the reply could cite, as `prepare` returned them, so its
   // "[p. 12]" stay links when the thread is reopened.
   refs: z

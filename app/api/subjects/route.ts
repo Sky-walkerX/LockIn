@@ -3,11 +3,12 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { listSubjects } from "@/lib/subjects/list";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const SubjectSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  color: z.string().optional(),
+  title: f.title,
+  description: f.blurb.optional(),
+  color: f.color.optional(),
 });
 
 // GET /api/subjects - list the user's active subjects with task progress

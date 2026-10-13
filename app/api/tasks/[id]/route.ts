@@ -4,15 +4,16 @@ import { getUserId } from "@/lib/auth";
 import { appendToTask, updateTask } from "@/lib/tasks/update";
 import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const UpdateTaskSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().nullable().optional(),
+  title: f.title.optional(),
+  description: f.body.nullable().optional(),
   isCompleted: z.boolean().optional(),
   dueDate: z.iso.datetime().nullable().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   estimatedTime: z.number().int().positive().nullable().optional(),
-  milestoneId: z.string().nullable().optional(),
+  milestoneId: f.id.nullable().optional(),
   timeSpent: z.number().int().nonnegative().nullable().optional(),
   recurrence: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
   // A labelled block added to the end of the notes ("from focus", "from chat").

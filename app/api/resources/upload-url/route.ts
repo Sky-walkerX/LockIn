@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
 import { publicOrigin } from "@/lib/http/origin";
-import { createUpload } from "@/lib/storage";
+import { BUCKETS, createUpload, storageDriver } from "@/lib/storage";
+import { fitsQuota, quotaMessage, recordFile } from "@/lib/storage/quota";
+import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 /**
  * POST /api/resources/upload-url
@@ -28,6 +30,9 @@ export async function POST(request: NextRequest) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const limit = await countAgainst(`upload:${userId}`, 60, 60);
+  if (!limit.ok) return tooMany(limit, "Too many uploads");
+
   const body = await request.json().catch(() => null);
   const contentType = typeof body?.contentType === "string" ? body.contentType : "";
   const size = typeof body?.size === "number" ? body.size : 0;
@@ -38,8 +43,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `File must be under ${MAX_BYTES / 1024 / 1024}MB` }, { status: 413 });
   }
 
+  if (!(await fitsQuota(userId, size))) return NextResponse.json({ error: quotaMessage() }, { status: 413 });
+
   try {
-    const target = await createUpload("docs", `${userId}/${crypto.randomUUID()}.${ext}`, MAX_BYTES, publicOrigin(request));
+    const objectPath = `${userId}/${crypto.randomUUID()}.${ext}`;
+    const target = await createUpload("docs", objectPath, MAX_BYTES, publicOrigin(request), size);
+    // On local disk the file is counted when it arrives, at its real size
+    // (/api/files/upload). Supabase takes the upload itself, so the size the
+    // browser gave is counted here.
+    if (storageDriver() === "supabase") await recordFile(userId, `${BUCKETS.docs}/${objectPath}`, size);
     return NextResponse.json(target);
   } catch {
     return NextResponse.json({ error: "Could not prepare the upload" }, { status: 502 });

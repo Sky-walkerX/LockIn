@@ -2,10 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const UpdateSchema = z.object({
-  title: z.string().min(1).optional(),
-  contextSubjectIds: z.array(z.string()).optional(),
+  title: f.title.optional(),
+  contextSubjectIds: z.array(f.id).max(200).optional(),
 });
 
 // GET /api/chat/conversations/[id] - the thread with its full transcript

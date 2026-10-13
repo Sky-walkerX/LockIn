@@ -1,7 +1,8 @@
 import { mkdir, open, rm } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { CONTENT_TYPES, localPath, storageDriver, verifyUpload } from "@/lib/storage";
+import { CONTENT_TYPES, localPath, ownerOfKey, storageDriver, verifyUpload } from "@/lib/storage";
+import { recordFile } from "@/lib/storage/quota";
 
 // PUT /api/files/upload?key=…&exp=…&max=…&sig=… — the local stand-in for a
 // Supabase signed upload URL. The signed query names the one key the browser
@@ -54,5 +55,8 @@ export async function PUT(request: Request) {
       { status: tooLarge ? 413 : 500 },
     );
   }
+  // Counted against its owner's quota, at the size that really arrived.
+  const owner = ownerOfKey(key);
+  if (owner) await recordFile(owner, key, written).catch((error) => console.error("Recording an upload failed", error));
   return new Response(null, { status: 201 });
 }

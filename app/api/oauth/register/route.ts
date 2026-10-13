@@ -1,6 +1,7 @@
 import { json, preflight } from "@/lib/oauth/http";
 import { registerClient } from "@/lib/oauth/server";
 import { SCOPE } from "@/lib/oauth/rules";
+import { clientAddress, countAgainst } from "@/lib/limits/rate";
 
 /**
  * POST /api/oauth/register: Dynamic Client Registration (RFC 7591). Kept for
@@ -8,6 +9,14 @@ import { SCOPE } from "@/lib/oauth/rules";
  * prefers those. Public clients only: there's no secret to hand out.
  */
 export async function POST(req: Request) {
+  // Registration is open to anyone by design, and each one is a row.
+  const limit = await countAgainst(`oauth-register:${clientAddress(req.headers)}`, 30, 60 * 60);
+  if (!limit.ok) {
+    return json({ error: "too_many_requests", error_description: "Too many registrations from here" }, 429, {
+      "Retry-After": String(limit.retryAfter),
+    });
+  }
+
   const body = await req.json().catch(() => null);
   const result = await registerClient(body);
   if (!result.ok) return json({ error: "invalid_client_metadata", error_description: result.error }, 400);

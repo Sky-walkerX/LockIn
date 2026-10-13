@@ -139,11 +139,14 @@ export async function createUpload(
   objectPath: string,
   maxBytes: number,
   origin: string,
+  /** The size the browser said the file is. The local link is signed for
+   *  exactly that, so no more than was counted against the quota can arrive. */
+  size: number = maxBytes,
 ): Promise<{ uploadUrl: string; publicUrl: string }> {
   const name = BUCKETS[bucket];
   const key = `${name}/${objectPath}`;
   if (storageDriver() === "local") {
-    const { exp, max, sig } = signUpload(key, maxBytes);
+    const { exp, max, sig } = signUpload(key, Math.min(maxBytes, size));
     const q = new URLSearchParams({ key, exp: String(exp), max: String(max), sig });
     return { uploadUrl: `${origin}/api/files/upload?${q}`, publicUrl: `${origin}/api/files/${key}` };
   }
@@ -173,6 +176,39 @@ export async function createUpload(
     uploadUrl: `${base}/storage/v1${signedPath}`,
     publicUrl: `${base}/storage/v1/object/public/${name}/${objectPath}`,
   };
+}
+
+/**
+ * The storage key behind one of this app's own file URLs, or null for any
+ * other URL (a link to somewhere else, say). Both shapes a stored file's URL
+ * takes: /api/files/<key> on local disk, and Supabase's public object path.
+ */
+export function keyFromUrl(url: string): string | null {
+  let pathname: string;
+  try {
+    pathname = new URL(url).pathname;
+  } catch {
+    return null;
+  }
+  const key = pathname.match(/^\/api\/files\/(.+)$/)?.[1] ?? pathname.match(/^\/storage\/v1\/object\/public\/(.+)$/)?.[1] ?? null;
+  return key && isValidKey(key) ? key : null;
+}
+
+/** The user a stored file belongs to: the folder in its key. */
+export function ownerOfKey(key: string): string | null {
+  return isValidKey(key) ? key.split("/")[1] : null;
+}
+
+/** Removes one stored file. Quiet when it's already gone. */
+export async function deleteObject(key: string): Promise<void> {
+  if (!isValidKey(key)) return;
+  if (storageDriver() === "local") {
+    const full = localPath(key);
+    if (full) await rm(full, { force: true });
+    return;
+  }
+  const { base, key: token } = supabase();
+  await fetch(`${base}/storage/v1/object/${key}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
 }
 
 /**

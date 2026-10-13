@@ -2,10 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 
 const CreateSchema = z.object({
-  subjectId: z.string().nullable().optional(),
-  contextSubjectIds: z.array(z.string()).optional(),
+  subjectId: f.id.nullable().optional(),
+  contextSubjectIds: z.array(f.id).max(200).optional(),
 });
 
 // GET /api/chat/conversations - the user's threads, newest activity first.

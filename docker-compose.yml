@@ -64,6 +64,12 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
+      # Megabytes of files each account may store; 0 for no ceiling.
+      STORAGE_QUOTA_MB: ${STORAGE_QUOTA_MB:-1024}
+      # "off" drops the limits on sign-in tries, sign-ups and the like.
+      RATE_LIMITS: ${RATE_LIMITS:-on}
+      # How many proxies stand between visitors and LockIn (see README).
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
       # Used only when the ingest profile is running.
       INGEST_URL: ${INGEST_URL:-}
       INGEST_SECRET: ${INGEST_SECRET:-}

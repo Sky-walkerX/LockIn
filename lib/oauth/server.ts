@@ -197,3 +197,21 @@ export async function authenticateAccessToken(bearer: string) {
       CEIL(EXTRACT(EPOCH FROM g."windowStart" + interval '1 minute' - (now() AT TIME ZONE 'UTC')))::int AS "retryAfter"`;
   return row ?? null;
 }
+
+/**
+ * Clears out what can never be used again: codes and tokens a day past their
+ * expiry, grants revoked a month ago, and registered clients a day old that
+ * nobody ever connected with. Without it these tables only grow, since
+ * registration is open to anyone. A metadata-document client is left alone:
+ * it's a cache of a document that's fetched again when needed.
+ */
+export async function sweepExpired(): Promise<void> {
+  const dayAgo = later(-24 * 60 * 60);
+  const monthAgo = later(-30 * 24 * 60 * 60);
+  await prisma.oAuthCode.deleteMany({ where: { expiresAt: { lt: dayAgo } } });
+  await prisma.oAuthToken.deleteMany({ where: { expiresAt: { lt: dayAgo } } });
+  await prisma.oAuthGrant.deleteMany({ where: { revokedAt: { lt: monthAgo } } });
+  await prisma.oAuthClient.deleteMany({
+    where: { kind: "dcr", createdAt: { lt: dayAgo }, grants: { none: {} }, codes: { none: {} } },
+  });
+}

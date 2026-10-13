@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getUserId } from "@/lib/auth";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/rag/embedding-model";
 import { embedOnServer } from "@/lib/rag/ingest";
+import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 /**
  * POST /api/rag/embed
@@ -25,7 +26,7 @@ import { embedOnServer } from "@/lib/rag/ingest";
  */
 
 const RequestSchema = z.object({
-  texts: z.array(z.string()).min(1),
+  texts: z.array(z.string().max(8_000)).min(1),
   role: z.enum(["query", "passage"]),
 });
 
@@ -37,6 +38,11 @@ const MAX_BATCH = 128;
 export async function POST(request: NextRequest) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // The embedder is shared by everyone on the instance. Indexing a book sends
+  // a batch every second or two, well inside this.
+  const limit = await countAgainst(`embed:${userId}`, 240, 60);
+  if (!limit.ok) return tooMany(limit);
 
   const parsed = RequestSchema.safeParse(await request.json());
   if (!parsed.success) {

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import * as f from "@/lib/http/fields";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL, listLiveSources } from "@/lib/rag/sources";
@@ -13,12 +14,12 @@ const MAX_BATCH = 100;
 
 const ChunkInputSchema = z.object({
   source: z.enum(["SUBJECT", "MILESTONE", "TASK", "SUBTASK", "RESOURCE", "RESOURCE_DOC"]),
-  sourceId: z.string().min(1),
+  sourceId: f.id,
   ordinal: z.number().int().min(0),
-  breadcrumb: z.string().min(1),
-  content: z.string().min(1),
-  contentHash: z.string().min(1),
-  embedding: z.array(z.number()).length(EMBEDDING_DIMS),
+  breadcrumb: z.string().min(1).max(2_000),
+  content: z.string().min(1).max(8_000),
+  contentHash: z.string().min(1).max(128),
+  embedding: z.array(z.number().finite()).length(EMBEDDING_DIMS),
 });
 
 // There is exactly one embedding model, so both of these are constants
