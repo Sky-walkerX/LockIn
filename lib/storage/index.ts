@@ -199,6 +199,20 @@ export function ownerOfKey(key: string): string | null {
   return isValidKey(key) ? key.split("/")[1] : null;
 }
 
+/**
+ * How big a file in Supabase Storage really is, or null when it isn't there
+ * (or can't be asked about). The browser uploads PDFs to Supabase directly,
+ * so this is the only way the server learns what arrived.
+ */
+export async function storedSize(key: string): Promise<number | null> {
+  if (!isValidKey(key) || storageDriver() !== "supabase") return null;
+  const { base, key: token } = supabase();
+  const res = await fetch(`${base}/storage/v1/object/info/${key}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+  if (!res?.ok) return null;
+  const size = ((await res.json().catch(() => null)) as { size?: unknown } | null)?.size;
+  return typeof size === "number" && Number.isFinite(size) ? size : null;
+}
+
 /** Removes one stored file. Quiet when it's already gone. */
 export async function deleteObject(key: string): Promise<void> {
   if (!isValidKey(key)) return;

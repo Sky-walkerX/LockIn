@@ -7,7 +7,7 @@ import { mailConfigured } from "@/lib/mail";
 import { NO_ACCOUNT_HASH, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
 import { sessionStands } from "@/lib/accounts/session";
 import { EMAIL_NOT_VERIFIED, TOO_MANY_ATTEMPTS } from "@/lib/accounts/errors";
-import { clientAddress, countAgainst } from "@/lib/limits/rate";
+import { clientAddress, countPasswordTry } from "@/lib/limits/rate";
 
 
 export const authOptions: NextAuthOptions = {
@@ -36,18 +36,8 @@ export const authOptions: NextAuthOptions = {
         const refused = new Error("Invalid credentials");
         if (!credentials?.email || !credentials?.password) throw refused;
 
-        // Guessing a password is slowed three ways: per address from one
-        // network (the usual case), per network across addresses, and per
-        // address across networks, which is loose enough that a stranger
-        // can't lock someone out of their own notebook by guessing at it.
         const address = clientAddress(new Headers(req?.headers as Record<string, string> | undefined));
-        const email = normalizeEmail(credentials.email);
-        const tries = await Promise.all([
-          countAgainst(`login:${email}:${address}`, 10, 10 * 60),
-          countAgainst(`login-from:${address}`, 100, 10 * 60),
-          countAgainst(`login:${email}`, 200, 60 * 60),
-        ]);
-        if (tries.some((t) => !t.ok)) throw new Error(TOO_MANY_ATTEMPTS);
+        if (await countPasswordTry(normalizeEmail(credentials.email), address)) throw new Error(TOO_MANY_ATTEMPTS);
 
         const user = await userByEmail(credentials.email);
         const matches = await bcrypt.compare(credentials.password, user?.password ?? NO_ACCOUNT_HASH);

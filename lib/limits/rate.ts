@@ -53,6 +53,23 @@ export function wait(seconds: number): string {
 }
 
 /**
+ * Counts one guess at an account's password, wherever it's made: signing in,
+ * or asking for the confirmation link again, which checks the same password.
+ * Guessing is slowed three ways: per address from one network (the usual
+ * case), per network across addresses, and per address across networks, which
+ * is loose enough that a stranger can't lock someone out of their own notebook
+ * by guessing at it. Returns the limit that was passed, or null.
+ */
+export async function countPasswordTry(email: string, address: string): Promise<Limit | null> {
+  const tries = await Promise.all([
+    countAgainst(`login:${email}:${address}`, 10, 10 * 60),
+    countAgainst(`login-from:${address}`, 100, 10 * 60),
+    countAgainst(`login:${email}`, 200, 60 * 60),
+  ]);
+  return tries.find((t) => !t.ok) ?? null;
+}
+
+/**
  * The address a request came from, for limits on people who aren't signed in.
  * Only a proxy's word for it can be believed: each proxy adds the address it
  * saw to the end of X-Forwarded-For, so the last entry is what the nearest

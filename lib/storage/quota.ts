@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { deleteObject, storedSize } from "@/lib/storage";
 
 // How much a notebook may store. Files are public by their unguessable URL
 // (lib/storage), so without a ceiling an account is free file hosting for
@@ -38,6 +39,24 @@ export function quotaMessage(): string {
 /** Notes that a file now exists under this account, and how big it is. */
 export async function recordFile(userId: string, key: string, bytes: number): Promise<void> {
   await prisma.storedFile.upsert({ where: { key }, create: { key, userId, bytes }, update: { bytes } });
+}
+
+/**
+ * Settles a PDF the browser uploaded to Supabase directly. Supabase's upload
+ * link can't be held to a size, so the file was counted at the most it could
+ * be when the link was made; here it's counted at what it is. False when that
+ * puts the account over its quota: the file is removed.
+ * A file that never gets this far stays counted at the ceiling, which is the
+ * point: saying "1 byte" and uploading 50 MB costs 50 MB.
+ */
+export async function settleUpload(userId: string, key: string): Promise<boolean> {
+  const bytes = await storedSize(key);
+  if (bytes === null) return true;
+  await recordFile(userId, key, bytes);
+  if ((await storageUsed(userId)) <= storageQuota()) return true;
+  await deleteObject(key).catch((error) => console.error("Removing a file over quota failed", error));
+  await forgetFile(key);
+  return false;
 }
 
 /** Forgets a file that has been removed. */

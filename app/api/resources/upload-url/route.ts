@@ -49,9 +49,11 @@ export async function POST(request: NextRequest) {
     const objectPath = `${userId}/${crypto.randomUUID()}.${ext}`;
     const target = await createUpload("docs", objectPath, MAX_BYTES, publicOrigin(request), size);
     // On local disk the file is counted when it arrives, at its real size
-    // (/api/files/upload). Supabase takes the upload itself, so the size the
-    // browser gave is counted here.
-    if (storageDriver() === "supabase") await recordFile(userId, `${BUCKETS.docs}/${objectPath}`, size);
+    // (/api/files/upload). Supabase takes the upload itself and its link
+    // can't be held to the size the browser gave, so the file is counted at
+    // the most the link allows until saving the resource settles it
+    // (settleUpload).
+    if (storageDriver() === "supabase") await recordFile(userId, `${BUCKETS.docs}/${objectPath}`, MAX_BYTES);
     return NextResponse.json(target);
   } catch {
     return NextResponse.json({ error: "Could not prepare the upload" }, { status: 502 });
