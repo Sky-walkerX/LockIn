@@ -34,3 +34,41 @@ jobs:
       - run: pnpm build
         env:
           NEXT_TELEMETRY_DISABLED: 1
+
+  # The self-hosted path, as the README gives it: the images build, migrations
+  # apply, and the app comes up answering its healthcheck.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: |
+          cp .env.example .env
+          sed -i "s|^AUTH_SECRET=.*|AUTH_SECRET=$(openssl rand -hex 32)|" .env
+
+      - run: docker compose up -d --build --wait --wait-timeout 300
+      - run: curl -fsS http://localhost:3000/api/health
+
+      - if: failure()
+        run: docker compose logs --no-color
+
+      - run: docker compose --profile ingest build ingest
+
+  # The ingest service's own tests, against the real embedding weights.
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: service
+    env:
+      INGEST_SECRET: dev-secret
+      MODEL_DIR: models/arctic-embed-s
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: pipx install uv
+      - run: uv sync --frozen
+      - run: uv run python scripts/fetch_model.py
+      - run: uv run pytest
