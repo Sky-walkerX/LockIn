@@ -183,7 +183,7 @@ function SlipRow({
       }}
     >
       <div>
-        <h3>{arrival.title}</h3>
+        <p className={s.slipTitle}>{arrival.title}</p>
         <p>{arrival.text}</p>
       </div>
       <div className={s.meta}>

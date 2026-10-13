@@ -91,10 +91,10 @@ export function NoteView({
         <NoteFullscreen note={note} sectionTitle={sectionTitle} color={fullscreen.color} onClose={() => setFullscreen(null)} />
       )}
       <div className="lk-runhead">
-        <Link href={backHref} scroll={false} className="flex items-center gap-1.5 lg:hidden">
+        <Link href={backHref} scroll={false} className="lk-note-back">
           <ArrowLeft size={13} /> All notes
         </Link>
-        <span className="hidden lg:inline">
+        <span className="lk-note-where">
           <b>{sectionTitle}</b> · Note{note.page != null && <> · {pageLabel(note.page)}</>}
         </span>
         <span>Updated {ago(note.updatedAt)}</span>

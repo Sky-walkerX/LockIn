@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -57,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SheetTrigger className="lk-spine-mini h-8 w-8" aria-label="Open the notebook spine">
               <Menu size={18} />
             </SheetTrigger>
-            <Link href="/" aria-label="Home">
+            <Link href="/" aria-label={`${BRAND.name}, home`}>
               <Wordmark className="text-ui" />
             </Link>
             {session?.user && (

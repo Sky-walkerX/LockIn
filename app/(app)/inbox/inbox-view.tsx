@@ -91,34 +91,36 @@ function Inbox() {
         </p>
       </header>
 
-      <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
-        <NoteList
-          subjectId={subject.id}
-          notes={notes}
-          selectedId={shown?.id ?? null}
-          hrefFor={(id) => href(id)}
-          placeholder="Quick note title…"
-          onCreated={(id) => {
-            setJustCreated(id);
-            router.replace(href(id), { scroll: false });
-          }}
-        />
-        {shown ? (
-          <NoteView
-            key={shown.id}
-            note={shown}
-            sectionTitle="Inbox"
-            planHref={null}
-            backHref={href(null)}
-            startEditing={justCreated === shown.id}
-            onDeleted={() => router.replace(href(null), { scroll: false })}
-            onMoved={() => router.replace(href(null), { scroll: false })}
+      <div className="lk-notes-frame">
+        <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
+          <NoteList
+            subjectId={subject.id}
+            notes={notes}
+            selectedId={shown?.id ?? null}
+            hrefFor={(id) => href(id)}
+            placeholder="Quick note title…"
+            onCreated={(id) => {
+              setJustCreated(id);
+              router.replace(href(id), { scroll: false });
+            }}
           />
-        ) : (
-          <div className="lk-note-page lk-note-empty">
-            <p>The tray is empty.</p>
-          </div>
-        )}
+          {shown ? (
+            <NoteView
+              key={shown.id}
+              note={shown}
+              sectionTitle="Inbox"
+              planHref={null}
+              backHref={href(null)}
+              startEditing={justCreated === shown.id}
+              onDeleted={() => router.replace(href(null), { scroll: false })}
+              onMoved={() => router.replace(href(null), { scroll: false })}
+            />
+          ) : (
+            <div className="lk-note-page lk-note-empty">
+              <p>The tray is empty.</p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

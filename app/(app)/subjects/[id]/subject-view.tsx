@@ -154,33 +154,35 @@ export function SubjectView() {
       </nav>
 
       {tab === "notes" && (
-        <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
-          <NoteList
-            subjectId={subject.id}
-            notes={notes}
-            selectedId={shown?.id ?? null}
-            hrefFor={(noteId) => href({ note: noteId })}
-            onCreated={(noteId) => {
-              setJustCreated(noteId);
-              router.replace(href({ note: noteId }), { scroll: false });
-            }}
-          />
-          {shown ? (
-            <NoteView
-              key={shown.id}
-              note={shown}
-              sectionTitle={subject.title}
-              planHref={href({ tab: "plan" })}
-              backHref={href({})}
-              startEditing={justCreated === shown.id}
-              onDeleted={() => router.replace(href({}), { scroll: false })}
-              onMoved={() => router.replace(href({}), { scroll: false })}
+        <div className="lk-notes-frame">
+          <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
+            <NoteList
+              subjectId={subject.id}
+              notes={notes}
+              selectedId={shown?.id ?? null}
+              hrefFor={(noteId) => href({ note: noteId })}
+              onCreated={(noteId) => {
+                setJustCreated(noteId);
+                router.replace(href({ note: noteId }), { scroll: false });
+              }}
             />
-          ) : (
-            <div className="lk-note-page lk-note-empty">
-              <p>This section has no notes yet.</p>
-            </div>
-          )}
+            {shown ? (
+              <NoteView
+                key={shown.id}
+                note={shown}
+                sectionTitle={subject.title}
+                planHref={href({ tab: "plan" })}
+                backHref={href({})}
+                startEditing={justCreated === shown.id}
+                onDeleted={() => router.replace(href({}), { scroll: false })}
+                onMoved={() => router.replace(href({}), { scroll: false })}
+              />
+            ) : (
+              <div className="lk-note-page lk-note-empty">
+                <p>This section has no notes yet.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

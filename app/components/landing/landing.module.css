@@ -153,7 +153,8 @@
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px;
   padding: 14px 16px; border-bottom: 1px solid var(--rule); background: var(--card);
 }
-.slip h3 { margin: 0; font-family: var(--lk-font-prose); font-weight: 600; font-size: 18.5px; line-height: 1.25; }
+/* A note's title in the example. Not a heading: it isn't a section of this page. */
+.slip .slipTitle { margin: 0; font-family: var(--lk-font-prose); font-weight: 600; font-size: 18.5px; line-height: 1.25; color: inherit; }
 .slip p { margin: 3px 0 0; font-family: var(--lk-font-prose); font-size: 15.5px; color: var(--ink-2); }
 .meta {
   grid-column: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
