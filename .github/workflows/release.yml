@@ -1,0 +1,72 @@
+name: Release
+
+# Pushing a version tag (v1.2.3) publishes the images docker-compose.yml pulls:
+# the app, the one-shot migrator and the ingest service, for amd64 and arm64.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io/sky-walkerx
+  SOURCE: https://github.com/Sky-walkerX/LockIn
+
+jobs:
+  # Each architecture builds on its own kind of runner, so nothing is emulated.
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    env:
+      ARCH: ${{ matrix.arch }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: |
+          version="${TAG#v}"
+          publish() {
+            name="$1"; shift
+            docker build --label "org.opencontainers.image.source=$SOURCE" \
+              --label "org.opencontainers.image.version=$version" \
+              -t "$REGISTRY/$name:$version-$ARCH" "$@"
+            docker push "$REGISTRY/$name:$version-$ARCH"
+          }
+          publish lockin --target app .
+          publish lockin-migrate --target migrate .
+          publish lockin-ingest service
+
+  # One name per image that resolves to the right architecture. A pre-release
+  # (v1.2.3-rc.1) gets its version tag only; `latest` stays on the last release.
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: |
+          version="${TAG#v}"
+          for name in lockin lockin-migrate lockin-ingest; do
+            tags=(-t "$REGISTRY/$name:$version")
+            case "$version" in *-*) ;; *) tags+=(-t "$REGISTRY/$name:latest") ;; esac
+            docker buildx imagetools create "${tags[@]}" \
+              "$REGISTRY/$name:$version-amd64" "$REGISTRY/$name:$version-arm64"
+          done

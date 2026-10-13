@@ -3,6 +3,10 @@
 #   cp .env.example .env    # then set AUTH_SECRET (and INGEST_SECRET for the ingest profile)
 #   docker compose up -d    # Postgres + LockIn on http://localhost:3000
 #
+# Each service names a published image and how to build it. `up` pulls the
+# image for LOCKIN_VERSION (the latest release by default) and builds from
+# this checkout when there isn't one; `up --build` always builds.
+#
 # Add PDF/link text extraction and server-side embeddings:
 #   docker compose --profile ingest up -d
 #
@@ -26,6 +30,7 @@ services:
 
   # Runs `prisma migrate deploy` once, then exits; the app waits for it.
   migrate:
+    image: ghcr.io/sky-walkerx/lockin-migrate:${LOCKIN_VERSION:-latest}
     build: { context: ., target: migrate }
     environment: &db-env
       DATABASE_URL: postgresql://lockin:${POSTGRES_PASSWORD:-lockin}@db:5432/lockin
@@ -34,6 +39,7 @@ services:
       db: { condition: service_healthy }
 
   app:
+    image: ghcr.io/sky-walkerx/lockin:${LOCKIN_VERSION:-latest}
     build: { context: ., target: app }
     restart: unless-stopped
     ports:
@@ -56,11 +62,21 @@ services:
       - uploads:/data/uploads
     depends_on:
       migrate: { condition: service_completed_successfully }
+    # The image has no curl; node is already there.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # Time for requests in flight, and indexing queued behind a reply, to finish.
+    stop_grace_period: 30s
 
   # Optional: `docker compose --profile ingest up`. Then set
   # INGEST_URL=http://ingest:8080 and INGEST_SECRET in .env.
   ingest:
     profiles: [ingest]
+    image: ghcr.io/sky-walkerx/lockin-ingest:${LOCKIN_VERSION:-latest}
     build: ./service
     restart: unless-stopped
     environment:
@@ -70,6 +86,12 @@ services:
       INGEST_SECRET: ${INGEST_SECRET:-}
       # Lets the parser fetch PDFs the app stores on its own disk.
       INGEST_ALLOWED_HOSTS: app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 volumes:
   db:

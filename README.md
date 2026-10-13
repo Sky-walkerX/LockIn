@@ -22,7 +22,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Open http://localhost:3000 and create an account. The first start builds the image, waits for Postgres and applies the database migrations before the app starts.
+Open http://localhost:3000 and create an account. The first start pulls the released images, waits for Postgres and applies the database migrations before the app starts. Images are published for amd64 and arm64; where there's none for your version, Compose builds from the checkout instead.
 
 What runs:
 
@@ -41,11 +41,32 @@ docker compose --profile ingest up -d
 
 The ingest image carries its embedding model, so it's about 1 GB. Without it, keyword search works, and the browser does embeddings itself.
 
-To update, pull and rebuild. Migrations run on start:
+To update, pull the new release. Migrations run on start:
 
 ```bash
-git pull && docker compose up -d --build
+git pull && docker compose pull && docker compose up -d
 ```
+
+To run the code in your checkout instead of a release, build it: `docker compose up -d --build`.
+
+`docker compose ps` shows whether the app is healthy; the same check is at `/api/health` (200 when the app can reach its database) for an uptime monitor.
+
+### Backups
+
+Everything lives in two volumes: `db` (Postgres) and `uploads` (note images and PDFs). Back up both, and take a backup before updating.
+
+```bash
+# back up
+docker compose exec -T db pg_dump -U lockin -Fc lockin > lockin.dump
+docker compose cp app:/data/uploads ./uploads-backup
+
+# restore, into a stack that is up
+docker compose exec -T db pg_restore -U lockin -d lockin --clean --if-exists < lockin.dump
+docker compose cp ./uploads-backup/. app:/data/uploads
+docker compose exec -u root app chown -R lockin /data/uploads   # copied files arrive owned by the host user
+```
+
+Keep `AUTH_SECRET` with the backups. A restored copy with a different secret signs everyone out.
 
 Settings in `.env`:
 
@@ -54,6 +75,7 @@ Settings in `.env`:
 | `AUTH_SECRET` | Required. Signs sessions and upload links. |
 | `PUBLIC_URL` | The address people open LockIn at. Default `http://localhost:3000`. |
 | `LOCKIN_PORT` | Host port. Default `3000`. |
+| `LOCKIN_VERSION` | The release to run, such as `1.0.0`. Default `latest`. |
 | `POSTGRES_PASSWORD` | Password for the bundled Postgres. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. "Continue with Google" appears only when both are set. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |
