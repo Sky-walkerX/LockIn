@@ -4,14 +4,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { mailConfigured } from "@/lib/mail";
-import { canCreateAccount, normalizeEmail } from "@/lib/accounts/policy";
+import { NO_ACCOUNT_HASH, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
 import { sessionStands } from "@/lib/accounts/session";
-import { EMAIL_NOT_VERIFIED } from "@/lib/accounts/errors";
+import { EMAIL_NOT_VERIFIED, TOO_MANY_ATTEMPTS } from "@/lib/accounts/errors";
+import { clientAddress, countAgainst } from "@/lib/limits/rate";
 
-/** One user by email, whatever case it was typed or stored in. */
-function findByEmail(email: string) {
-  return prisma.user.findFirst({ where: { email: { equals: normalizeEmail(email), mode: "insensitive" } } });
-}
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
@@ -33,15 +30,28 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         // One message for every way this fails, so the form can't be used to
         // find out which addresses have accounts.
         const refused = new Error("Invalid credentials");
         if (!credentials?.email || !credentials?.password) throw refused;
 
-        const user = await findByEmail(credentials.email);
-        if (!user?.password) throw refused;
-        if (!(await bcrypt.compare(credentials.password, user.password))) throw refused;
+        // Guessing a password is slowed three ways: per address from one
+        // network (the usual case), per network across addresses, and per
+        // address across networks, which is loose enough that a stranger
+        // can't lock someone out of their own notebook by guessing at it.
+        const address = clientAddress(new Headers(req?.headers as Record<string, string> | undefined));
+        const email = normalizeEmail(credentials.email);
+        const tries = await Promise.all([
+          countAgainst(`login:${email}:${address}`, 10, 10 * 60),
+          countAgainst(`login-from:${address}`, 100, 10 * 60),
+          countAgainst(`login:${email}`, 200, 60 * 60),
+        ]);
+        if (tries.some((t) => !t.ok)) throw new Error(TOO_MANY_ATTEMPTS);
+
+        const user = await userByEmail(credentials.email);
+        const matches = await bcrypt.compare(credentials.password, user?.password ?? NO_ACCOUNT_HASH);
+        if (!user?.password || !matches) throw refused;
 
         // Said only to someone who knows the password. Without email set up
         // there's no link to send, so an unconfirmed address signs in.
@@ -64,7 +74,7 @@ export const authOptions: NextAuthOptions = {
       if (!email || (profile as GoogleProfile | undefined)?.email_verified !== true) return false;
 
       try {
-        let existing = await findByEmail(email);
+        let existing = await userByEmail(email);
         if (existing) {
           // Signing in with Google lands in the account that has this address
           // only if the address was proven by whoever made that account.
@@ -93,11 +103,13 @@ export const authOptions: NextAuthOptions = {
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
+        // Written once: what a later password change is compared with.
+        token.signedInAt = Date.now();
         return token;
       }
       // Every later read of the session: it ends when the password changes or
       // the account is deleted. Throwing makes NextAuth clear the cookie.
-      if (token.sub && !(await sessionStands(token.sub, token.iat as number | undefined))) {
+      if (token.sub && !(await sessionStands(token.sub, token.signedInAt))) {
         throw new Error("This session has ended");
       }
       return token;
@@ -134,5 +146,7 @@ declare module "next-auth/jwt" {
     id?: string;
     email?: string | null;
     name?: string | null;
+    /** When this session's holder signed in (ms). */
+    signedInAt?: number;
   }
 }

@@ -5,7 +5,8 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
 import { mailConfigured } from "@/lib/mail";
 import { sendVerification } from "@/lib/accounts/emails";
-import { PASSWORD_MAX, PASSWORD_MIN, appOrigin, canCreateAccount, normalizeEmail } from "@/lib/accounts/policy";
+import { PASSWORD_MAX, PASSWORD_MIN, appOrigin, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
+import { clientAddress, countAgainst, wait } from "@/lib/limits/rate";
 
 const RegisterSchema = z.object({
   name: z.string().trim().max(100).optional().nullable(),
@@ -21,6 +22,15 @@ const RegisterSchema = z.object({
 // confirmed from the link this sends (`verify: true` in the reply).
 export async function POST(request: Request) {
   try {
+    // Ten new accounts an hour from one network is plenty for people and little for a script.
+    const limit = await countAgainst(`register:${clientAddress(request.headers)}`, 10, 60 * 60);
+    if (!limit.ok) {
+      return NextResponse.json(
+        { message: `Too many sign-ups from here. Try again in ${wait(limit.retryAfter)}.` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
+      );
+    }
+
     const parsed = RegisterSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? "Invalid registration data";
@@ -33,10 +43,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Sign-up is closed on this notebook." }, { status: 403 });
     }
 
-    // Addresses are stored in lower case now; one stored earlier in another
-    // case is still the same account.
-    const taken = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true } });
-    if (taken) return NextResponse.json({ message: "User with this email already exists" }, { status: 409 });
+    if (await userByEmail(email)) {
+      return NextResponse.json({ message: "User with this email already exists" }, { status: 409 });
+    }
 
     // The unique index on email is still the last word when two sign-ups race (P2002).
     const user = await prisma.user.create({

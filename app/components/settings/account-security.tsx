@@ -17,7 +17,7 @@ export function AccountSecurity() {
   return (
     <div className="flex flex-col gap-3">
       <PasswordCard hasPassword={account.hasPassword} />
-      <DeleteCard email={account.email} />
+      <DeleteCard email={account.email} hasPassword={account.hasPassword} />
     </div>
   );
 }
@@ -83,10 +83,11 @@ function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
   );
 }
 
-function DeleteCard({ email }: { email: string }) {
+function DeleteCard({ email, hasPassword }: { email: string; hasPassword: boolean }) {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState("");
-  const matches = confirm.trim().toLowerCase() === email.toLowerCase();
+  const [password, setPassword] = useState("");
+  const matches = confirm.trim().toLowerCase() === email.toLowerCase() && (!hasPassword || password.length > 0);
 
   const remove = useMutation({
     mutationFn: () =>
@@ -94,7 +95,7 @@ function DeleteCard({ email }: { email: string }) {
         method: "DELETE",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirm }),
+        body: JSON.stringify({ confirm, password: hasPassword ? password : undefined }),
       }).then(async (res) => {
         if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? "Couldn't delete the account");
       }),
@@ -135,6 +136,14 @@ function DeleteCard({ email }: { email: string }) {
             </label>
             <Input id="delete-confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" />
           </div>
+          {hasPassword && (
+            <div>
+              <label htmlFor="delete-password" className="lk-sec mb-1.5 block">
+                Your password
+              </label>
+              <Input id="delete-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            </div>
+          )}
           {remove.isError && <p className="lk-print text-xs text-destructive">{remove.error.message}</p>}
           <div className="flex items-center gap-2">
             <button
@@ -149,6 +158,7 @@ function DeleteCard({ email }: { email: string }) {
               onClick={() => {
                 setOpen(false);
                 setConfirm("");
+                setPassword("");
               }}
               className="rounded-md border border-border px-3 py-2 text-sm transition-colors hover:border-foreground"
             >

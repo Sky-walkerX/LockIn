@@ -28,15 +28,18 @@ async function accountState(userId: string): Promise<Kept> {
 }
 
 /**
- * Whether a session issued at `issuedAt` (the token's `iat`, in seconds) for
- * this account still stands. A session from the same second as the change is
- * let through: that's the one the user signs in with straight afterwards.
+ * Whether a session for this account still stands. `signedInAt` is when its
+ * holder signed in (ms), written into the token once and never refreshed.
+ * The token's own `iat` won't do: NextAuth re-issues the token, with a new
+ * `iat`, every time the browser asks for its session, so an old session would
+ * look new again the moment it was next used. A session from before sign-in
+ * times were recorded stands until the password first changes.
  */
-export async function sessionStands(userId: string, issuedAt: number | undefined): Promise<boolean> {
+export async function sessionStands(userId: string, signedInAt: number | undefined): Promise<boolean> {
   const state = await accountState(userId);
   if (!state.exists) return false;
   if (state.changedAt === null) return true;
-  return typeof issuedAt === "number" && issuedAt >= Math.floor(state.changedAt / 1000);
+  return typeof signedInAt === "number" && signedInAt >= state.changedAt;
 }
 
 /** Drop what's remembered about an account that just changed or went. */

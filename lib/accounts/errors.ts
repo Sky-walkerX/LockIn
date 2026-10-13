@@ -4,6 +4,9 @@
 /** A correct password for an address that hasn't been confirmed yet. */
 export const EMAIL_NOT_VERIFIED = "email-not-verified";
 
+/** More sign-in tries than the limit allows, for this address or from this network. */
+export const TOO_MANY_ATTEMPTS = "too-many-attempts";
+
 /** `?error=` values NextAuth sends the sign-in page to, in the user's words. */
 export const SIGN_IN_ERRORS: Record<string, string> = {
   AccountExists:

@@ -12,11 +12,11 @@ export async function sendVerification(user: { id: string; email: string }, orig
     to: user.email,
     subject: `Confirm your email for ${BRAND.name}`,
     text: [
-      `Open this link to confirm your address and finish setting up your ${BRAND.name} notebook:`,
+      `Open this link and enter your password to confirm your address and finish setting up your ${BRAND.name} notebook:`,
       "",
       `${origin}/verify?token=${token}`,
       "",
-      "It works for 24 hours. If you didn't sign up, ignore this email and nothing happens.",
+      "It works for 24 hours. If you didn't sign up, ignore this email: without the password, nothing can be confirmed.",
     ].join("\n"),
   });
   return true;

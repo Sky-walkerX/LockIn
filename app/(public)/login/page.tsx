@@ -13,7 +13,7 @@ import { AuthShell, AuthBrand, GoogleMark } from "@/app/components/auth-shell";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
 import { api } from "@/lib/fetcher";
-import { EMAIL_NOT_VERIFIED, SIGN_IN_ERRORS } from "@/lib/accounts/errors";
+import { EMAIL_NOT_VERIFIED, SIGN_IN_ERRORS, TOO_MANY_ATTEMPTS } from "@/lib/accounts/errors";
 import { useAccountOptions } from "@/hooks/useAccount";
 
 function LoginForm({ nextParam, errorParam }: { nextParam: string | null; errorParam: string | null }) {
@@ -38,6 +38,7 @@ function LoginForm({ nextParam, errorParam }: { nextParam: string | null; errorP
       // redirect lands. We navigate manually in onSuccess.
       const result = await signIn("credentials", { redirect: false, email, password });
       if (result?.error === EMAIL_NOT_VERIFIED) throw new Error(EMAIL_NOT_VERIFIED);
+      if (result?.error === TOO_MANY_ATTEMPTS) throw new Error("Too many sign-in tries. Wait ten minutes and try again.");
       if (!result?.ok || result.error) {
         throw new Error("Login failed. Please check your credentials.");
       }

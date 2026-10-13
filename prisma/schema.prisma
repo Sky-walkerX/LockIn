@@ -80,6 +80,16 @@ model User {
   emailTokens   EmailToken[]
 }
 
+// How many times something was done lately, for the limits in lib/limits: one
+// row per thing counted ("login:ada@example.com", "register:203.0.113.7"),
+// with the window it's counted in. The same scheme as an agent token's own
+// per-minute window, for callers that have no token row to carry it.
+model RateLimit {
+  key         String   @id
+  windowStart DateTime
+  count       Int
+}
+
 // A one-time link sent by email: to prove an address at sign-up ("verify") or
 // to set a new password ("reset"). Only its sha256 is stored.
 model EmailToken {

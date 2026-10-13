@@ -1,8 +1,9 @@
+import { after } from "next/server";
 import { z } from "zod";
-import prisma from "@/lib/prisma";
 import { mailConfigured } from "@/lib/mail";
 import { sendPasswordReset } from "@/lib/accounts/emails";
-import { appOrigin, normalizeEmail } from "@/lib/accounts/policy";
+import { appOrigin, userByEmail } from "@/lib/accounts/policy";
+import { clientAddress, countAgainst, tooMany } from "@/lib/limits/rate";
 
 const Body = z.object({ email: z.email().max(254) });
 
@@ -15,14 +16,16 @@ export async function POST(request: Request) {
   if (!mailConfigured()) {
     return Response.json({ error: "This notebook doesn't send email. Ask whoever runs it to reset your password." }, { status: 503 });
   }
+  const limit = await countAgainst(`reset:${clientAddress(request.headers)}`, 10, 60 * 60);
+  if (!limit.ok) return tooMany(limit, "Too many requests");
 
-  const user = await prisma.user.findFirst({
-    where: { email: { equals: normalizeEmail(parsed.data.email), mode: "insensitive" } },
-    select: { id: true, email: true },
-  });
+  const user = await userByEmail(parsed.data.email);
   if (user) {
-    // A failure to send is logged, not reported: reporting it would say the address has an account.
-    await sendPasswordReset(user, appOrigin(request)).catch((error) => console.error("Sending the reset email failed", error));
+    const origin = appOrigin(request);
+    // Sent once the reply has gone, so the reply takes as long for an address
+    // with an account as for one without. A failure to send is logged, not
+    // reported: reporting it would say the address has an account.
+    after(() => sendPasswordReset(user, origin).catch((error) => console.error("Sending the reset email failed", error)));
   }
   return Response.json({ sent: true });
 }

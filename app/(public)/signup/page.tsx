@@ -79,8 +79,8 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
             <div>
               <h2 className="lk-display text-2xl font-black tracking-tight">Check your email</h2>
               <p className="mt-3 text-sm text-muted-foreground">
-                We sent a link to <b className="text-foreground">{confirmAt}</b>. Open it to confirm the address, then
-                sign in. It works for 24 hours.
+                We sent a link to <b className="text-foreground">{confirmAt}</b>. Open it and enter your password to
+                confirm the address. It works for 24 hours.
               </p>
               <Link href={loginHref} className="lk-btn mt-6 inline-block px-4 py-2.5 text-xs">
                 Go to sign in

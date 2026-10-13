@@ -14,7 +14,7 @@ import { sessionStands } from "@/lib/accounts/session";
 export async function getUserId(request: NextRequest): Promise<string | null> {
   const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
   if (!token?.sub) return null;
-  return (await sessionStands(token.sub, token.iat as number | undefined)) ? token.sub : null;
+  return (await sessionStands(token.sub, token.signedInAt)) ? token.sub : null;
 }
 
 export type TokenAuth = {

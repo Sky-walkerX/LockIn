@@ -39,11 +39,16 @@ export async function issueEmailToken(userId: string, purpose: EmailPurpose): Pr
   return token;
 }
 
+/** Whose link this is if it would still work, without spending it; null otherwise. */
+export async function emailTokenOwner(token: string, purpose: EmailPurpose): Promise<string | null> {
+  if (!token.startsWith(PREFIX[purpose])) return null;
+  const row = await prisma.emailToken.findUnique({ where: { tokenHash: hashToken(token) } });
+  return row && row.purpose === purpose && !row.usedAt && row.expiresAt > new Date() ? row.userId : null;
+}
+
 /** Whether a link would still work, without spending it. */
 export async function emailTokenStands(token: string, purpose: EmailPurpose): Promise<boolean> {
-  if (!token.startsWith(PREFIX[purpose])) return false;
-  const row = await prisma.emailToken.findUnique({ where: { tokenHash: hashToken(token) } });
-  return !!row && row.purpose === purpose && !row.usedAt && row.expiresAt > new Date();
+  return (await emailTokenOwner(token, purpose)) !== null;
 }
 
 /**
