@@ -22,7 +22,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Open http://localhost:3000 and create an account. The first start pulls the released images, waits for Postgres and applies the database migrations before the app starts. Images are published for amd64 and arm64; where there's none for your version, Compose builds from the checkout instead.
+Open http://localhost:3000 and create an account. The port answers only on the machine itself; for a server, see HTTPS below. The first start pulls the released images, waits for Postgres and applies the database migrations before the app starts. Images are published for amd64 and arm64; where there's none for your version, Compose builds from the checkout instead.
 
 What runs:
 
@@ -76,7 +76,7 @@ Settings in `.env`:
 | `AUTH_SECRET` | Required. Signs sessions and upload links. |
 | `PUBLIC_URL` | The address people open LockIn at. Default `http://localhost:3000`. |
 | `LOCKIN_PORT` | Host port. Default `3000`. |
-| `LOCKIN_BIND` | Which of the machine's addresses that port listens on. Default `0.0.0.0` (all of them); `127.0.0.1` when a proxy on the machine is the way in. |
+| `LOCKIN_BIND` | Which of the machine's addresses that port listens on. Default `127.0.0.1`: the machine itself, which is you or a proxy running on it. |
 | `LOCKIN_VERSION` | The release to run, such as `1.0.0`. Default: the release your checkout is. |
 | `POSTGRES_PASSWORD` | Password for the bundled Postgres. |
 | `SIGNUP` | `open` (the default) lets anyone who can reach the address make an account. `closed` stops new accounts once the first one exists. |
@@ -84,7 +84,7 @@ Settings in `.env`:
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Optional. Outgoing email, see Accounts below. |
 | `STORAGE_QUOTA_MB` | Megabytes of images and PDFs each account may store. Default `1024`; `0` for no ceiling. |
 | `RATE_LIMITS` | `off` drops the limits below. Default `on`. |
-| `TRUSTED_PROXY_HOPS` | How many reverse proxies stand in front of LockIn. Default `1`. |
+| `TRUSTED_PROXY_HOPS` | How many reverse proxies stand in front of LockIn. Default `1`; `0` when visitors reach the port directly. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |
 
 ### HTTPS
@@ -93,16 +93,17 @@ On a machine the internet can reach, LockIn needs HTTPS: without it sessions and
 
 ```bash
 PUBLIC_URL=https://notes.example.com   # no trailing slash
-LOCKIN_BIND=127.0.0.1                  # port 3000 stops answering from outside
 ```
 
 ```bash
 docker compose --profile https up -d
 ```
 
-`LOCKIN_BIND` matters here. Docker publishes ports past most host firewalls, and someone reaching port 3000 directly skips HTTPS and can name any address as their own to get around the limits below. The proxy's settings are in `Caddyfile`: a year of `Strict-Transport-Security`, and a 60 MB cap on a request's body.
+The proxy's settings are in `Caddyfile`: a year of `Strict-Transport-Security`, and a 60 MB cap on a request's body.
 
-With a proxy of your own (nginx, Traefik) leave the profile off and do the same three things: set `PUBLIC_URL`, keep port 3000 to the machine, and have the proxy send `Strict-Transport-Security`. That's the one security header LockIn leaves out, since only the proxy knows the site is served over HTTPS; the rest (a content security policy, no framing by other sites, no content sniffing) it sends itself.
+With a proxy of your own on the machine (nginx, Traefik) leave the profile off, set `PUBLIC_URL`, point the proxy at `127.0.0.1:3000` and have it send `Strict-Transport-Security`. That's the one security header LockIn leaves out, since only the proxy knows the site is served over HTTPS; the rest (a content security policy, no framing by other sites, no content sniffing) it sends itself.
+
+Port 3000 isn't open to the network, so the proxy can't be gone around. To use LockIn from other machines without a proxy, on a home network say, set `LOCKIN_BIND=0.0.0.0` and `TRUSTED_PROXY_HOPS=0`. Docker publishes that port past most host firewalls, and everything, passwords and agent tokens included, then travels unencrypted.
 
 ### Accounts
 
@@ -131,7 +132,7 @@ LockIn counts a few things so one caller can't wear the instance out, and answer
 | Document extraction | 30 an hour per account |
 | Agents (MCP) | 60 requests a minute per token |
 
-Limits per network go by the visitor's address, which LockIn only knows from the `X-Forwarded-For` header its proxy sets. That's another reason to run it behind one. With a CDN in front of the proxy as well, set `TRUSTED_PROXY_HOPS=2`, or everyone behind the CDN is counted as one visitor.
+Limits per network go by the visitor's address, which LockIn only knows from the `X-Forwarded-For` header its proxy sets. That's another reason to run it behind one. With a CDN in front of the proxy as well, set `TRUSTED_PROXY_HOPS=2` and have the proxy keep the CDN's header (`Caddyfile` says how), or everyone behind the CDN is counted as one visitor. With no proxy at all, `TRUSTED_PROXY_HOPS=0`: a visitor who reaches LockIn directly writes that header themselves, so it isn't believed and those limits count all visitors together.
 
 A request's fields are capped too (a note's body at a million characters, a title at 300). The request body itself is not: let the proxy cap it, at 60 MB or more so PDF uploads still fit (the `https` profile does; `client_max_body_size` in nginx).
 

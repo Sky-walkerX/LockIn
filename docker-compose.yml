@@ -46,10 +46,11 @@ services:
     image: ghcr.io/sky-walkerx/lockin:${LOCKIN_VERSION:-0.1.0}
     build: { context: ., target: app }
     restart: unless-stopped
-    # LOCKIN_BIND=127.0.0.1 keeps this port to the machine itself, for when a
-    # proxy on it (the https profile, or your own) is the way in.
+    # Published to the machine itself only, so a proxy in front (the https
+    # profile, or your own) can't be gone around. LOCKIN_BIND=0.0.0.0 opens it
+    # to the network; set TRUSTED_PROXY_HOPS=0 with it.
     ports:
-      - "${LOCKIN_BIND:-0.0.0.0}:${LOCKIN_PORT:-3000}:3000"
+      - "${LOCKIN_BIND:-127.0.0.1}:${LOCKIN_PORT:-3000}:3000"
     environment:
       <<: *db-env
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env (openssl rand -base64 32)}
@@ -73,7 +74,8 @@ services:
       STORAGE_QUOTA_MB: ${STORAGE_QUOTA_MB:-1024}
       # "off" drops the limits on sign-in tries, sign-ups and the like.
       RATE_LIMITS: ${RATE_LIMITS:-on}
-      # How many proxies stand between visitors and LockIn (see README).
+      # How many proxies stand between visitors and LockIn; 0 when visitors
+      # reach port 3000 directly (see README).
       TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
       # Used only when the ingest profile is running.
       INGEST_URL: ${INGEST_URL:-}
@@ -118,7 +120,7 @@ services:
       start_period: 30s
 
   # Optional: `docker compose --profile https up`, with PUBLIC_URL set to the
-  # https:// address and LOCKIN_BIND=127.0.0.1 in .env.
+  # https:// address in .env.
   caddy:
     profiles: [https]
     image: caddy:2-alpine

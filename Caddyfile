@@ -13,5 +13,10 @@
 		max_size 60MB
 	}
 
+	# Caddy tells LockIn the address each visitor connected from, and drops
+	# any X-Forwarded-For the visitor sent, which is what TRUSTED_PROXY_HOPS=1
+	# expects. With a CDN in front of this, name its ranges under
+	# `servers { trusted_proxies static … }` in the global options and set
+	# TRUSTED_PROXY_HOPS=2, or everyone behind the CDN counts as one visitor.
 	reverse_proxy app:3000
 }

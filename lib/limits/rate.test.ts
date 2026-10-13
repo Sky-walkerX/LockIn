@@ -22,6 +22,20 @@ describe("clientAddress", () => {
   it("has nothing to go on without the header", () => {
     expect(clientAddress(from())).toBe("unknown");
   });
+
+  it("believes none of it when no proxy stands in front", () => {
+    vi.stubEnv("TRUSTED_PROXY_HOPS", "0");
+    // Reached directly, the caller wrote all of this.
+    expect(clientAddress(from("6.6.6.6"))).toBe("unknown");
+    expect(clientAddress(from("6.6.6.6, 203.0.113.7"))).toBe("unknown");
+  });
+
+  it("reads a setting that isn't a count as one proxy", () => {
+    for (const value of ["", " ", "-1", "1.5", "many"]) {
+      vi.stubEnv("TRUSTED_PROXY_HOPS", value);
+      expect(clientAddress(from("1.1.1.1, 203.0.113.7"))).toBe("203.0.113.7");
+    }
+  });
 });
 
 describe("wait", () => {

@@ -60,9 +60,15 @@ export function wait(seconds: number): string {
  * TRUSTED_PROXY_HOPS says how many proxies stand in front (1 unless set): the
  * address is that many entries from the end. With no such header there is no
  * address to go on, and everyone shares one count.
+ *
+ * 0 is for a LockIn that visitors reach directly. Then the whole header is the
+ * caller's to write, a fresh address per request if they like, so none of it
+ * is believed and everyone shares one count again.
  */
 export function clientAddress(headers: Headers): string {
-  const hops = Math.max(1, Number(process.env.TRUSTED_PROXY_HOPS) || 1);
+  const set = Number(process.env.TRUSTED_PROXY_HOPS?.trim() || 1);
+  const hops = Number.isInteger(set) && set >= 0 ? set : 1;
+  if (hops === 0) return "unknown";
   const seen = (headers.get("x-forwarded-for") ?? "")
     .split(",")
     .map((s) => s.trim())
