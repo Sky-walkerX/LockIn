@@ -173,7 +173,7 @@ OLLAMA_ORIGINS=https://your-lockin ollama serve
 
 Running both on localhost needs no configuration.
 
-When your notes outgrow one prompt, Ask stops trimming and starts searching: notes are chunked and embedded (by the ingest service, or in the browser), and a question gets an outline of the subject plus the passages that score as relevant.
+When your notes outgrow one prompt, Ask stops trimming and starts searching: notes are chunked and embedded (by the ingest service, or in the browser), and a question gets an outline of the subject plus the passages that score as relevant. Embedding in the browser downloads the model once from Hugging Face (about 130 MB, then cached); the code that runs it is served by LockIn itself.
 
 Every note and saved resource has a page number in the notebook. The model sees each one labelled with its page and cites it like `[p. 12]`; in the reply that's a link to the note. Under each answer, **From your notebook** lists the passages it used and the pages it cited. A citation of a passage opens the note scrolled to it, with the passage marked.
 

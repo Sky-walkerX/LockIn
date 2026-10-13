@@ -4,6 +4,7 @@ node_modules
 .env*
 !.env.example
 storage
+public/ort
 .impeccable
 .claude
 .agents

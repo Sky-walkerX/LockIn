@@ -15,9 +15,9 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-# The app has no public/ folder today; the runtime stage copies one, so make
-# sure it exists whether or not the repo carries any static files.
-RUN mkdir -p public && pnpm run build
+# The build fills public/ort with the CPU embedder's runtime, taken from
+# node_modules (scripts/copy-ort.mjs); the runtime stage copies public/.
+RUN pnpm run build
 
 # Migrate: a one-shot container that brings the database schema up to date
 # before the app starts (prisma migrate deploy).

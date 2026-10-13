@@ -12,6 +12,7 @@ const eslintConfig = [
       "build/**",
       "app/generated/**", // Prisma's generated client
       "service/**", // the Python ingest service
+      "public/ort/**", // onnxruntime's build, copied from node_modules
       ".impeccable/**", // design prototypes and review captures (gitignored)
       "next-env.d.ts",
     ],

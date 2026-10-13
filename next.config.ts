@@ -8,9 +8,9 @@ const SESSION_COOKIES = ["__Secure-next-auth.session-token", "next-auth.session-
 // kind that stamps each inline script, since that needs every page rendered
 // per request and the landing page is prerendered; so inline scripts are
 // allowed, and the rest is closed:
-//  - scripts come from LockIn itself, plus the one CDN the in-browser
-//    embedding model takes its runtime from. WebAssembly may be compiled, for
-//    that model and the chat one. React's dev tooling needs eval; a build doesn't.
+//  - scripts come from LockIn itself and nowhere else. WebAssembly may be
+//    compiled, for the in-browser embedding and chat models. React's dev
+//    tooling needs eval; a build doesn't.
 //  - connections aren't restricted: Ask talks to whichever model endpoint the
 //    user configured, and the models download from Hugging Face.
 //  - images and framed PDFs come from anywhere over https (a note can show any
@@ -22,7 +22,7 @@ const dev = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = ({ formsStayHere }: { formsStayHere: boolean }) =>
   [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net${dev ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${dev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src * data: blob:",
     "font-src 'self' data:",
@@ -64,6 +64,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },
+      // The CPU embedder's runtime (scripts/copy-ort.mjs): 14 MB that never
+      // changes under an address that carries its version.
+      {
+        source: "/ort/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
       // "Allow" on this page is a form whose answer sends the browser on to
       // the app that asked, at an address checked against the ones that app
       // registered. Chrome counts that redirect as the form's destination,

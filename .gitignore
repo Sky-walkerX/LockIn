@@ -38,6 +38,9 @@ yarn-error.log*
 # local uploads when files are stored on disk (lib/storage)
 /storage
 
+# the CPU embedder's runtime, copied from node_modules (scripts/copy-ort.mjs)
+/public/ort/
+
 # vercel
 .vercel
 

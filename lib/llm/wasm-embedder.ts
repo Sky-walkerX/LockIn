@@ -35,11 +35,38 @@ type FeatureExtractor = (
 
 let extractorPromise: Promise<FeatureExtractor> | null = null;
 
+/**
+ * The library would fetch onnxruntime's WebAssembly build, and the script that
+ * starts it, from a CDN. LockIn serves its own copy (`scripts/copy-ort.mjs`
+ * puts it in public/ at build), so the page runs no code from anywhere else.
+ * The folder carries the runtime's version: the script and the binary have to
+ * be the pair this build of the library was written against.
+ *
+ * It's the plain CPU build on every browser. The library's default is a
+ * larger one that can also drive WebGPU, which this path never does.
+ *
+ * The library's own cache for these two files is off. It hands the script to
+ * the browser as a blob: address, which the content policy (next.config.ts)
+ * refuses, and it isn't needed: the files are served to be cached for good.
+ */
+function useOwnRuntime(env: {
+  useWasmCache: boolean;
+  backends: { onnx: { versions?: { web?: string }; wasm?: { wasmPaths?: unknown } } };
+}) {
+  const onnx = env.backends.onnx;
+  const version = onnx.versions?.web;
+  if (!version || !onnx.wasm) throw new Error("The embedding runtime didn't load.");
+  const base = `${location.origin}/ort/${version}/ort-wasm-simd-threaded`;
+  onnx.wasm.wasmPaths = { mjs: `${base}.mjs`, wasm: `${base}.wasm` };
+  env.useWasmCache = false;
+}
+
 export type WasmProgress = { progress: number; text?: string };
 
 function loadExtractor(onProgress?: (report: WasmProgress) => void): Promise<FeatureExtractor> {
   extractorPromise ??= (async () => {
-    const { pipeline } = await import("@huggingface/transformers");
+    const { pipeline, env } = await import("@huggingface/transformers");
+    useOwnRuntime(env);
     const extractor = await pipeline("feature-extraction", ONNX_EMBEDDING_REPO, {
       // fp32 keeps this in the same vector space as the WebGPU path.
       dtype: "fp32",
