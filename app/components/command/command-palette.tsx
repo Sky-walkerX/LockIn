@@ -398,6 +398,11 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
               Loading the model… {Math.round(st.progress * 100)}%
             </p>
           )}
+          {!tooShort && semantic.active && st.status === "unavailable" && (
+            <p className="lk-print px-2.5 py-2 text-2xs text-muted-foreground">
+              Search by meaning couldn&apos;t start in this browser. Keyword search still works.
+            </p>
+          )}
           {!tooShort && semantic.active && st.status === "ready" && semantic.unindexed > 0 && (
             <p className="lk-print px-2.5 py-1.5 text-2xs text-muted-foreground">
               {semantic.unindexed} item{semantic.unindexed === 1 ? " isn't" : "s aren't"} indexed yet — they&apos;re indexed

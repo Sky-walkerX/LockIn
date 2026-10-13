@@ -45,7 +45,17 @@ export function useSemanticSearch(q: string) {
     setState({ status: "loading", progress: 0 });
     try {
       const { getEmbedder } = await import("@/lib/llm/embedder");
-      const embedder = await getEmbedder(chatModel(), (r) => setState({ status: "loading", progress: r.progress }));
+      // An in-browser embedder downloads its model the first time it embeds
+      // something, not when it's handed out, and reports progress then. So
+      // the first embedding happens here, while this still says "loading":
+      // left to the first search, its progress would arrive after "ready"
+      // and put the palette back to loading for good.
+      let loaded = false;
+      const embedder = await getEmbedder(chatModel(), (r) => {
+        if (!loaded) setState({ status: "loading", progress: r.progress });
+      });
+      await embedder?.embedQuery("warm up");
+      loaded = true;
       setState(embedder ? { status: "ready", embedder } : { status: "unavailable" });
     } catch {
       setState({ status: "unavailable" });
