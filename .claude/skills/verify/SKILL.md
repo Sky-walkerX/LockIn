@@ -13,8 +13,9 @@ pnpm build           # prisma generate + next build
 
 ## Database
 Fresh clones have **no `.env` / `.env.local`** (gitignored) — the app cannot reach
-the real Supabase DB. Boot a throwaway Postgres instead (no Docker/psql on this
-machine):
+the real Supabase DB. Boot a throwaway Postgres instead. With Docker running,
+`docker run -d -p 127.0.0.1:54329:5432 -e POSTGRES_USER=lockin -e POSTGRES_PASSWORD=lockin -e POSTGRES_DB=lockin postgres:17-alpine`
+then `prisma migrate deploy`; without it:
 
 ```bash
 # in a scratch dir:
@@ -29,8 +30,16 @@ Pass env inline — do NOT create `.env` files in the repo:
 
 ```bash
 DATABASE_URL=… DIRECT_URL=… AUTH_SECRET=x NEXTAUTH_SECRET=x \
-NEXTAUTH_URL=http://localhost:3001 npx next dev --turbopack -p 3001
+NEXTAUTH_URL=http://localhost:3001 STORAGE_DRIVER=local STORAGE_DIR=/tmp/lockin-storage \
+npx next dev --turbopack -p 3001
 ```
+
+**`.env.local` is loaded too.** Next reads it on top of what you pass, and a
+working checkout's copy holds the real Supabase keys. Inline variables win, but
+anything you don't override comes from the file: without `STORAGE_DRIVER=local`
+a test upload lands in the production storage bucket. Check which names it
+defines (`sed -E 's/=.*//' .env.local`) and override every one that points at
+something real.
 
 Create a user via `POST /api/register` (`{email, password≥8}`), then log in.
 
