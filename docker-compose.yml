@@ -11,6 +11,9 @@
 # Add PDF/link text extraction and server-side embeddings:
 #   docker compose --profile ingest up -d
 #
+# Add HTTPS on a machine the internet can reach (see README):
+#   docker compose --profile https up -d
+#
 # Data lives in two volumes: `db` (Postgres) and `uploads` (note images, PDFs).
 
 services:
@@ -43,8 +46,10 @@ services:
     image: ghcr.io/sky-walkerx/lockin:${LOCKIN_VERSION:-0.1.0}
     build: { context: ., target: app }
     restart: unless-stopped
+    # LOCKIN_BIND=127.0.0.1 keeps this port to the machine itself, for when a
+    # proxy on it (the https profile, or your own) is the way in.
     ports:
-      - "${LOCKIN_PORT:-3000}:3000"
+      - "${LOCKIN_BIND:-0.0.0.0}:${LOCKIN_PORT:-3000}:3000"
     environment:
       <<: *db-env
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env (openssl rand -base64 32)}
@@ -112,6 +117,26 @@ services:
       retries: 3
       start_period: 30s
 
+  # Optional: `docker compose --profile https up`, with PUBLIC_URL set to the
+  # https:// address and LOCKIN_BIND=127.0.0.1 in .env.
+  caddy:
+    profiles: [https]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PUBLIC_URL: ${PUBLIC_URL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # The certificate and its key. Losing them only means asking for new ones.
+      - caddy:/data
+    depends_on:
+      - app
+
 volumes:
   db:
   uploads:
+  caddy:

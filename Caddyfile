@@ -1,0 +1,17 @@
+# HTTPS in front of LockIn. Used by `docker compose --profile https up -d`.
+#
+# PUBLIC_URL (https://notes.example.com, no trailing slash) is the site. Caddy
+# gets a certificate for that name from Let's Encrypt and renews it, so the
+# name has to point at this machine already, with ports 80 and 443 reachable.
+{$PUBLIC_URL} {
+	# Browsers that have been here keep to HTTPS for a year.
+	header Strict-Transport-Security "max-age=31536000"
+
+	# LockIn caps a request's fields, not its body. The largest thing it takes
+	# is a 50 MB PDF.
+	request_body {
+		max_size 60MB
+	}
+
+	reverse_proxy app:3000
+}

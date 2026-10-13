@@ -32,6 +32,7 @@ What runs:
 | `migrate` | Applies migrations (`prisma migrate deploy`) and exits. |
 | `app` | LockIn on port 3000. Note images and PDFs are stored in the `uploads` volume. |
 | `ingest` | Optional. PDF and web-page text extraction plus server-side embeddings. |
+| `caddy` | Optional. HTTPS in front of the app, see below. |
 
 To add text extraction and server-side embeddings, set `INGEST_SECRET` (any long random string) and `INGEST_URL=http://ingest:8080` in `.env`, then:
 
@@ -75,6 +76,7 @@ Settings in `.env`:
 | `AUTH_SECRET` | Required. Signs sessions and upload links. |
 | `PUBLIC_URL` | The address people open LockIn at. Default `http://localhost:3000`. |
 | `LOCKIN_PORT` | Host port. Default `3000`. |
+| `LOCKIN_BIND` | Which of the machine's addresses that port listens on. Default `0.0.0.0` (all of them); `127.0.0.1` when a proxy on the machine is the way in. |
 | `LOCKIN_VERSION` | The release to run, such as `1.0.0`. Default: the release your checkout is. |
 | `POSTGRES_PASSWORD` | Password for the bundled Postgres. |
 | `SIGNUP` | `open` (the default) lets anyone who can reach the address make an account. `closed` stops new accounts once the first one exists. |
@@ -85,7 +87,22 @@ Settings in `.env`:
 | `TRUSTED_PROXY_HOPS` | How many reverse proxies stand in front of LockIn. Default `1`. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |
 
-Put a reverse proxy (Caddy, nginx, Traefik) in front for HTTPS, and set `PUBLIC_URL` to the public address. LockIn sends its own security headers (a content security policy, no framing by other sites, no content sniffing); the one it leaves to the proxy is `Strict-Transport-Security`, since only the proxy knows the site is served over HTTPS.
+### HTTPS
+
+On a machine the internet can reach, LockIn needs HTTPS: without it sessions and agent tokens cross the network in the clear, and browsers won't run a local model. The `https` profile adds Caddy, which gets a certificate from Let's Encrypt and renews it. Point your domain at the machine, open ports 80 and 443, and set in `.env`:
+
+```bash
+PUBLIC_URL=https://notes.example.com   # no trailing slash
+LOCKIN_BIND=127.0.0.1                  # port 3000 stops answering from outside
+```
+
+```bash
+docker compose --profile https up -d
+```
+
+`LOCKIN_BIND` matters here. Docker publishes ports past most host firewalls, and someone reaching port 3000 directly skips HTTPS and can name any address as their own to get around the limits below. The proxy's settings are in `Caddyfile`: a year of `Strict-Transport-Security`, and a 60 MB cap on a request's body.
+
+With a proxy of your own (nginx, Traefik) leave the profile off and do the same three things: set `PUBLIC_URL`, keep port 3000 to the machine, and have the proxy send `Strict-Transport-Security`. That's the one security header LockIn leaves out, since only the proxy knows the site is served over HTTPS; the rest (a content security policy, no framing by other sites, no content sniffing) it sends itself.
 
 ### Accounts
 
@@ -116,7 +133,7 @@ LockIn counts a few things so one caller can't wear the instance out, and answer
 
 Limits per network go by the visitor's address, which LockIn only knows from the `X-Forwarded-For` header its proxy sets. That's another reason to run it behind one. With a CDN in front of the proxy as well, set `TRUSTED_PROXY_HOPS=2`, or everyone behind the CDN is counted as one visitor.
 
-A request's fields are capped too (a note's body at a million characters, a title at 300). The request body itself is not: let the proxy cap it, at 60 MB or more so PDF uploads still fit (`request_body` in Caddy, `client_max_body_size` in nginx).
+A request's fields are capped too (a note's body at a million characters, a title at 300). The request body itself is not: let the proxy cap it, at 60 MB or more so PDF uploads still fit (the `https` profile does; `client_max_body_size` in nginx).
 
 ### How big a notebook can get
 

@@ -9,5 +9,6 @@ public/ort
 .claude
 .agents
 service
+Caddyfile
 coverage
 *.log
