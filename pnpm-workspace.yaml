@@ -14,3 +14,11 @@ onlyBuiltDependencies:
   - "prisma"
   - "sharp"
   - "unrs-resolver"
+# Minimum versions for packages that come in through other dependencies.
+overrides:
+  mysql2: ">=3.23.1"
+  deepmerge-ts: ">=8.0.0"
+  source-map-js: ">=1.2.2"
+  # One KaTeX for the stylesheet (ours) and the renderer (rehype-katex asks
+  # for 0.16): the two must match, or sub- and superscripts lose their size.
+  katex: "$katex"
