@@ -55,6 +55,15 @@ services:
       # Optional: Google sign-in appears only when both are set.
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # "closed" stops new accounts once the first one exists.
+      SIGNUP: ${SIGNUP:-open}
+      # Optional: with SMTP_HOST set, sign-up confirms the address by email
+      # and a forgotten password can be reset from a link.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
       # Used only when the ingest profile is running.
       INGEST_URL: ${INGEST_URL:-}
       INGEST_SECRET: ${INGEST_SECRET:-}

@@ -10,6 +10,7 @@ import { Input } from "@/app/components/ui/input";
 import { AuthShell, AuthBrand } from "@/app/components/auth-shell";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
+import { useAccountOptions } from "@/hooks/useAccount";
 
 function SignupForm({ nextParam }: { nextParam: string | null }) {
   const router = useRouter();
@@ -24,6 +25,9 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Set once the account exists and a confirmation link has been emailed.
+  const [confirmAt, setConfirmAt] = useState<string | null>(null);
+  const { data: options } = useAccountOptions();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +49,9 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
       const data = await response.json();
       if (!response.ok) {
         setError(data.message || "Failed to register");
+      } else if (data.verify) {
+        // Nothing to sign in to until the address is confirmed.
+        setConfirmAt(email);
       } else {
         setSuccess(data.message || "Registration successful! Please log in.");
         setTimeout(() => router.push(loginHref), 2000);
@@ -68,52 +75,77 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
           <Link href="/" className="lk-display mb-5 block text-2xl font-black tracking-tight lg:hidden">
             <Wordmark />
           </Link>
-          <div className="mb-6">
-            <h2 className="lk-display text-2xl font-black tracking-tight">Create account</h2>
-            <p className="mt-1 text-sm text-muted-foreground">It starts empty, and you can export all of it whenever you like.</p>
-          </div>
-
-          {error && (
-            <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2">
-              <p className="lk-print text-xs text-destructive">{error}</p>
+          {confirmAt ? (
+            <div>
+              <h2 className="lk-display text-2xl font-black tracking-tight">Check your email</h2>
+              <p className="mt-3 text-sm text-muted-foreground">
+                We sent a link to <b className="text-foreground">{confirmAt}</b>. Open it to confirm the address, then
+                sign in. It works for 24 hours.
+              </p>
+              <Link href={loginHref} className="lk-btn mt-6 inline-block px-4 py-2.5 text-xs">
+                Go to sign in
+              </Link>
             </div>
-          )}
-          {success && (
-            <div className="mb-5 rounded-md border px-3 py-2" style={{ borderColor: "var(--lk-ok)", background: "color-mix(in srgb, var(--lk-ok) 12%, transparent)" }}>
-              <p className="lk-print text-xs" style={{ color: "var(--lk-ok)" }}>{success}</p>
+          ) : options?.signup === false ? (
+            <div>
+              <h2 className="lk-display text-2xl font-black tracking-tight">Sign-up is closed</h2>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Whoever runs this notebook isn&apos;t taking new accounts. If you have one, sign in.
+              </p>
+              <Link href={loginHref} className="lk-btn mt-6 inline-block px-4 py-2.5 text-xs">
+                Sign in
+              </Link>
             </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h2 className="lk-display text-2xl font-black tracking-tight">Create account</h2>
+                <p className="mt-1 text-sm text-muted-foreground">It starts empty, and you can export all of it whenever you like.</p>
+              </div>
+
+              {error && (
+                <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2">
+                  <p className="lk-print text-xs text-destructive">{error}</p>
+                </div>
+              )}
+              {success && (
+                <div className="mb-5 rounded-md border px-3 py-2" style={{ borderColor: "var(--lk-ok)", background: "color-mix(in srgb, var(--lk-ok) 12%, transparent)" }}>
+                  <p className="lk-print text-xs" style={{ color: "var(--lk-ok)" }}>{success}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSignUp} className="flex flex-col gap-4">
+                <Field id="name" label="Full name">
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
+                </Field>
+
+                <Field id="email" label="Email">
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                </Field>
+
+                <Field id="password" label="Password">
+                  <PasswordInput id="password" value={password} onChange={setPassword} show={showPassword} setShow={setShowPassword} placeholder="Create a password" />
+                </Field>
+
+                <Field id="confirmPassword" label="Confirm password">
+                  <PasswordInput id="confirmPassword" value={confirmPassword} onChange={setConfirmPassword} show={showConfirmPassword} setShow={setShowConfirmPassword} placeholder="Repeat password" />
+                </Field>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="lk-btn px-4 py-2.5 text-xs disabled:opacity-50"
+                >
+                  {isLoading ? "Creating account…" : "Create account"}
+                </button>
+              </form>
+
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href={loginHref} className="font-semibold text-foreground hover:underline">Sign in</Link>
+              </p>
+            </>
           )}
-
-          <form onSubmit={handleSignUp} className="flex flex-col gap-4">
-            <Field id="name" label="Full name">
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
-            </Field>
-
-            <Field id="email" label="Email">
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
-            </Field>
-
-            <Field id="password" label="Password">
-              <PasswordInput id="password" value={password} onChange={setPassword} show={showPassword} setShow={setShowPassword} placeholder="Create a password" />
-            </Field>
-
-            <Field id="confirmPassword" label="Confirm password">
-              <PasswordInput id="confirmPassword" value={confirmPassword} onChange={setConfirmPassword} show={showConfirmPassword} setShow={setShowConfirmPassword} placeholder="Repeat password" />
-            </Field>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="lk-btn px-4 py-2.5 text-xs disabled:opacity-50"
-            >
-              {isLoading ? "Creating account…" : "Create account"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href={loginHref} className="font-semibold text-foreground hover:underline">Sign in</Link>
-          </p>
         </div>
       </div>
     </AuthShell>

@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 // Where note images and uploaded PDFs live. Two backends:
@@ -173,4 +173,42 @@ export async function createUpload(
     uploadUrl: `${base}/storage/v1${signedPath}`,
     publicUrl: `${base}/storage/v1/object/public/${name}/${objectPath}`,
   };
+}
+
+/**
+ * Removes everything a user stored, when their account is deleted. Files sit
+ * under `<bucket>/<userId>/`, so it's that folder in each bucket. Best effort:
+ * the account goes either way, and a file that stays behind is reachable only
+ * by a link nothing points to any more.
+ */
+export async function deleteUserFiles(userId: string): Promise<void> {
+  if (!/^[A-Za-z0-9-]{1,64}$/.test(userId)) return;
+  const buckets = Object.values(BUCKETS);
+
+  if (storageDriver() === "local") {
+    const root = storageDir();
+    await Promise.all(buckets.map((bucket) => rm(path.join(root, bucket, userId), { recursive: true, force: true })));
+    return;
+  }
+
+  const { base, key } = supabase();
+  const headers = { Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
+  for (const bucket of buckets) {
+    // Listed and removed a page at a time until the folder is empty.
+    for (let page = 0; page < 100; page++) {
+      const listed = await fetch(`${base}/storage/v1/object/list/${bucket}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ prefix: `${userId}/`, limit: 1000 }),
+      });
+      const files = listed.ok ? ((await listed.json()) as { name: string }[]) : [];
+      if (files.length === 0) break;
+      const removed = await fetch(`${base}/storage/v1/object/${bucket}`, {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ prefixes: files.map((f) => `${userId}/${f.name}`) }),
+      });
+      if (!removed.ok) break;
+    }
+  }
 }

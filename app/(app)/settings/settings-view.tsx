@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { Download, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { FocusSettings } from "@/app/components/focus/focus-settings";
 import { AgentConnections } from "@/app/components/settings/agent-connections";
+import { AccountSecurity } from "@/app/components/settings/account-security";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
 const THEMES = [
@@ -110,6 +111,11 @@ export function SettingsView() {
           <div className="lk-card p-4">
             <FocusSettings />
           </div>
+        </section>
+
+        <section>
+          <div className="lk-sec mb-3">password and account</div>
+          <AccountSecurity />
         </section>
       </div>
     </main>

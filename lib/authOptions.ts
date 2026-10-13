@@ -1,19 +1,22 @@
-// src/lib/authOptions.ts
 import type { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs"; // For password comparison
+import bcrypt from "bcryptjs";
+import prisma from "@/lib/prisma";
+import { mailConfigured } from "@/lib/mail";
+import { canCreateAccount, normalizeEmail } from "@/lib/accounts/policy";
+import { sessionStands } from "@/lib/accounts/session";
+import { EMAIL_NOT_VERIFIED } from "@/lib/accounts/errors";
 
-// IMPORT THE GLOBAL PRISMA CLIENT HERE
-import prisma from "@/lib/prisma"; // Your global Prisma client instance
+/** One user by email, whatever case it was typed or stored in. */
+function findByEmail(email: string) {
+  return prisma.user.findFirst({ where: { email: { equals: normalizeEmail(email), mode: "insensitive" } } });
+}
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
-  session: {
-    strategy: "jwt", // Use JWT strategy for stateless sessions
-  },
+  session: { strategy: "jwt" },
   providers: [
-    // --- Google OAuth Provider ---
     // Only when configured: a self-hosted copy without Google credentials
     // signs in with email and password, and the sign-in page hides the button.
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -24,161 +27,105 @@ export const authOptions: NextAuthOptions = {
           }),
         ]
       : []),
-    // --- Credentials Provider (for Email/Password Login) ---
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "jsmith@example.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing email or password");
-        }
+        // One message for every way this fails, so the form can't be used to
+        // find out which addresses have accounts.
+        const refused = new Error("Invalid credentials");
+        if (!credentials?.email || !credentials?.password) throw refused;
 
-        // Use the imported global prisma instance here to find the user
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+        const user = await findByEmail(credentials.email);
+        if (!user?.password) throw refused;
+        if (!(await bcrypt.compare(credentials.password, user.password))) throw refused;
 
-        if (!user || !user.password) {
-          throw new Error("No user found with this email or password not set");
-        }
+        // Said only to someone who knows the password. Without email set up
+        // there's no link to send, so an unconfirmed address signs in.
+        if (!user.emailVerifiedAt && mailConfigured()) throw new Error(EMAIL_NOT_VERIFIED);
 
-        const isValidPassword = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!isValidPassword) {
-          throw new Error("Invalid credentials");
-        }
-
-        // Return the user object from the database for credentials login
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        };
+        return { id: user.id, name: user.name, email: user.email };
       },
     }),
   ],
   pages: {
     signIn: "/login",
-    error: "/login", // Redirect to login page on error for better UX
+    error: "/login",
   },
   callbacks: {
-    // --- IMPORTANT: This signIn callback is crucial for OAuth when NOT using PrismaAdapter ---
-    async signIn({ user, account}) {
-      // This callback runs after a successful authentication with any provider
-      // 'user' here is the object returned by the provider (e.g., Google profile for GoogleProvider)
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google") return true;
 
-      if (account?.provider === "google") {
-        // This block handles users signing in via Google OAuth
-        try {
-          // Check if a user with this email already exists in your database
-          let existingUser = await prisma.user.findUnique({
-            where: { email: user.email as string },
+      // Google says whether the address is the account holder's own.
+      const email = user.email;
+      if (!email || (profile as GoogleProfile | undefined)?.email_verified !== true) return false;
+
+      try {
+        let existing = await findByEmail(email);
+        if (existing) {
+          // Signing in with Google lands in the account that has this address
+          // only if the address was proven by whoever made that account.
+          // Otherwise anyone could register someone's address with a password
+          // of their own and wait for the owner to arrive through Google.
+          if (!existing.emailVerifiedAt) return "/login?error=AccountExists";
+        } else {
+          if (!(await canCreateAccount())) return "/login?error=SignupClosed";
+          existing = await prisma.user.create({
+            data: { email: normalizeEmail(email), name: user.name, emailVerifiedAt: new Date() },
           });
-
-          if (!existingUser) {
-            // If the user does NOT exist in your database, create a new User record
-            console.log(`Creating new user in DB for OAuth: ${user.email}`);
-            existingUser = await prisma.user.create({
-              data: {
-                // Use the ID provided by NextAuth.js/OAuth. This ID will be used as token.sub.
-                // It's crucial that this ID matches the one NextAuth.js expects for the JWT.
-                id: user.id,
-                email: user.email as string,
-                name: user.name,
-                // Do NOT set a password for OAuth users here
-                // Consider setting emailVerified if you trust the OAuth provider's verification
-                // emailVerified: new Date(),
-                // image: user.image, // If your User model has an 'image' field
-              },
-            });
-          } else {
-            // If the user already exists, you might want to update their details
-            // (e.g., name, image) if they've changed on the OAuth provider's side.
-            console.log(`Existing user found in DB for OAuth: ${user.email}`);
-            // Example: Update name if it's different
-            // if (existingUser.name !== user.name) {
-            //   await prisma.user.update({
-            //     where: { id: existingUser.id },
-            //     data: { name: user.name },
-            //   });
-            // }
-          }
-
-          // Crucially, ensure the 'user' object passed to the 'jwt' callback
-          // contains the 'id' from your database.
-          // For OAuth, NextAuth.js provides an ID, and we've now ensured it's in our DB.
-          // For credentials, 'user.id' already comes from the DB in 'authorize'.
-          user.id = existingUser.id; // Make sure the ID is the one from your DB
-          return true; // Allow the sign-in to proceed
-        } catch (error) {
-          console.error("Error in signIn callback (OAuth user DB handling):", error);
-          return false; // Prevent sign-in if there's a database error
         }
+        // The session carries the notebook's own id, not Google's.
+        user.id = existing.id;
+        return true;
+      } catch (error) {
+        console.error("Signing in with Google failed", error);
+        return false;
       }
-
-      // For Credentials Provider, the 'authorize' function already returns a user with a DB ID,
-      // so we can simply allow the sign-in to proceed.
-      return true;
     },
 
-    async jwt({ token, user, account }) {
-      // 'user' object is only present on the first sign-in or if using a database adapter.
-      // After the 'signIn' callback, 'user.id' will be the ID from your database.
+    async jwt({ token, user }) {
+      // `user` is here only at sign-in.
       if (user) {
         token.id = user.id;
-        token.sub = user.id; // Explicitly set 'sub' as it's critical for getToken validation
+        token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
-
-        // Store OAuth-specific tokens if needed for API calls
-        if (account?.provider === "google" && account.access_token) {
-          token.accessToken = account.access_token;
-        }
+        return token;
+      }
+      // Every later read of the session: it ends when the password changes or
+      // the account is deleted. Throwing makes NextAuth clear the cookie.
+      if (token.sub && !(await sessionStands(token.sub, token.iat as number | undefined))) {
+        throw new Error("This session has ended");
       }
       return token;
     },
+
     async session({ session, token }) {
-      // Populate session.user with data from the token (which comes from the JWT callback)
-      if (token.id) {
-        session.user.id = token.id as string;
-      }
-      if (token.email) {
-        session.user.email = token.email as string;
-      }
-      if (token.name) {
-        session.user.name = token.name as string;
-      }
-      if (token.accessToken) {
-        session.accessToken = token.accessToken as string;
-      }
+      if (token.id) session.user.id = token.id as string;
+      if (token.email) session.user.email = token.email as string;
+      if (token.name) session.user.name = token.name as string;
       return session;
     },
   },
 };
 
-// --- Type augmentations (remain the same) ---
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string; // Add id to user in session
+      id: string;
       name?: string | null;
       email?: string | null;
-      image?: string | null; // For OAuth providers
+      image?: string | null;
     };
-    accessToken?: string; // Add accessToken to session (e.g., from Google)
   }
 
   interface User {
-    id: string; // The ID of the user in your database
+    id: string;
     name?: string | null;
     email?: string | null;
-    // Add any other user properties you return from `authorize` or expect from OAuth providers
   }
 }
 
@@ -187,6 +134,5 @@ declare module "next-auth/jwt" {
     id?: string;
     email?: string | null;
     name?: string | null;
-    accessToken?: string;
   }
 }

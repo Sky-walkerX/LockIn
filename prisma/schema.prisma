@@ -57,6 +57,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // When the user proved the address is theirs: by the link sent at sign-up,
+  // by resetting a password, or by signing in with Google. Null on an account
+  // whose address was never proven, which Google sign-in won't attach to.
+  emailVerifiedAt DateTime?
+  // Sessions and tokens issued before this stop working (lib/accounts/session.ts).
+  passwordChangedAt DateTime?
+
   // The page the user's next note or resource gets. Pages count up across the
   // whole notebook and are never reused, so a citation like "p. 12" keeps
   // pointing at the same note after others are moved or deleted.
@@ -70,6 +77,23 @@ model User {
   shares        Share[]
   apiTokens     ApiToken[]
   oauthGrants   OAuthGrant[]
+  emailTokens   EmailToken[]
+}
+
+// A one-time link sent by email: to prove an address at sign-up ("verify") or
+// to set a new password ("reset"). Only its sha256 is stored.
+model EmailToken {
+  tokenHash String    @id
+  // "verify" or "reset"
+  purpose   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId, purpose, createdAt(sort: Desc)])
 }
 
 // OAuth for MCP clients that sign in rather than take a pasted token (Claude.ai,

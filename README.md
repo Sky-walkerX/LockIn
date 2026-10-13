@@ -77,10 +77,26 @@ Settings in `.env`:
 | `LOCKIN_PORT` | Host port. Default `3000`. |
 | `LOCKIN_VERSION` | The release to run, such as `1.0.0`. Default: the release your checkout is. |
 | `POSTGRES_PASSWORD` | Password for the bundled Postgres. |
+| `SIGNUP` | `open` (the default) lets anyone who can reach the address make an account. `closed` stops new accounts once the first one exists. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. "Continue with Google" appears only when both are set. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Optional. Outgoing email, see Accounts below. |
 | `INGEST_URL`, `INGEST_SECRET` | Optional. See above. |
 
 Put a reverse proxy (Caddy, nginx, Traefik) in front for HTTPS, and set `PUBLIC_URL` to the public address.
+
+### Accounts
+
+Anyone who can open the address can sign up, unless you set `SIGNUP=closed`: make your own account first, then close it.
+
+With `SMTP_HOST` set, LockIn sends two emails. A new account gets a link to confirm its address and can't sign in until it's opened, and "Forgot password" sends a link that sets a new one. The links are built from `PUBLIC_URL`, so set it to the address people really use. Without SMTP there's no email: accounts sign in straight away, and you reset a forgotten password yourself:
+
+```bash
+scripts/set-password.sh someone@example.com
+```
+
+Changing or resetting a password signs that account out everywhere. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access.
+
+"Continue with Google" makes a new account, or opens the existing one with that address if the address was confirmed. It won't attach to an account made with a password whose address was never confirmed, so nobody can claim an address ahead of its owner.
 
 ## Connect your agents (MCP)
 
@@ -156,7 +172,7 @@ NEXTAUTH_SECRET=
 NEXTAUTH_URL=     # e.g. http://localhost:3000
 ```
 
-Optional: `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, `INGEST_URL` / `INGEST_SECRET`, and `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` to store uploads in Supabase Storage instead of `./storage`.
+Optional: `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, `SIGNUP` and `SMTP_*` (Accounts, above), `INGEST_URL` / `INGEST_SECRET`, and `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` to store uploads in Supabase Storage instead of `./storage`.
 
 `DIRECT_URL` must not be a copy of `DATABASE_URL` on Supabase: pgbouncer in transaction mode can't run DDL, and migrations hang instead of failing.
 
@@ -168,7 +184,7 @@ The Prisma client is generated into `app/generated/prisma/` (not committed) by `
 
 ### Data model
 
-`User ──< Subject ──< Milestone ──< Task ──< Subtask`, with `Subject ──< Resource`, `User ──< ApiToken`, `User ──< OAuthGrant ──< OAuthToken` (apps that signed in) and the chat and embedding tables beside them.
+`User ──< Subject ──< Milestone ──< Task ──< Subtask`, with `Subject ──< Resource`, `User ──< ApiToken`, `User ──< OAuthGrant ──< OAuthToken` (apps that signed in), `User ──< EmailToken` (confirmation and reset links) and the chat and embedding tables beside them.
 
 A note is stored as a `Milestone` row (its title and `notes` markdown), and a subject's Plan tasks can hang off it. The Inbox is a `Subject` with `isInbox`. `Milestone.source` records who wrote a note ("web", or an agent's name), and `witnessedAt` records when the user signed off on an agent's note.
 

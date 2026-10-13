@@ -3,15 +3,18 @@ import type { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { TOKEN_PREFIX, hashToken, sourceFromTokenName } from "@/lib/tokens";
 import { ACCESS_PREFIX, authenticateAccessToken } from "@/lib/oauth/server";
+import { sessionStands } from "@/lib/accounts/session";
 
 /**
  * Returns the authenticated user's id (JWT `sub`) for an API route, or null.
  * Mirrors the project convention: routes read the NextAuth JWT directly with
- * `getToken` and authorize on `token.sub`.
+ * `getToken` and authorize on `token.sub`. The session has to still stand:
+ * one from before a password change, or for a deleted account, is nobody.
  */
 export async function getUserId(request: NextRequest): Promise<string | null> {
   const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-  return token?.sub ?? null;
+  if (!token?.sub) return null;
+  return (await sessionStands(token.sub, token.iat as number | undefined)) ? token.sub : null;
 }
 
 export type TokenAuth = {
