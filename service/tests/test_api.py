@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import parse as parser
-from app.config import EMBEDDING_DIMS, EMBEDDING_MODEL, MAX_EMBED_BATCH
+from app.config import EMBEDDING_DIMS, EMBEDDING_MODEL, MAX_EMBED_BATCH, MAX_EMBED_CHARS
 from app.main import app
 
 SECRET = "dev-secret"
@@ -64,11 +64,33 @@ def test_embed_distinguishes_roles(client: TestClient) -> None:
         {"texts": [], "role": "passage"},
         {"texts": ["x"], "role": "sideways"},
         {"texts": ["x"] * (MAX_EMBED_BATCH + 1), "role": "passage"},
+        {"texts": ["x" * (MAX_EMBED_CHARS + 1)], "role": "passage"},
     ],
-    ids=["empty", "bad-role", "over-batch-cap"],
+    ids=["empty", "bad-role", "over-batch-cap", "over-length"],
 )
 def test_embed_rejects_invalid_payloads(client: TestClient, payload: dict) -> None:
     assert client.post("/embed", json=payload, headers=AUTH).status_code == 422
+
+
+@pytest.mark.parametrize("path", ["/docs", "/redoc", "/openapi.json"])
+def test_the_api_isnt_described_to_strangers(client: TestClient, path: str) -> None:
+    """On a public URL these pages would hand anyone the service's schema."""
+    assert client.get(path).status_code == 401
+    assert client.get(path, headers=AUTH).status_code == 404
+
+
+def test_parse_says_its_busy_rather_than_queueing(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    """With every slot taken, a caller is told so while it can still be told."""
+    import anyio
+
+    from app import main
+
+    monkeypatch.setattr(main, "PARSE_QUEUE_SECONDS", 0.05)
+    monkeypatch.setattr(main.app.state, "parse_slots", anyio.Semaphore(0))
+    response = client.post("/parse", json={"url": "https://example.com/a.pdf"}, headers=AUTH)
+    assert response.status_code == 503
+    assert response.headers["retry-after"] == "60"
+    assert "busy" in response.json()["detail"]
 
 
 # --- parser ---------------------------------------------------------------
@@ -81,6 +103,12 @@ def test_embed_rejects_invalid_payloads(client: TestClient, payload: dict) -> No
         "http://localhost:8080/admin",
         "http://127.0.0.1/",
         "http://10.0.0.5/internal",
+        "http://0.0.0.0:8080/",  # this machine, by the address a deny-list forgets
+        "http://100.64.0.1/",  # carrier-grade NAT: private, though not "private"
+        "http://[::1]/",
+        "http://[::ffff:10.0.0.5]/",  # an IPv4 address in IPv6 clothing
+        "http://[64:ff9b::a9fe:a9fe]/",  # the metadata server, through NAT64
+        "http://[fe80::1]/",
         "file:///etc/passwd",
     ],
 )
@@ -88,11 +116,94 @@ def test_parse_refuses_private_and_non_http_urls(url: str) -> None:
     """Resource.url is user-authored, so /parse must not become a reader for
     anything inside the VPC."""
     with pytest.raises(parser.ParseError):
-        parser._assert_public_url(url)
+        parser._public_address(url)
 
 
-def test_parse_allows_a_public_host() -> None:
-    parser._assert_public_url("https://example.com/paper.pdf")
+def test_parse_allows_a_public_address() -> None:
+    assert parser._public_address("https://93.184.215.14/paper.pdf") == "93.184.215.14"
+
+
+def _resolves_to(*answers: str):
+    """A stand-in for socket.getaddrinfo that gives each call the next answer."""
+    import socket
+
+    remaining = list(answers)
+    asked: list[str] = []
+
+    def getaddrinfo(host, port, *args, **kwargs):
+        asked.append(host)
+        answer = remaining.pop(0) if len(remaining) > 1 else remaining[0]
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (answer, port))]
+
+    return getaddrinfo, asked
+
+
+class _Recorder:
+    """An httpx.Client stand-in that answers every request with a 200 and
+    keeps what it was asked for."""
+
+    requests: list[dict]
+
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+
+    def stream(self, method, url, headers=None, extensions=None):
+        type(self).requests.append({"url": str(url), "headers": headers, "extensions": extensions})
+        return self
+
+    is_redirect = False
+    headers = {"content-type": "text/plain"}
+
+    def raise_for_status(self) -> None:
+        pass
+
+    def iter_bytes(self):
+        return iter((b"hello",))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+def test_parse_connects_to_the_address_it_checked(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A name is resolved once and that answer is what gets connected to.
+
+    The DNS server here says "public" the first time and the metadata server
+    every time after: handing the *name* to the HTTP client, which resolves it
+    again to connect, would reach the second answer.
+    """
+    import httpx
+
+    getaddrinfo, asked = _resolves_to("93.184.215.14", "169.254.169.254")
+    monkeypatch.setattr(parser.socket, "getaddrinfo", getaddrinfo)
+    _Recorder.requests = []
+    monkeypatch.setattr(httpx, "Client", _Recorder)
+
+    body, _ = parser._download("https://rebind.example:8443/paper.pdf?x=1")
+
+    assert body == b"hello"
+    assert asked == ["rebind.example"], "resolved once, not again to connect"
+    (request,) = _Recorder.requests
+    assert request["url"] == "https://93.184.215.14:8443/paper.pdf?x=1"
+    # The site still sees its own name, and the certificate has to match it.
+    assert request["headers"]["Host"] == "rebind.example:8443"
+    assert request["extensions"] == {"sni_hostname": "rebind.example"}
+
+
+def test_parse_refuses_a_name_with_any_private_answer(monkeypatch: pytest.MonkeyPatch) -> None:
+    import socket
+
+    def getaddrinfo(host, port, *args, **kwargs):
+        return [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.215.14", port)),
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("10.0.0.5", port)),
+        ]
+
+    monkeypatch.setattr(parser.socket, "getaddrinfo", getaddrinfo)
+    with pytest.raises(parser.ParseError, match="private address"):
+        parser._public_address("https://both.example/")
 
 
 def test_parses_a_real_pdf() -> None:
@@ -159,7 +270,7 @@ def test_parse_validates_every_redirect_hop(monkeypatch: pytest.MonkeyPatch) -> 
     """A public URL that redirects to a private address must not reach it.
 
     httpx's own `follow_redirects=True` would happily chase this; `_download`
-    is written to check `_assert_public_url` again on every hop instead.
+    is written to check `_public_address` again on every hop instead.
     """
     import httpx
 
@@ -188,8 +299,8 @@ def test_parse_validates_every_redirect_hop(monkeypatch: pytest.MonkeyPatch) -> 
         def __init__(self, *a, **k) -> None:
             pass
 
-        def stream(self, method, url, headers=None):
-            calls.append(url)
+        def stream(self, method, url, headers=None, extensions=None):
+            calls.append((str(url), headers["Host"]))
             return FakeResponse(url)
 
         def __enter__(self):
@@ -199,11 +310,13 @@ def test_parse_validates_every_redirect_hop(monkeypatch: pytest.MonkeyPatch) -> 
             return False
 
     monkeypatch.setattr(httpx, "Client", FakeClient)
+    getaddrinfo, _asked = _resolves_to("93.184.215.14")
+    monkeypatch.setattr(parser.socket, "getaddrinfo", getaddrinfo)
 
     with pytest.raises(parser.ParseError, match="private address"):
         parser._download("https://example.com/redirects-me")
 
-    assert calls == ["https://example.com/redirects-me"], (
+    assert calls == [("https://93.184.215.14/redirects-me", "example.com")], (
         "should stop at the first hop rather than ever requesting the target"
     )
 
@@ -212,8 +325,9 @@ def test_parse_allows_an_operator_named_private_host(monkeypatch: pytest.MonkeyP
     """Self-hosted, the app's own container is named in INGEST_ALLOWED_HOSTS
     so PDFs on its disk can be read; that host and only that host is let in."""
     monkeypatch.setattr(parser, "INGEST_ALLOWED_HOSTS", frozenset({"localhost"}))
-    parser._assert_public_url("http://localhost:3000/api/files/docs/u/a.pdf")
+    # None: connected to by name, since the operator vouched for the name.
+    assert parser._public_address("http://localhost:3000/api/files/docs/u/a.pdf") is None
     with pytest.raises(parser.ParseError):
-        parser._assert_public_url("http://127.0.0.1/")
+        parser._public_address("http://127.0.0.1/")
     with pytest.raises(parser.ParseError):
-        parser._assert_public_url("file://localhost/etc/passwd")
+        parser._public_address("file://localhost/etc/passwd")

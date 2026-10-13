@@ -3,6 +3,10 @@
 Two endpoints, no state, no database. The browser never calls this directly —
 Next.js proxies every request — which is what keeps the shared secret server-side
 and means there is no CORS configuration here at all.
+
+Both endpoints do bounded work: a fixed number of documents are read and a
+fixed number of batches embedded at a time (app/config.py), and a document is
+read in a process that's stopped if it takes too long (app/isolate.py).
 """
 
 from __future__ import annotations
@@ -16,8 +20,16 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app import parse as parser
-from app.config import EMBEDDING_DIMS, EMBEDDING_MODEL, INGEST_SECRET
+from app.config import (
+    EMBED_CONCURRENCY,
+    EMBEDDING_DIMS,
+    EMBEDDING_MODEL,
+    INGEST_SECRET,
+    PARSE_CONCURRENCY,
+    PARSE_QUEUE_SECONDS,
+)
 from app.embed import embedder
+from app.isolate import parse_isolated
 from app.models import (
     EmbedRequest,
     EmbedResponse,
@@ -31,7 +43,7 @@ logger = logging.getLogger("lockin.ingest")
 # /health is deliberately open: Cloud Run's own probes hit it, and the Next.js
 # side pings it to warm a cold container when the Ask panel opens. It reveals
 # nothing a caller couldn't guess from this repo.
-PUBLIC_PATHS = {"/health", "/openapi.json", "/docs", "/redoc"}
+PUBLIC_PATHS = {"/health"}
 
 
 @asynccontextmanager
@@ -50,10 +62,16 @@ async def lifespan(_: FastAPI):
     logger.info("Loading %s…", EMBEDDING_MODEL)
     await anyio.to_thread.run_sync(embedder.load)
     logger.info("Model ready (%d dims).", EMBEDDING_DIMS)
+
+    # Made here, inside the running event loop they belong to.
+    app.state.parse_slots = anyio.Semaphore(PARSE_CONCURRENCY)
+    app.state.embed_slots = anyio.CapacityLimiter(EMBED_CONCURRENCY)
     yield
 
 
-app = FastAPI(title="LockIn ingest", version="0.1.0", lifespan=lifespan)
+# No /docs, /redoc or /openapi.json: nothing but the Next.js server calls
+# this, and on a public URL those pages would describe it to anyone.
+app = FastAPI(title="LockIn ingest", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 
 @app.middleware("http")
@@ -81,19 +99,41 @@ async def embed(request: EmbedRequest) -> EmbedResponse:
     # onnxruntime releases the GIL, but the call is still CPU-bound for tens of
     # milliseconds; off the event loop it goes, so one batch can't stall the
     # health probe that Cloud Run uses to decide this container is alive.
-    vectors = await anyio.to_thread.run_sync(embedder.embed, request.texts, request.role)
+    # A batch waits its turn here: they're short, and queueing them keeps
+    # memory at a few batches' worth however many arrive together.
+    vectors = await anyio.to_thread.run_sync(
+        embedder.embed, request.texts, request.role, limiter=app.state.embed_slots
+    )
     return EmbedResponse(vectors=vectors)
 
 
 @app.post("/parse", response_model=ParseResponse)
 async def parse_document(request: ParseRequest) -> ParseResponse:
+    # A document doesn't queue for long. Each one can take a minute or more,
+    # and a caller that waited behind several would time out with no answer;
+    # better to be told the service is busy while there's time to say so.
+    slots: anyio.Semaphore = app.state.parse_slots
+    with anyio.move_on_after(PARSE_QUEUE_SECONDS) as waiting:
+        await slots.acquire()
+    if waiting.cancelled_caught:
+        raise HTTPException(
+            status_code=503,
+            detail="The extraction service is busy reading other documents. Try again in a minute.",
+            headers={"Retry-After": "60"},
+        )
+
     try:
-        result = await anyio.to_thread.run_sync(parser.parse, request.url, request.kind)
+        # In a thread so the event loop is free, and from there in a child
+        # process so it can be stopped (app/isolate.py). `abandon_on_cancel`
+        # stays off: the slot is held until the child is really gone.
+        result = await anyio.to_thread.run_sync(parse_isolated, request.url, request.kind)
     except parser.ParseError as error:
         # 422, not 500: these are all "this document can't be read" — a scanned
         # PDF, a dead link, a page with no article text — and the Next.js side
         # turns them into an `ingestError` the user can act on.
         raise HTTPException(status_code=422, detail=str(error)) from error
+    finally:
+        slots.release()
 
     return ParseResponse(
         markdown=result.markdown,

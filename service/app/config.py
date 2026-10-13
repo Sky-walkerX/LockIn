@@ -48,4 +48,35 @@ MAX_EMBED_BATCH = 128
 MAX_DOWNLOAD_BYTES = 50 * 1024 * 1024
 MAX_PDF_PAGES = 1200
 MAX_MARKDOWN_CHARS = 2 * 1024 * 1024
-FETCH_TIMEOUT_SECONDS = 120.0
+# For each step of a fetch (connecting, each read), not the whole of it. The
+# whole of it is bounded by PARSE_TIMEOUT_SECONDS below.
+FETCH_TIMEOUT_SECONDS = 30.0
+
+# The longest one text sent to /embed may be. A chunk is at most 1,600
+# characters with its breadcrumb in front (lib/rag/chunk.ts) and the Next.js
+# proxy stops at 8,000, so this is headroom; it's here so the tokenizer is
+# never handed megabytes to cut down to 512 tokens.
+MAX_EMBED_CHARS = 16_000
+MAX_URL_CHARS = 2_000
+
+
+def _positive(name: str, default: float) -> float:
+    try:
+        value = float(os.environ.get(name, default))
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+# How many documents are read at once, and how many embedding batches run at
+# once. A parse can hold a 50 MB download and its PDF in memory and a core for
+# a minute; left unbounded, a handful of textbooks sent together would take the
+# container down. Raise these on a machine with the memory and cores for it.
+PARSE_CONCURRENCY = int(_positive("PARSE_CONCURRENCY", 2))
+EMBED_CONCURRENCY = int(_positive("EMBED_CONCURRENCY", 2))
+
+# A document that takes longer than this to fetch and read is stopped. Under
+# the 150 s the Next.js side waits, so the user is told why. And how long a
+# request waits for a free slot before it's told the service is busy.
+PARSE_TIMEOUT_SECONDS = _positive("PARSE_TIMEOUT_SECONDS", 140)
+PARSE_QUEUE_SECONDS = _positive("PARSE_QUEUE_SECONDS", 20)

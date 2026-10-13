@@ -11,7 +11,7 @@ from __future__ import annotations
 import ipaddress
 import socket
 from dataclasses import dataclass
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import httpx
 import pymupdf4llm
@@ -40,41 +40,87 @@ class Parsed:
     truncated: bool
 
 
-def _assert_public_url(url: str) -> None:
-    """Refuse to fetch anything on a private network.
+def _is_public(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """Whether an address is on the public internet.
+
+    `is_global` is the allow-list reading of that question: it's false for
+    private, loopback and link-local ranges, and also for the ones a deny-list
+    forgets: 0.0.0.0 (which connects to this machine), carrier-grade NAT
+    (100.64.0.0/10) and the documentation and reserved blocks. An IPv4 address
+    written as IPv6 (::ffff:10.0.0.5, or through NAT64) is judged as the IPv4
+    address it is.
+    """
+    if address.version == 6 and address.ipv4_mapped is not None:
+        address = address.ipv4_mapped
+    elif address.version == 6 and address in _NAT64:
+        # On an IPv6-only network every IPv4 address is reached through this
+        # prefix, the private ones included: the last four bytes are the
+        # address that's really meant.
+        address = ipaddress.IPv4Address(int(address) & 0xFFFFFFFF)
+    return address.is_global and not address.is_multicast
+
+
+_NAT64 = ipaddress.ip_network("64:ff9b::/96")
+
+
+def _public_address(url: str) -> str | None:
+    """The address to connect to for this URL, having checked it's public.
 
     The URL reaching this service comes from a `Resource` row, which is
-    user-authored — so without this check, saving a resource pointed at
-    169.254.169.254 would turn /parse into a reader for Cloud Run's metadata
-    server, and anything else inside the VPC. The bucket URLs this is actually
-    meant to fetch are all public.
+    user-authored, so without this check saving a resource pointed at
+    169.254.169.254 would turn /parse into a reader for the cloud metadata
+    server, and for anything else on the private network.
+
+    The host is resolved here, once, and the caller connects to the address
+    this returns. Checking a name and then handing the name to the HTTP client
+    resolves it a second time, and a DNS server that answers with a public
+    address first and a private one after gets past the check that way.
+
+    None means the host is one the operator named (INGEST_ALLOWED_HOSTS, the
+    app's own container when self-hosted): trusted by name and connected to by
+    name. Redirects come back through here, so a trusted host can't bounce the
+    fetch somewhere else private.
     """
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise ParseError(f"Unsupported URL scheme: {parsed.scheme or '(none)'}")
     if not parsed.hostname:
         raise ParseError("URL has no host.")
-    # An operator-named host (the app's own container, when self-hosted) is
-    # trusted by name. Redirects still go through this check, so a trusted
-    # host can't bounce the fetch somewhere else private.
     if parsed.hostname.lower() in INGEST_ALLOWED_HOSTS:
-        return
+        return None
+
+    # An address written out needs no lookup, and is connected to as written.
+    try:
+        literal = ipaddress.ip_address(parsed.hostname)
+    except ValueError:
+        literal = None
+    if literal is not None:
+        if not _is_public(literal):
+            raise ParseError(f"Refusing to fetch a private address ({literal}).")
+        return str(literal)
 
     try:
-        resolved = socket.getaddrinfo(parsed.hostname, None)
-    except socket.gaierror as error:
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        resolved = socket.getaddrinfo(parsed.hostname, port, type=socket.SOCK_STREAM)
+    except (socket.gaierror, ValueError, UnicodeError) as error:
         raise ParseError(f"Could not resolve {parsed.hostname}.") from error
 
-    for family, *_rest, sockaddr in resolved:
-        address = ipaddress.ip_address(sockaddr[0])
-        if (
-            address.is_private
-            or address.is_loopback
-            or address.is_link_local
-            or address.is_reserved
-            or address.is_multicast
-        ):
+    addresses: list[str] = []
+    for _family, *_rest, sockaddr in resolved:
+        try:
+            # A link-local IPv6 answer carries its interface ("fe80::1%eth0").
+            address = ipaddress.ip_address(str(sockaddr[0]).split("%")[0])
+        except ValueError as error:
+            raise ParseError(f"Could not resolve {parsed.hostname}.") from error
+        # Every answer has to be public, not just the one that gets used: a
+        # name that also answers with a private address is not one to trust.
+        if not _is_public(address):
             raise ParseError(f"Refusing to fetch a private address ({address}).")
+        addresses.append(str(address))
+
+    if not addresses:
+        raise ParseError(f"Could not resolve {parsed.hostname}.")
+    return addresses[0]
 
 
 # Plenty of sites (Wikipedia included) 403 a client with no User-Agent at all,
@@ -90,12 +136,15 @@ def _download(url: str) -> tuple[bytes, str]:
     rather than buffered in full first.
 
     Redirects are followed by hand rather than via httpx's `follow_redirects`,
-    because `_assert_public_url` only runs against whatever URL is passed to
-    it — a redirect target is a second URL that needs the exact same check. A
-    resource pointed at a public URL that 302s to an internal one would
-    otherwise sail straight past the SSRF guard on the second hop.
+    because `_public_address` only checks the URL it's given, and a redirect
+    target is a second URL that needs the same check. A resource pointed at a
+    public URL that 302s to an internal one would otherwise sail straight past
+    the guard on the second hop.
+
+    Each hop connects to the address `_public_address` checked, with the
+    host's name sent as the Host header and, over TLS, as the name the
+    certificate has to match.
     """
-    headers = {"User-Agent": USER_AGENT}
     chunks: list[bytes] = []
     total = 0
     content_type = ""
@@ -104,13 +153,24 @@ def _download(url: str) -> tuple[bytes, str]:
         with httpx.Client(timeout=FETCH_TIMEOUT_SECONDS, follow_redirects=False) as client:
             current_url = url
             for _hop in range(MAX_REDIRECTS + 1):
-                _assert_public_url(current_url)
-                with client.stream("GET", current_url, headers=headers) as response:
+                address = _public_address(current_url)
+                request_url: str | httpx.URL = current_url
+                headers = {"User-Agent": USER_AGENT}
+                extensions: dict[str, str] = {}
+                if address is not None:
+                    named = httpx.URL(current_url)
+                    request_url = named.copy_with(host=address)
+                    headers["Host"] = named.netloc.decode("ascii")
+                    if named.scheme == "https":
+                        extensions["sni_hostname"] = named.host
+
+                with client.stream("GET", request_url, headers=headers, extensions=extensions) as response:
                     if response.is_redirect:
                         location = response.headers.get("location")
                         if not location:
                             raise ParseError("Redirected with no Location header.")
-                        current_url = str(response.next_request.url) if response.next_request else location
+                        # Against the URL as named, not the address connected to.
+                        current_url = urljoin(current_url, location)
                         continue
 
                     response.raise_for_status()

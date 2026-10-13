@@ -39,7 +39,7 @@ To add text extraction and server-side embeddings, set `INGEST_SECRET` (any long
 docker compose --profile ingest up -d
 ```
 
-The ingest image carries its embedding model, so it's about 1 GB. Without it, keyword search works, and the browser does embeddings itself.
+The ingest image carries its embedding model, so it's about 1 GB. Without it, keyword search works, and the browser does embeddings itself. It reads two documents at a time and stops one that takes over 140 seconds; a third waits 20 seconds for a slot and is then told the service is busy. `PARSE_CONCURRENCY` in `.env` raises the first number, on a machine with a core and a few hundred MB to spare per document.
 
 To update, pull the new release. The compose file names the version it goes with, so the images always match the checkout. Migrations run on start:
 

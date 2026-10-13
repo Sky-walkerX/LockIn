@@ -7,15 +7,15 @@ here means changing it there.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.config import EMBEDDING_DIMS, EMBEDDING_MODEL, MAX_EMBED_BATCH
+from app.config import EMBEDDING_DIMS, EMBEDDING_MODEL, MAX_EMBED_BATCH, MAX_EMBED_CHARS, MAX_URL_CHARS
 
 
 class EmbedRequest(BaseModel):
-    texts: list[str] = Field(min_length=1, max_length=MAX_EMBED_BATCH)
+    texts: list[Annotated[str, Field(max_length=MAX_EMBED_CHARS)]] = Field(min_length=1, max_length=MAX_EMBED_BATCH)
     role: Literal["query", "passage"]
 
 
@@ -32,7 +32,7 @@ class EmbedResponse(BaseModel):
 
 
 class ParseRequest(BaseModel):
-    url: str
+    url: str = Field(min_length=1, max_length=MAX_URL_CHARS)
     kind: Literal["pdf", "html", "text", "auto"] = "auto"
 
 

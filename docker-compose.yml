@@ -102,6 +102,9 @@ services:
       INGEST_SECRET: ${INGEST_SECRET:-}
       # Lets the parser fetch PDFs the app stores on its own disk.
       INGEST_ALLOWED_HOSTS: app
+      # How many documents are read at once. Each can take a core and a few
+      # hundred MB for a minute; raise it on a machine with room.
+      PARSE_CONCURRENCY: ${PARSE_CONCURRENCY:-2}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=4)"]
       interval: 30s
