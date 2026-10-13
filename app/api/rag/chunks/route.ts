@@ -4,7 +4,7 @@ import * as f from "@/lib/http/fields";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/rag/embedding-model";
-import { liveHashes } from "@/lib/rag/freshness";
+import { liveRefs } from "@/lib/rag/freshness";
 import { storeChunks } from "@/lib/rag/store";
 
 // The browser asks `/api/rag/pending` for 20 chunks at a time, which never
@@ -39,6 +39,9 @@ const PostSchema = z.object({
  * Writes the browser's embedded chunks through `storeChunks`, which skips any
  * source that was deleted or edited while the batch was being embedded. A
  * batch may be part of a source: a long document is written across several.
+ * Only passages `/api/rag/pending` handed out can be written: the source has
+ * to have been chunked by the server, and a passage number has to be one that
+ * chunking produced.
  *
  * `content` is trusted only within the caller's own account: every row is
  * scoped by `userId`, so the worst a tampered client achieves is poisoning
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const written = await storeChunks(userId, parsed.data.chunks, await liveHashes(userId, parsed.data.chunks));
+  const written = await storeChunks(userId, parsed.data.chunks, await liveRefs(userId, parsed.data.chunks));
   return NextResponse.json({ written });
 }
 

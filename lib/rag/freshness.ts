@@ -3,6 +3,7 @@ import { Prisma } from "@/app/generated/prisma/client";
 import type { ChunkSourceType } from "./chunk";
 import { EMBEDDING_MODEL } from "./embedding-model";
 import { loadSources, sourceKey, type LiveSource } from "./sources";
+import type { LiveRef } from "./store";
 
 /**
  * What's indexed and what isn't, worked out in the database.
@@ -122,18 +123,23 @@ export async function recordSource(userId: string, source: LiveSource): Promise<
   });
 }
 
-/** The current hash of each of these sources, by `sourceKey`: the check a
- *  write makes that the text it embedded is still the text there. */
-export async function liveHashes(
-  userId: string,
-  keys: { source: ChunkSourceType; sourceId: string }[],
-): Promise<{ source: ChunkSourceType; sourceId: string; subjectId: string; contentHash: string }[]> {
+/**
+ * Each of these sources as it stands: its current hash, and how many passages
+ * the indexer counted for that text (0 when it hasn't chunked it). A write
+ * checks both, so it can store neither passages of text that's gone nor more
+ * passages than the text has.
+ */
+export async function liveRefs(userId: string, keys: { source: ChunkSourceType; sourceId: string }[]): Promise<LiveRef[]> {
   if (keys.length === 0) return [];
   const wanted = [...new Set(keys.map((k) => sourceKey(k.source, k.sourceId)))];
-  return prisma.$queryRaw`
-    SELECT source::text AS source, "sourceId", "subjectId", hash AS "contentHash"
+  return prisma.$queryRaw<LiveRef[]>`
+    SELECT l.source::text AS source, l."sourceId", l."subjectId", l.hash AS "contentHash",
+           coalesce(i."chunkCount", 0) AS "chunkCount"
     FROM (${liveHashed(userId)}) l
-    WHERE (source::text || ':' || "sourceId") = ANY(${wanted}::text[])`;
+    LEFT JOIN "IndexedSource" i
+      ON i."source" = l.source AND i."sourceId" = l."sourceId"
+     AND i."contentHash" = l.hash AND i."embeddingModel" = ${EMBEDDING_MODEL}
+    WHERE (l.source::text || ':' || l."sourceId") = ANY(${wanted}::text[])`;
 }
 
 export type PendingChunk = {

@@ -16,11 +16,12 @@ vi.mock("@/lib/prisma", () => ({
 
 const { acceptedGroups, storeChunks } = await import("./store");
 
-const live = (sourceId: string, contentHash: string): LiveRef => ({
+const live = (sourceId: string, contentHash: string, chunkCount = 4): LiveRef => ({
   source: "MILESTONE",
   sourceId,
   subjectId: "subject-1",
   contentHash,
+  chunkCount,
 });
 
 const chunk = (sourceId: string, ordinal: number, contentHash: string) => ({
@@ -49,6 +50,14 @@ describe("acceptedGroups", () => {
   it("drops a source that was edited while it was being embedded", () => {
     const groups = acceptedGroups([chunk("a", 0, "old"), chunk("b", 0, "h2")], [live("a", "new"), live("b", "h2")]);
     expect(groups.map((g) => g.live.sourceId)).toEqual(["b"]);
+  });
+
+  it("drops a batch that numbers a passage the text doesn't have", () => {
+    // Two passages were counted for this text; a third can't be written, nor
+    // can anything for a source the server hasn't chunked.
+    expect(acceptedGroups([chunk("a", 0, "h1"), chunk("a", 2, "h1")], [live("a", "h1", 2)])).toEqual([]);
+    expect(acceptedGroups([chunk("a", 0, "h1")], [live("a", "h1", 0)])).toEqual([]);
+    expect(acceptedGroups([chunk("a", 1, "h1")], [live("a", "h1", 2)]).map((g) => g.chunks.length)).toEqual([1]);
   });
 
   it("drops a source that no longer exists", () => {

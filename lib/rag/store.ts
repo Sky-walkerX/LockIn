@@ -16,8 +16,9 @@ export type EmbeddedChunk = {
   embedding: number[];
 };
 
-/** A source as it stands now: where it files, and what its text hashes to. */
-export type LiveRef = { source: ChunkSourceType; sourceId: string; subjectId: string; contentHash: string };
+/** A source as it stands now: where it files, what its text hashes to, and
+ *  how many passages that text chunks into. */
+export type LiveRef = { source: ChunkSourceType; sourceId: string; subjectId: string; contentHash: string; chunkCount: number };
 
 export type ChunkGroup = { live: LiveRef; chunks: EmbeddedChunk[] };
 
@@ -27,6 +28,11 @@ export type ChunkGroup = { live: LiveRef; chunks: EmbeddedChunk[] };
  * its `contentHash` no longer matches the live text: the note was edited while
  * the batch was being embedded, and writing it would store passages of text
  * that's gone. Dropping leaves it stale, and the next pass picks it up.
+ *
+ * It's also dropped when it numbers a passage the text doesn't have. A source
+ * is written across several requests, so nothing else stops a caller sending
+ * passage after passage for one note: the count the server made when it
+ * chunked the text is the ceiling on how many rows that note can hold.
  */
 export function acceptedGroups(chunks: EmbeddedChunk[], live: LiveRef[]): ChunkGroup[] {
   const liveByKey = new Map(live.map((l) => [sourceKey(l.source, l.sourceId), l]));
@@ -42,6 +48,7 @@ export function acceptedGroups(chunks: EmbeddedChunk[], live: LiveRef[]): ChunkG
     const entry = liveByKey.get(key);
     if (!entry) continue;
     if (group.some((c) => c.contentHash !== entry.contentHash)) continue;
+    if (group.some((c) => c.ordinal >= entry.chunkCount)) continue;
     out.push({ live: entry, chunks: group });
   }
   return out;

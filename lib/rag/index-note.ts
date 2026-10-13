@@ -49,5 +49,5 @@ export async function indexNoteOnServer(userId: string, noteId: string): Promise
   const now = await liveNoteSource(userId, noteId);
   if (!now) return 0;
   await recordSource(userId, now);
-  return storeChunks(userId, chunks, [now]);
+  return storeChunks(userId, chunks, [{ ...now, chunkCount: now.chunks.length }]);
 }
