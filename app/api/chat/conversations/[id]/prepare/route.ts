@@ -42,7 +42,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
 
-  const parsed = PrepareSchema.safeParse(await request.json());
+  const parsed = PrepareSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }

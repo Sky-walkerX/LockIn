@@ -233,12 +233,19 @@ export function useSendMessage() {
       cancelPaint();
 
       if (streamed.trim()) {
-        await api.post<ChatMessage>(`/api/chat/conversations/${conversationId}/messages`, {
-          content: streamed,
-          model: modelName(settings),
-          sources,
-          refs,
-        });
+        try {
+          await api.post<ChatMessage>(`/api/chat/conversations/${conversationId}/messages`, {
+            content: streamed,
+            model: modelName(settings),
+            sources,
+            refs,
+          });
+        } catch {
+          // Without this the panel stayed on "streaming" for good: the reply
+          // was read but never stored, and nothing below ran. The thread ends
+          // on the question, so asking again is a retry.
+          setError("The reply arrived but couldn't be saved, so it isn't in this thread. Ask again.");
+        }
       }
 
       setIsStreaming(false);

@@ -88,10 +88,15 @@ export function SubjectView() {
 
   const closeReader = useCallback(() => router.replace(href(here), { scroll: false }), [router, href, here]);
 
-  // The Inbox is a subject underneath, but it has its own page.
+  // The Inbox is a subject underneath, but it has its own page. A search
+  // result for one of its notes arrives here as ?open=milestone:<id>, which
+  // the Inbox doesn't read: it's handed the note the way it takes one.
   const isInbox = subject?.isInbox;
   useEffect(() => {
-    if (isInbox) router.replace(`/inbox${searchParams.size ? `?${searchParams}` : ""}`);
+    if (!isInbox) return;
+    const opened = parseOpen(searchParams.get("open"));
+    const note = searchParams.get("note") ?? (opened?.kind === "milestone" ? opened.id : null);
+    router.replace(note ? `/inbox?note=${encodeURIComponent(note)}` : "/inbox");
   }, [isInbox, router, searchParams]);
 
   if (status === "loading" || isLoading) {

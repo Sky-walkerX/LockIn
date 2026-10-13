@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   const limit = await countAgainst(`embed:${userId}`, 240, 60);
   if (!limit.ok) return tooMany(limit);
 
-  const parsed = RequestSchema.safeParse(await request.json());
+  const parsed = RequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }

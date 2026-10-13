@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const parsed = Body.safeParse(await request.json());
+  const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
