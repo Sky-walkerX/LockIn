@@ -7,6 +7,7 @@ import { ChevronRight, GripVertical, Pencil, Trash2, FileText } from "lucide-rea
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Input } from "@/app/components/ui/input";
 import { useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
+import { useBodyDraft } from "@/hooks/useBodyDraft";
 import type { Subtask } from "@/app/generated/prisma/browser";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
@@ -15,6 +16,7 @@ import { SortableList } from "./sortable-list";
 import { AddSubtask } from "./add-subtask";
 import { useReveal } from "./reveal";
 import { ShareButton } from "@/app/components/share/share-button";
+import { NoteConflict } from "@/app/components/note/note-conflict";
 
 // Memoized: the subject-cache mappers preserve identity for untouched
 // subtasks, so only rows whose subtask actually changed re-render.
@@ -39,10 +41,6 @@ export const SubtaskRow = memo(function SubtaskRow({
   const reveal = useReveal(subtask.id, setOpen);
   const [renaming, setRenaming] = useState(false);
   const [titleVal, setTitleVal] = useState(subtask.title);
-  const [editingNotes, setEditingNotes] = useState(false);
-  // Saving closes the editor immediately (the cache is patched optimistically),
-  // so a failed save has nowhere to put the text — park it here and reopen.
-  const [failedNotes, setFailedNotes] = useState<string | null>(null);
 
   // Plan-tree depth: tasks are 1, so a subtask is 2 and its child items are 3.
   const depth = isChild ? 3 : 2;
@@ -64,24 +62,13 @@ export const SubtaskRow = memo(function SubtaskRow({
     setRenaming(true);
   };
 
-  const openNotes = () => {
-    setFailedNotes(null);
-    setEditingNotes(true);
-  };
-
-  const saveNotes = (v: string) => {
-    setEditingNotes(false);
-    setFailedNotes(null);
-    update.mutate(
-      { id: subtask.id, data: { notes: v } },
-      {
-        onError: () => {
-          setFailedNotes(v);
-          setEditingNotes(true);
-        },
-      },
-    );
-  };
+  // The notes editor. A save is refused when an agent added to the notes while
+  // it was open; see useBodyDraft for what happens then.
+  const notesDraft = useBodyDraft<Subtask>(
+    subtask.notes,
+    (notes, base, onError) => update.mutate({ id: subtask.id, data: { notes, base } }, { onError }),
+    (current) => current.notes,
+  );
 
   const saveTitle = () => {
     const t = titleVal.trim();
@@ -186,22 +173,22 @@ export const SubtaskRow = memo(function SubtaskRow({
       {open && (
         <>
         <div data-depth={depth} className="lk-tsub mb-1 mr-1.5 flex flex-col gap-1.5">
-          {editingNotes ? (
+          {notesDraft.editing && notesDraft.conflict && (
+            <NoteConflict what="These notes" note={{ notes: subtask.notes, page: null }} />
+          )}
+          {notesDraft.editing ? (
             <NotesEditor
-              value={failedNotes ?? subtask.notes}
+              value={notesDraft.failed ?? subtask.notes}
               breadcrumb={subtask.title}
-              onSave={saveNotes}
-              onCancel={() => {
-                setEditingNotes(false);
-                setFailedNotes(null);
-              }}
+              onSave={notesDraft.save}
+              onCancel={notesDraft.cancel}
             />
           ) : hasNotes ? (
             <div className="lk-notes group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{subtask.notes}</Markdown>
               <button
                 type="button"
-                onClick={openNotes}
+                onClick={notesDraft.open}
                 className="lk-iconbtn absolute right-0.5 top-0.5 opacity-0 transition-opacity group-hover/n:opacity-100"
                 title="Edit notes"
               >
@@ -211,7 +198,7 @@ export const SubtaskRow = memo(function SubtaskRow({
           ) : (
             <button
               type="button"
-              onClick={openNotes}
+              onClick={notesDraft.open}
               className="lk-print flex items-center gap-1.5 text-2xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
             >
               <FileText size={12} /> Add notes

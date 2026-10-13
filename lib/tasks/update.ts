@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import type { Prisma, Recurrence, Subtask, Task } from "@/app/generated/prisma/client";
 import { setClause } from "@/lib/sql";
 import { appendNote, continueNote } from "@/lib/notes/append";
+import { bodyRev } from "@/lib/notes/revision";
 
 export type TaskPatch = {
   title?: string;
@@ -172,5 +173,37 @@ export async function appendToSubtask(userId: string, id: string, text: string, 
       FOR UPDATE OF s`;
     if (!row) return null;
     return tx.subtask.update({ where: { id }, data: { notes: added(row.notes, text, block) } });
+  });
+}
+
+export type NotesSave<Row> = { kind: "saved"; row: Row } | { kind: "conflict"; current: Row } | { kind: "missing" };
+
+/**
+ * The editor's save of a task's notes: the whole text, written only if the
+ * notes still say what the edit started from (`base`, its bodyRev). Otherwise
+ * an agent added to them meanwhile, and the caller gets the task as it stands
+ * instead of overwriting that (as saveNoteBody does for a note).
+ */
+export async function saveTaskNotes(userId: string, id: string, text: string | null, base: string): Promise<NotesSave<Task>> {
+  return prisma.$transaction(async (tx) => {
+    const [current] = await tx.$queryRaw<Task[]>`
+      SELECT * FROM "Task" WHERE "id" = ${id} AND "userId" = ${userId} FOR UPDATE`;
+    if (!current) return { kind: "missing" };
+    if (bodyRev(current.description ?? "") !== base) return { kind: "conflict", current };
+    return { kind: "saved", row: await tx.task.update({ where: { id }, data: { description: text } }) };
+  });
+}
+
+/** The same for a subtask, scoped through its task. */
+export async function saveSubtaskNotes(userId: string, id: string, text: string, base: string): Promise<NotesSave<Subtask>> {
+  return prisma.$transaction(async (tx) => {
+    const [current] = await tx.$queryRaw<Subtask[]>`
+      SELECT s.* FROM "Subtask" s
+      JOIN "Task" t ON t."id" = s."taskId"
+      WHERE s."id" = ${id} AND t."userId" = ${userId}
+      FOR UPDATE OF s`;
+    if (!current) return { kind: "missing" };
+    if (bodyRev(current.notes) !== base) return { kind: "conflict", current };
+    return { kind: "saved", row: await tx.subtask.update({ where: { id }, data: { notes: text } }) };
   });
 }

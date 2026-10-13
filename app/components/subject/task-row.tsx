@@ -17,8 +17,9 @@ import {
 } from "@/app/components/ui/select";
 import { useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
 import { useReorderSubtasks } from "@/hooks/useSubtasks";
+import { useBodyDraft } from "@/hooks/useBodyDraft";
 import type { TaskWithSubtasks } from "@/hooks/useSubjects";
-import type { Priority, Recurrence } from "@/app/generated/prisma/browser";
+import type { Priority, Recurrence, Task } from "@/app/generated/prisma/browser";
 import { isTempId } from "@/lib/subject-cache";
 import { Markdown } from "./markdown";
 import { NotesEditor } from "./notes-editor-lazy";
@@ -27,6 +28,7 @@ import { SubtaskRow } from "./subtask-row";
 import { AddSubtask } from "./add-subtask";
 import { useReveal } from "./reveal";
 import { ShareButton } from "@/app/components/share/share-button";
+import { NoteConflict } from "@/app/components/note/note-conflict";
 import { useClock } from "@/app/components/clock";
 
 const PRIORITY_COLOR: Record<Priority, string> = {
@@ -55,10 +57,6 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
   const [due, setDue] = useState(task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd", { in: clock.in }) : "");
   const [recurrence, setRecurrence] = useState<"NONE" | Recurrence>(task.recurrence ?? "NONE");
   const [estimate, setEstimate] = useState(task.estimatedTime ? String(task.estimatedTime) : "");
-  const [editingNotes, setEditingNotes] = useState(false);
-  // Saving closes the editor immediately (the cache is patched optimistically),
-  // so a failed save has nowhere to put the text — park it here and reopen.
-  const [failedNotes, setFailedNotes] = useState<string | null>(null);
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
   const overdue = !task.isCompleted && dueDate ? isBefore(dueDate, startOfDay(clock.now, { in: clock.in })) : false;
@@ -93,24 +91,13 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
     setEditOpen(o);
   };
 
-  const openNotes = () => {
-    setFailedNotes(null);
-    setEditingNotes(true);
-  };
-
-  const saveNotes = (v: string) => {
-    setEditingNotes(false);
-    setFailedNotes(null);
-    update.mutate(
-      { id: task.id, data: { description: v } },
-      {
-        onError: () => {
-          setFailedNotes(v);
-          setEditingNotes(true);
-        },
-      },
-    );
-  };
+  // The notes editor. A save is refused when an agent added to the notes while
+  // it was open; see useBodyDraft for what happens then.
+  const notesDraft = useBodyDraft<Task>(
+    task.description ?? "",
+    (description, base, onError) => update.mutate({ id: task.id, data: { description, base } }, { onError }),
+    (current) => current.description ?? "",
+  );
 
   const saveEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,22 +290,22 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
         <>
         <div data-depth="1" className="lk-tsub mb-1 mr-1 flex flex-col gap-1.5 pb-1 pt-1">
           {/* Notes */}
-          {editingNotes ? (
+          {notesDraft.editing && notesDraft.conflict && (
+            <NoteConflict what="These notes" note={{ notes: task.description ?? "", page: null }} />
+          )}
+          {notesDraft.editing ? (
             <NotesEditor
-              value={failedNotes ?? task.description ?? ""}
+              value={notesDraft.failed ?? task.description ?? ""}
               breadcrumb={task.title}
-              onSave={saveNotes}
-              onCancel={() => {
-                setEditingNotes(false);
-                setFailedNotes(null);
-              }}
+              onSave={notesDraft.save}
+              onCancel={notesDraft.cancel}
             />
           ) : hasNotes ? (
             <div className="lk-notes group/n relative rounded-md bg-muted/40 p-2.5">
               <Markdown>{task.description ?? ""}</Markdown>
               <button
                 type="button"
-                onClick={openNotes}
+                onClick={notesDraft.open}
                 className="lk-iconbtn absolute right-0.5 top-0.5 opacity-0 transition-opacity group-hover/n:opacity-100"
                 title="Edit notes"
               >
@@ -328,7 +315,7 @@ export const TaskRow = memo(function TaskRow({ task }: { task: TaskWithSubtasks 
           ) : (
             <button
               type="button"
-              onClick={openNotes}
+              onClick={notesDraft.open}
               className="lk-print flex items-center gap-1.5 text-2xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
             >
               <FileText size={12} /> Add notes

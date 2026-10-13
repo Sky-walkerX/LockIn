@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
-import { appendToTask, updateTask } from "@/lib/tasks/update";
+import { appendToTask, saveTaskNotes, updateTask } from "@/lib/tasks/update";
 import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import { z } from "zod";
 import * as f from "@/lib/http/fields";
@@ -16,6 +16,9 @@ const UpdateTaskSchema = z.object({
   milestoneId: f.id.nullable().optional(),
   timeSpent: z.number().int().nonnegative().nullable().optional(),
   recurrence: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).nullable().optional(),
+  // With `description`: the bodyRev of the text the edit started from. The notes are
+  // saved only if they still say that (lib/notes/revision.ts).
+  base: z.string().max(64).optional(),
   // A labelled block added to the end of the notes ("from focus", "from chat").
   append: z.object({ text: z.string().trim().min(1).max(100_000), label: z.string().trim().min(1).max(40) }).optional(),
 });
@@ -31,15 +34,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { append, ...patch } = parsed.data;
+  const { append, base, ...patch } = parsed.data;
   // An addition builds on the notes as they are now, so it takes the row lock.
   const appended = append
     ? await appendToTask(userId, id, append.text, { label: append.label, day: localDay(request.cookies.get(ZONE_COOKIE)?.value) })
     : null;
   if (append && !appended) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // The editor's save: refused if the notes changed since the edit began.
+  let saved = appended;
+  if (base !== undefined && patch.description !== undefined) {
+    const result = await saveTaskNotes(userId, id, patch.description, base);
+    if (result.kind === "missing") return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (result.kind === "conflict") {
+      return NextResponse.json({ error: "These notes changed while you were editing them", current: result.current }, { status: 409 });
+    }
+    saved = result.row;
+    delete patch.description;
+  }
+
   const updated = await updateTask(userId, id, patch);
-  const task = updated === "empty" && appended ? appended : updated;
+  const task = updated === "empty" && saved ? saved : updated;
   if (task === "empty") return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(task);

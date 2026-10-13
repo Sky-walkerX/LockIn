@@ -31,7 +31,13 @@ export type CreateTaskInput = {
 };
 
 export type UpdateTaskInput = Partial<
-  Omit<CreateTaskInput, "subjectId" | "estimatedTime"> & { isCompleted: boolean; timeSpent: number; estimatedTime: number | null }
+  Omit<CreateTaskInput, "subjectId" | "estimatedTime"> & {
+    isCompleted: boolean;
+    timeSpent: number;
+    estimatedTime: number | null;
+    /** With `description`: the bodyRev of the notes the edit started from. */
+    base: string;
+  }
 >;
 
 // Tasks scoped to a subject or milestone.
@@ -126,7 +132,8 @@ export function useUpdateTask() {
   const invalidate = useInvalidateTasks();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) => api.put<Task>(`/api/tasks/${id}`, data),
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data: { base, ...data } }) => {
+      void base;
       const prev = await patchSubjectCaches(qc, (s) =>
         mapTasks(s, (t) => {
           if (t.id !== id) return t;

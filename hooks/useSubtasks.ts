@@ -23,6 +23,8 @@ export type UpdateSubtaskInput = Partial<{
   notes: string;
   isCompleted: boolean;
   order: number;
+  /** With `notes`: the bodyRev of the notes the edit started from. */
+  base: string;
 }>;
 
 // Subtasks are read through the subject detail query (["subject", id]); these
@@ -78,7 +80,8 @@ export function useUpdateSubtask() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateSubtaskInput }) =>
       api.put<Subtask>(`/api/subtasks/${id}`, data),
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data: { base, ...data } }) => {
+      void base;
       const prev = await patchSubjectCaches(qc, (s) =>
         mapSubtasks(s, (st) => {
           if (st.id !== id) return st;
