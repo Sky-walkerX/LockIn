@@ -44,7 +44,7 @@ services:
 
   app:
     image: ghcr.io/sky-walkerx/lockin:${LOCKIN_VERSION:-0.1.0}
-    build: { context: ., target: app }
+    build: { context: ., target: app, args: { PUBLIC_URL: "${PUBLIC_URL:-}" } }
     restart: unless-stopped
     # Published to the machine itself only, so a proxy in front (the https
     # profile, or your own) can't be gone around. LOCKIN_BIND=0.0.0.0 opens it

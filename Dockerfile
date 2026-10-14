@@ -15,6 +15,12 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# The address the instance is opened at, when the build knows it: the landing
+# page is prerendered here, and its link-preview image and canonical address
+# need it. Unset (a published image), those are left out. Only this stage sees
+# it; the runtime takes NEXTAUTH_URL from the environment as before.
+ARG PUBLIC_URL=""
+ENV NEXTAUTH_URL=${PUBLIC_URL}
 # The build fills public/ort with the CPU embedder's runtime, taken from
 # node_modules (scripts/copy-ort.mjs); the runtime stage copies public/.
 RUN pnpm run build

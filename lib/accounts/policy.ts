@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { publicOrigin } from "@/lib/http/origin";
+import { configuredOrigin, publicOrigin } from "@/lib/http/origin";
 
 // What whoever runs this instance decided about accounts.
 
@@ -35,13 +35,7 @@ export function appOrigin(request: Request): string {
   return publicOrigin(request);
 }
 
-/** The address this instance is set to be opened at, when it's set. */
-export function configuredOrigin(): string | null {
-  const configured = process.env.NEXTAUTH_URL?.trim().replace(/\/+$/, "");
-  if (configured) return configured;
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  return vercel ? `https://${vercel}` : null;
-}
+export { configuredOrigin };
 
 /** Addresses are compared and stored in lower case, so Ada@ and ada@ are one account. */
 export function normalizeEmail(email: string): string {
