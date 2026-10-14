@@ -70,6 +70,11 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
+      # Optional: who runs this instance. With OPERATOR_EMAIL set, /privacy
+      # and /terms appear.
+      OPERATOR_EMAIL: ${OPERATOR_EMAIL:-}
+      OPERATOR_NAME: ${OPERATOR_NAME:-}
+      OPERATOR_HOSTING: ${OPERATOR_HOSTING:-}
       # Megabytes of files each account may store; 0 for no ceiling.
       STORAGE_QUOTA_MB: ${STORAGE_QUOTA_MB:-1024}
       # "off" drops the limits on sign-in tries, sign-ups and the like.

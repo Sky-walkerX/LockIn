@@ -5,6 +5,7 @@ import { Wordmark } from "@/app/components/brand/wordmark";
 import { LiveInbox } from "./live-inbox";
 import { FullscreenDemo } from "./fullscreen-demo";
 import { ThemeToggle } from "./theme-toggle";
+import { LegalLinks } from "@/app/components/legal-links";
 import s from "./landing.module.css";
 
 // What `/` shows a visitor: the mechanism first (agents' notes arriving in the
@@ -301,6 +302,7 @@ docker compose up -d        # http://localhost:3000`}</pre>
             <Link className={s.link} href="/login">
               Sign in
             </Link>
+            <LegalLinks lead=" · " className={s.link} />
           </span>
         </div>
       </footer>

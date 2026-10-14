@@ -6,6 +6,8 @@ export type AccountOptions = {
   signup: boolean;
   /** It can send email: confirmation and password-reset links. */
   mail: boolean;
+  /** Its operator is named, so /privacy and /terms exist. */
+  legal: boolean;
 };
 
 // What the sign-in pages may offer here. They're prerendered, and these are

@@ -147,6 +147,7 @@ Settings in `.env`:
 | `SIGNUP` | `open` (the default) lets anyone who can reach the address make an account. `closed` stops new accounts once the first one exists. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. "Continue with Google" appears only when both are set. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Optional. Outgoing email, see Accounts below. |
+| `OPERATOR_EMAIL`, `OPERATOR_NAME`, `OPERATOR_HOSTING` | Optional. Privacy and terms pages, see Accounts below. |
 | `STORAGE_QUOTA_MB` | Megabytes of images and PDFs each account may store. Default `1024`; `0` for no ceiling. |
 | `RATE_LIMITS` | `off` drops the limits below. Default `on`. |
 | `TRUSTED_PROXY_HOPS` | How many reverse proxies stand in front of LockIn. Default `1`; `0` when visitors reach the port directly. |
@@ -180,7 +181,9 @@ With `SMTP_HOST` set, LockIn sends two emails. A new account gets a link to conf
 scripts/set-password.sh someone@example.com
 ```
 
-Changing or resetting a password signs that account out everywhere. Resetting one, by the emailed link or with the script, also disconnects every agent and connected app, in case someone else had been in: a token they made would outlast the new password. Connect them again in Settings. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access.
+Changing or resetting a password signs that account out everywhere. Resetting one, by the emailed link or with the script, also disconnects every agent and connected app, in case someone else had been in: a token they made would outlast the new password. Connect them again in Settings. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access.
+
+A notebook you run for yourself has no privacy or terms page. If other people sign up on yours, set `OPERATOR_EMAIL`, and `OPERATOR_NAME` if you like: `/privacy` and `/terms` appear, linked from the landing and sign-up pages, and name you as the one to write to. `OPERATOR_HOSTING` is a sentence of your own, shown on the privacy page, on where the data is kept and how long backups are. Both pages describe what LockIn does and make a few promises in your name (that you don't read people's notes, that you'll give notice before closing), so read them before turning them on.
 
 "Continue with Google" makes a new account, or opens the existing one with that address if the address was confirmed. It won't attach to an account made with a password whose address was never confirmed, so nobody can claim an address ahead of its owner.
 

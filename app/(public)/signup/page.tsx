@@ -140,6 +140,14 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
                 </button>
               </form>
 
+              {options?.legal && (
+                <p className="mt-4 text-center text-xs text-muted-foreground">
+                  Making an account means agreeing to this notebook&apos;s{" "}
+                  <Link href="/terms" className="underline underline-offset-2">terms</Link>. Its{" "}
+                  <Link href="/privacy" className="underline underline-offset-2">privacy page</Link> says what it keeps.
+                </p>
+              )}
+
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
                 <Link href={loginHref} className="font-semibold text-foreground hover:underline">Sign in</Link>
