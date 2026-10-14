@@ -65,10 +65,10 @@ export function FilmHero() {
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           onClick={() => (playing ? (wanted.current = false, video.current?.pause()) : play())}
-          aria-label="LockIn in 45 seconds: an agent saves a note to the Project-X section, you witness it, and another agent picks it up later."
+          aria-label="LockIn in a minute: an agent saves a note to the Project-X section, you witness it, and another agent picks it up later. A session files itself when it compacts and when it ends. Two notes disagree; each shows its commit date, and witnessing the newer one retires the older from search."
         >
-          <source src="/media/lockin-film-720.mp4" type="video/mp4" media="(max-width: 900px)" />
-          <source src="/media/lockin-film-1080.mp4" type="video/mp4" />
+          <source src="/media/lockin-film-2-720.mp4" type="video/mp4" media="(max-width: 900px)" />
+          <source src="/media/lockin-film-2-1080.mp4" type="video/mp4" />
         </video>
         {!playing && (
           <button type="button" className={s.playBtn} onClick={play} aria-label="Play the film">

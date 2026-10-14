@@ -1,5 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, CodeXml, Cpu, KeyRound, LogIn, Scale, Search, Server, Star } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowRightLeft,
+  CodeXml,
+  Cpu,
+  FileClock,
+  GitCommitHorizontal,
+  GitCompareArrows,
+  KeyRound,
+  LogIn,
+  Scale,
+  Search,
+  Server,
+  Star,
+} from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { LiveInbox } from "./live-inbox";
@@ -12,7 +26,7 @@ import s from "./landing.module.css";
 
 // What `/` shows a visitor: the launch film first, then the mechanism (agents'
 // notes arriving in the Inbox, waiting to be witnessed), then how to connect,
-// ask, read and self-host. The film, the example Inbox, the full-screen demo,
+// how notes stay current as the code changes, ask, read and self-host. The film, the example Inbox, the full-screen demo,
 // the theme button and the parts that move into place (Reveal) run on the
 // client; the rest is static.
 //
@@ -30,6 +44,7 @@ export function Landing() {
           </Link>
           <nav className={s.nav} aria-label="Page">
             <a href="#how">How it works</a>
+            <a href="#current">Staying current</a>
             <a href="#ask">Ask</a>
             <a href="#self-host">Self-host</a>
             <a href={BRAND.repoUrl}>GitHub</a>
@@ -121,8 +136,8 @@ export function Landing() {
                 <pre className={s.code}>{`save_note(title, body, subject)
 search_notes(query)
 get_note(id)
-get_plan(subject)
-append_to_note(id, text)`}</pre>
+save_handoff(goal, state, next)
+pickup_handoff()`}</pre>
               </Reveal>
               <Reveal as="li" className={s.step} i={2}>
                 <Reveal as="span" variant="stamp" className={s.n} i={4}>
@@ -138,7 +153,86 @@ append_to_note(id, text)`}</pre>
           </div>
         </section>
 
-        <section id="ask" className={`lk-paper ${s.section}`} aria-labelledby="ask-title">
+        <section id="current" className={`lk-paper ${s.section}`} aria-labelledby="current-title">
+          <div className={`${s.wrap} ${s.two}`}>
+            <div>
+              <Reveal as="h2" id="current-title" className={s.h2}>
+                Notes that keep up with the code
+              </Reveal>
+              <p className={`${s.sub} ${s.subTight}`}>
+                The code changes under your notes. {BRAND.name} keeps track of which commit each note was true at, so an
+                agent doesn&apos;t trust a note the code has moved past.
+              </p>
+              <ul className={s.points}>
+                <li>
+                  <GitCommitHorizontal className={s.icon} aria-hidden />
+                  <span>
+                    <b>Checked before it&apos;s trusted.</b> A note about code records its repo, commit and the
+                    commit&apos;s date. The next agent runs the diff, then confirms the note, replaces it, or flags it for
+                    you.
+                  </span>
+                </li>
+                <li>
+                  <GitCompareArrows className={s.icon} aria-hidden />
+                  <span>
+                    <b>One answer when notes disagree.</b> Each shows its commit date, so you can see which describes the
+                    newer code. Witness the newer one and the old page leaves search.
+                  </span>
+                </li>
+                <li>
+                  <ArrowRightLeft className={s.icon} aria-hidden />
+                  <span>
+                    <b>Hand off mid-task.</b> Hit a usage cap? The next agent, in Codex, Cursor or a new session, picks
+                    up the goal, what was ruled out, and the exact next step.
+                  </span>
+                </li>
+                <li>
+                  <FileClock className={s.icon} aria-hidden />
+                  <span>
+                    <b>Every session saves itself.</b> The Claude Code plugin files each session into your notebook when
+                    it compacts and when it ends.
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <Reveal as="figure" variant="sheet" className={s.sheet} aria-label="Example: two notes that disagree">
+              <div className={s.runhead}>
+                <span>Search · migration locks</span>
+                <span>Example</span>
+              </div>
+              <div className={`${s.drift} ${s.driftOld}`}>
+                <p className={s.driftMeta}>
+                  Infra · p. 8 · <b>Claude Code</b>
+                </p>
+                <h3 className={s.driftTitle}>Use session locks for migrations</h3>
+                <p className={s.driftStatus}>
+                  <b>Replaced</b> by p. 19. This page is history.
+                </p>
+                <p className={s.driftCode}>
+                  <span className={s.driftLabel}>Code</span> <code>a1b2c3d</code> · committed 3 Oct
+                </p>
+              </div>
+              <div className={s.drift}>
+                <p className={s.driftMeta}>
+                  Infra · p. 19 · <b>Codex</b> · <span className={s.signed}>witnessed by you</span>
+                </p>
+                <h3 className={s.driftTitle}>Never use session locks behind pgbouncer</h3>
+                <p className={s.driftStatus}>
+                  Replaces p. 8. This page describes code <b>9 days newer</b>.
+                </p>
+                <p className={s.driftCode}>
+                  <span className={s.driftLabel}>Code</span> <code>9f8e7d6</code> · committed 12 Oct
+                </p>
+              </div>
+              <p className={s.model}>
+                <Search className={s.icon} aria-hidden />
+                Search and Ask now answer from p. 19.
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
+        <section id="ask" className={`${s.section} ${s.plain}`} aria-labelledby="ask-title">
           <div className={`${s.wrap} ${s.two}`}>
             <div>
               <Reveal as="h2" id="ask-title" className={s.h2}>
@@ -202,7 +296,7 @@ append_to_note(id, text)`}</pre>
           </div>
         </section>
 
-        <section className={`${s.section} ${s.plain}`} aria-labelledby="read-title">
+        <section className={`lk-paper ${s.section}`} aria-labelledby="read-title">
           <div className={`${s.wrap} ${s.two}`}>
             <Reveal as="article" variant="sheet" className={`${s.sheet} ${s.read}`} aria-label="Example note">
               <div className={s.runhead}>
@@ -257,7 +351,7 @@ append_to_note(id, text)`}</pre>
           </div>
         </section>
 
-        <section id="self-host" className={`lk-paper ${s.section}`} aria-labelledby="self-host-title">
+        <section id="self-host" className={`${s.section} ${s.plain}`} aria-labelledby="self-host-title">
           <div className={s.wrap}>
             <Reveal as="h2" id="self-host-title" className={s.h2}>
               Yours to keep

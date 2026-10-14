@@ -71,8 +71,8 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       // The landing film and its poster (public/media). A week, and a day
-      // more of serving the old copy while a new one is fetched: a recut
-      // film keeps its name, so it can't be cached for good.
+      // more of serving the old copy while a new one is fetched. A recut film
+      // gets a new name (lockin-film-2-…), so this never holds back a new cut.
       {
         source: "/media/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
