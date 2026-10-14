@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "lockin",
+  "description": "Save each Claude Code session to your LockIn notebook before it compacts, and pass unfinished work between agents with /lockin:handoff and /lockin:pickup.",
+  "version": "1.0.0",
+  "author": { "name": "Sky-walkerX", "url": "https://github.com/Sky-walkerX" },
+  "homepage": "https://lockin.namankhandelwal.dev",
+  "repository": "https://github.com/Sky-walkerX/LockIn",
+  "license": "AGPL-3.0-only",
+  "keywords": ["notes", "memory", "mcp", "handoff", "compaction"]
+}

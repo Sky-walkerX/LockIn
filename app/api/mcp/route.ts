@@ -428,7 +428,9 @@ const handler = createMcpHandler(
         const who = caller(ctx.http?.authInfo);
         const find = { subject, repo: repo || cwd };
         const card = await pickUp(who, find, peek);
-        return text(card ?? noBaton(find));
+        // A peek runs after every compaction: with nothing open it says so in
+        // a few words, rather than pointing at batons left for other work.
+        return text(card ?? (peek ? "No baton is open for this work." : noBaton(find)));
       },
     );
 

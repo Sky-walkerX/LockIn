@@ -1,0 +1,15 @@
+{
+  "name": "lockin",
+  "owner": { "name": "Sky-walkerX", "url": "https://github.com/Sky-walkerX" },
+  "metadata": { "description": "LockIn, the notebook your AI tools write to" },
+  "plugins": [
+    {
+      "name": "lockin",
+      "description": "Save each Claude Code session to your LockIn notebook before it compacts, and pass unfinished work between agents with /lockin:handoff and /lockin:pickup.",
+      "source": "./integrations/claude-code",
+      "category": "productivity",
+      "homepage": "https://lockin.namankhandelwal.dev",
+      "tags": ["notes", "memory", "mcp", "handoff"]
+    }
+  ]
+}

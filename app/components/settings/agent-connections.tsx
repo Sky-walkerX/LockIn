@@ -275,7 +275,30 @@ export function AgentConnections() {
         </ul>
       )}
 
+      <ClaudeCodePlugin />
+
       <SignInApps url={url} />
+    </div>
+  );
+}
+
+// The plugin lives in this repo (integrations/claude-code). Its hooks call the
+// server by the name the Claude Code command above gives it.
+const PLUGIN_SETUP = `claude plugin marketplace add ${BRAND.repoUrl.replace("https://github.com/", "")}\nclaude plugin install ${SERVER_NAME}@${SERVER_NAME}`;
+
+function ClaudeCodePlugin() {
+  return (
+    <div className="grid gap-2">
+      <h3 className="lk-sec">Claude Code plugin</h3>
+      <p className="text-sm text-muted-foreground">
+        Files each session into your notebook before Claude Code compacts it, and adds <code>/{SERVER_NAME}:handoff</code> and{" "}
+        <code>/{SERVER_NAME}:pickup</code> for passing unfinished work from one agent to the next. It uses the server the Claude Code
+        command above adds, named <code>{SERVER_NAME}</code>.
+      </p>
+      <pre className="overflow-x-auto rounded-sm border border-border bg-muted px-3 py-2.5 font-code text-xs leading-relaxed">{PLUGIN_SETUP}</pre>
+      <div>
+        <CopyButton value={PLUGIN_SETUP} label="Copy" />
+      </div>
     </div>
   );
 }
