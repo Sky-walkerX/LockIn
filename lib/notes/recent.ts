@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { excerpt } from "@/lib/notes/excerpt";
+import { notReplacedSql } from "@/lib/notes/status";
 
 export type RecentNote = {
   id: string;
@@ -9,6 +10,8 @@ export type RecentNote = {
   taskCount: number;
   source: string | null;
   witnessedAt: string | null;
+  /** A witnessed note replaces it (lib/notes/status.ts). */
+  replaced: boolean;
   subject: { id: string; title: string; color: string | null; isInbox: boolean };
 };
 
@@ -24,6 +27,7 @@ type Row = {
   subjectIsInbox: boolean;
   source: string | null;
   witnessedAt: Date | null;
+  replaced: boolean;
 };
 
 // One statement for the whole list. Only the head of each note comes
@@ -32,6 +36,7 @@ type Row = {
 const RECENT_SQL = `
   SELECT m.id, m.title, left(m.notes, 1500) AS head, m."updatedAt", m.source, m."witnessedAt",
          (SELECT count(*)::int FROM "Task" t WHERE t."milestoneId" = m.id) AS "taskCount",
+         NOT ${notReplacedSql("m.id")} AS replaced,
          s.id AS "subjectId", s.title AS "subjectTitle", s.color AS "subjectColor", s."isInbox" AS "subjectIsInbox"
   FROM "Milestone" m
   JOIN "Subject" s ON s.id = m."subjectId"
@@ -50,6 +55,7 @@ export async function listRecentNotes(userId: string, limit: number): Promise<Re
     taskCount: r.taskCount,
     source: r.source,
     witnessedAt: r.witnessedAt ? r.witnessedAt.toISOString() : null,
+    replaced: r.replaced,
     subject: { id: r.subjectId, title: r.subjectTitle, color: r.subjectColor, isInbox: r.subjectIsInbox },
   }));
 }

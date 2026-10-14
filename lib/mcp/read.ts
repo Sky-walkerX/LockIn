@@ -22,6 +22,28 @@ const TASKS = { select: TASK, orderBy: { order: "asc" } } satisfies Prisma.Miles
 
 const PLACE = { select: { id: true, title: true, isInbox: true } } as const;
 
+/** The notes that say they replace one, newest first (lib/notes/status.ts). */
+export const REPLACEMENTS = {
+  select: { id: true, page: true, title: true, source: true, witnessedAt: true },
+  orderBy: { createdAt: "desc" },
+} satisfies Prisma.Milestone$supersededByArgs;
+
+/**
+ * For search hits that are notes: their page, anchor commit, and whether
+ * they're flagged or have a replacement waiting. Replaced notes are already
+ * gone from the hits (the searches leave them out).
+ */
+export async function noteMarks(userId: string, ids: string[]) {
+  if (ids.length === 0) return new Map<string, { page: number | null; anchorCommit: string | null; stale: boolean; proposed: boolean }>();
+  const rows = await prisma.milestone.findMany({
+    where: { id: { in: ids }, subject: { userId } },
+    select: { id: true, page: true, anchorCommit: true, staleReason: true, _count: { select: { supersededBy: true } } },
+  });
+  return new Map(
+    rows.map((r) => [r.id, { page: r.page, anchorCommit: r.anchorCommit, stale: r.staleReason != null, proposed: r._count.supersededBy > 0 }]),
+  );
+}
+
 export type Found =
   | { kind: "note"; subjectId: string; note: NoteForAgent }
   | { kind: "task" | "subtask"; subjectId: string; item: PlanItemForAgent };
@@ -33,7 +55,12 @@ export async function readById(userId: string, id: string): Promise<Found | null
   const [note, task, subtask] = await Promise.all([
     prisma.milestone.findFirst({
       where: { id, subject: { userId } },
-      include: { subject: PLACE, tasks: TASKS },
+      include: {
+        subject: PLACE,
+        tasks: TASKS,
+        supersedes: { select: { id: true, page: true, title: true } },
+        supersededBy: REPLACEMENTS,
+      },
     }),
     prisma.task.findFirst({
       where: { id, userId },

@@ -17,7 +17,18 @@ const taskInclude = {
 };
 
 export const subjectTreeInclude = {
-  milestones: { orderBy: { order: "asc" as const }, include: { tasks: taskInclude } },
+  milestones: {
+    orderBy: { order: "asc" as const },
+    include: {
+      tasks: taskInclude,
+      // Whether the note still stands (lib/notes/status.ts).
+      supersedes: { select: { id: true, page: true, title: true, subjectId: true } },
+      supersededBy: {
+        select: { id: true, page: true, title: true, source: true, witnessedAt: true, subjectId: true },
+        orderBy: { createdAt: "desc" as const },
+      },
+    },
+  },
   tasks: { where: { milestoneId: null }, ...taskInclude },
   // The extracted document text can run to megabytes; nothing here needs it.
   resources: { orderBy: { createdAt: "desc" as const }, omit: { extracted: true } },

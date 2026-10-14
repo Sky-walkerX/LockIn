@@ -1,11 +1,13 @@
 import prisma from "@/lib/prisma";
 import { likePatterns, parseTerms } from "@/lib/search/query";
+import { notReplacedSql } from "@/lib/notes/status";
 import { rankHits, toHit, type SearchHit, type SearchRow } from "@/lib/search/hits";
 
 // Every table in one statement, so a search is one round trip.
 //
 // A row matches when every term appears somewhere in its title or notes
-// (ILIKE ALL over the term patterns). Title matches are pulled forward before
+// (ILIKE ALL over the term patterns). A note a witnessed note replaces is
+// left out: it's history, and the newer page says what's true. Title matches are pulled forward before
 // the LIMIT so a big notes-only result set can't crowd them out; rankHits does
 // the real ordering. Resources match on title, note and URL only: their
 // extracted text can be a whole book, and semantic search covers it by meaning.
@@ -25,6 +27,7 @@ SELECT * FROM (
   JOIN "Subject" s ON s.id = m."subjectId"
   WHERE s."userId" = $1
     AND (m.title || ' ' || m.notes) ILIKE ALL ($2::text[])
+    AND ${notReplacedSql("m.id")}
 
   UNION ALL
   SELECT 'task', t.id, t.title, coalesce(t.description, ''), t."isCompleted", s.id, s.title, s.color,

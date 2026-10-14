@@ -306,6 +306,30 @@ model Milestone {
   // Its page in the notebook (see User.nextPage), shared with resources.
   page Int?
 
+  // The code a note is about, as the agent that saved it saw it: the repo, the
+  // commit it was true at, and the files it describes. An agent reading it
+  // later compares those files with what it has, then confirms the note
+  // (checkedAt moves on), replaces it, or flags it for the user.
+  anchorRepo   String?
+  anchorCommit String?
+  anchorFiles  String[]  @default([])
+  checkedAt    DateTime?
+  checkedBy    String?
+  staleReason  String?
+  staleAt      DateTime?
+  staleBy      String?
+
+  // The note this one replaces. The old one counts as replaced only once this
+  // one is witnessed (lib/notes/replaced.ts), so an agent can propose but not
+  // retire a page by itself.
+  supersedes   Milestone?  @relation("Supersedes", fields: [supersedesId], references: [id], onDelete: SetNull)
+  supersedesId String?
+  supersededBy Milestone[] @relation("Supersedes")
+
+  // A note an agent's session files itself into ("<userId>:<session id>"), so
+  // each compaction adds to one note instead of starting another.
+  captureKey String? @unique
+
   // Revision (lib/review/schedule.ts). Completing a milestone schedules its
   // first review; each rating moves reviewDueAt out by a stretching interval.
   // A null reviewDueAt means the topic isn't being revised.
@@ -323,6 +347,7 @@ model Milestone {
   @@index([subjectId, order])
   @@index([subjectId, updatedAt(sort: Desc)])
   @@index([reviewDueAt])
+  @@index([supersedesId])
 }
 
 model Task {

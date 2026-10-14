@@ -5,17 +5,28 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { authenticateToken, MCP_REQUESTS_PER_MINUTE, type TokenAuth } from "@/lib/auth";
 import { BRAND } from "@/lib/brand";
-import { appendToNote, editAgentNote, insertNote, matchSubject, moveNote, placeNote } from "@/lib/notes/write";
+import {
+  appendToNote,
+  confirmNote,
+  editAgentNote,
+  flagStale,
+  insertNote,
+  matchSubject,
+  moveNote,
+  placeNote,
+  supersedeNote,
+} from "@/lib/notes/write";
 import { createSubtask, createTask } from "@/lib/tasks/create";
 import { appendToSubtask, appendToTask, updateSubtask, updateTask } from "@/lib/tasks/update";
 import { pagesOf } from "@/lib/notes/page";
+import { COMMIT, MAX_ANCHOR_FILES } from "@/lib/notes/anchor";
 import { sourceLabel } from "@/lib/notes/source";
 import { embedOnServer } from "@/lib/rag/ingest";
 import { indexNoteOnServer } from "@/lib/rag/index-note";
 import { searchKeyword } from "@/lib/search/keyword";
 import { searchSemantic } from "@/lib/search/semantic";
 import { formatNote, formatPlan, formatPlanItem, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
-import { readById, readPlan } from "@/lib/mcp/read";
+import { noteMarks, readById, readPlan } from "@/lib/mcp/read";
 
 // The notebook's MCP server: agents (Claude Code, Codex, Cursor…) list
 // subjects, search, read notes and plans, save and add to notes, edit the
@@ -56,6 +67,19 @@ const noteUrl = (origin: string | null, subjectId: string, isInbox: boolean, not
 // The subject page opens the Plan tab and expands the rows down to this one.
 const planItemUrl = (origin: string | null, subjectId: string, kind: "task" | "subtask", id: string) =>
   origin ? `${origin}/subjects/${subjectId}?open=${kind}:${id}` : null;
+
+// The code a note describes, as the agent saving or checking it sees it. All
+// optional: a note about an idea has none. Later agents use it to tell when
+// the note may be out of date (lib/notes/anchor.ts).
+const ANCHOR = {
+  repo: z.string().trim().min(1).max(300).optional().describe("The repo it's about: `git remote get-url origin`, or owner/name"),
+  commit: z.string().trim().regex(COMMIT, "a commit hash").optional().describe("The commit it's true at: `git rev-parse HEAD`"),
+  files: z
+    .array(z.string().trim().min(1).max(300))
+    .max(MAX_ANCHOR_FILES)
+    .optional()
+    .describe("The files it describes, relative to the repo root"),
+};
 
 const handler = createMcpHandler(
   (server) => {
@@ -110,8 +134,11 @@ const handler = createMcpHandler(
           if (found.some((f) => f.id === h.id)) continue;
           found.push({ kind: h.kind, id: h.id, title: h.title, path: h.path, snippet: h.snippet, href: h.href });
         }
-        const pages = await pagesOf(userId, found);
-        for (const f of found) f.page = pages.get(f.id) ?? null;
+        const [pages, notes] = await Promise.all([
+          pagesOf(userId, found),
+          noteMarks(userId, found.filter((f) => f.kind === "milestone").map((f) => f.id)),
+        ]);
+        for (const f of found) Object.assign(f, { page: pages.get(f.id) ?? null }, notes.get(f.id));
         return text(formatSearch(query, found, origin, mode));
       },
     );
@@ -163,18 +190,19 @@ const handler = createMcpHandler(
       {
         title: "Save a note",
         description:
-          "Save a new note to the user's notebook. Write the body as markdown: what was learned, with the code or commands that matter. Name an existing subject to file it there; with no subject, or one that doesn't exist, it goes to the Inbox. The user sees it marked as recorded by you until they witness it.",
+          "Save a new note to the user's notebook. Write the body as markdown: what was learned, with the code or commands that matter. Name an existing subject to file it there; with no subject, or one that doesn't exist, it goes to the Inbox. The user sees it marked as recorded by you until they witness it. When the note describes code in a repo, give repo, commit and files, so a later agent can tell when the code has moved on.",
         inputSchema: z.object({
           title: z.string().trim().min(1).max(200).describe("A short title that says what the note is about"),
           body: z.string().max(100_000).describe("The note, in markdown. Maths in LaTeX: $…$ inline, $$…$$ on lines of their own"),
           subject: z.string().trim().max(200).optional().describe("An existing subject's name or id, e.g. \"Rust\""),
+          ...ANCHOR,
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
-      async ({ title, body, subject }, ctx) => {
+      async ({ title, body, subject, repo, commit, files }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
         const place = await placeNote(userId, subject);
-        const note = await insertNote(userId, place.subjectId, { title, notes: body, source });
+        const note = await insertNote(userId, place.subjectId, { title, notes: body, source, anchor: { repo, commit, files } });
         indexAfterReply(userId, note.id);
         const where = place.isInbox
           ? place.requested
@@ -245,6 +273,78 @@ const handler = createMcpHandler(
         indexAfterReply(userId, note.id);
         const url = noteUrl(origin, note.subject.id, note.subject.isInbox, note.id);
         return text(`Edited "${note.title}" in ${subjectName(note.subject)}. It waits for the user to witness it again.${url ? `\n${url}` : ""}`);
+      },
+    );
+
+    server.registerTool(
+      "confirm_note",
+      {
+        title: "Confirm a note still holds",
+        description:
+          "Say a note still matches the code: you compared its files with what's in the repo now (see the git diff command get_note gives) and nothing it says changed. Moves its anchor to your commit and clears any stale flag. Works on any note, since it doesn't change what it says. Also anchors a note that has no anchor yet.",
+        inputSchema: z.object({
+          id: z.string().min(1).max(64).describe("The note's id"),
+          commit: z.string().trim().regex(COMMIT, "a commit hash").describe("The commit you checked it at: `git rev-parse HEAD`"),
+          repo: ANCHOR.repo,
+          files: ANCHOR.files,
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+      },
+      async ({ id, commit, repo, files }, ctx) => {
+        const { userId, source, origin } = caller(ctx.http?.authInfo);
+        const note = await confirmNote(userId, id, source, { commit, repo, files });
+        if (!note) return failed(`No note with id ${id} in this notebook.`);
+        const url = noteUrl(origin, note.subjectId, note.isInbox, note.id);
+        return text(`"${note.title}" is confirmed as true at ${commit.slice(0, 7)}.${url ? `\n${url}` : ""}`);
+      },
+    );
+
+    server.registerTool(
+      "flag_stale",
+      {
+        title: "Flag a note that may be out of date",
+        description:
+          "Tell the user a note may no longer be true, and why (e.g. \"lib/auth.ts moved to OAuth in 4f2c1e0; the token section is wrong\"). Use it when you can't tell what's true now; when you can, write the correction with supersede_note. The note shows the flag until the user looks at it or an agent confirms the note.",
+        inputSchema: z.object({
+          id: z.string().min(1).max(64).describe("The note's id"),
+          reason: z.string().trim().min(1).max(300).describe("What may be wrong, and what changed"),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+      },
+      async ({ id, reason }, ctx) => {
+        const { userId, source, origin } = caller(ctx.http?.authInfo);
+        const note = await flagStale(userId, id, source, reason);
+        if (!note) return failed(`No note with id ${id} in this notebook.`);
+        const url = noteUrl(origin, note.subjectId, note.isInbox, note.id);
+        return text(`Flagged "${note.title}" for the user to look at.${url ? `\n${url}` : ""}`);
+      },
+    );
+
+    server.registerTool(
+      "supersede_note",
+      {
+        title: "Replace a note with a newer one",
+        description:
+          "Write a new note that replaces an out-of-date one, in the same subject. Use it when the code or the facts moved on and you know what's true now. Write the new note whole; it doesn't build on the old one. The old note stays as it is until the user witnesses the new one; then it drops out of search. Give the commit you wrote it at.",
+        inputSchema: z.object({
+          id: z.string().min(1).max(64).describe("The id of the note it replaces"),
+          title: z.string().trim().min(1).max(200).describe("The new note's title"),
+          body: z.string().max(100_000).describe("The new note, in markdown, complete"),
+          ...ANCHOR,
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false },
+      },
+      async ({ id, title, body, repo, commit, files }, ctx) => {
+        const { userId, source, origin } = caller(ctx.http?.authInfo);
+        const done = await supersedeNote(userId, id, { title, notes: body, source, anchor: { repo, commit, files } });
+        if (!done) return failed(`No note with id ${id} in this notebook.`);
+        const { note, old } = done;
+        indexAfterReply(userId, note.id);
+        const subject = await prisma.subject.findUnique({ where: { id: note.subjectId }, select: { isInbox: true } });
+        const url = noteUrl(origin, note.subjectId, subject?.isInbox ?? false, note.id);
+        return text(
+          `Saved "${note.title}" on page ${note.page} to replace page ${old.page} ("${old.title}"). Note id ${note.id}.\nThe old note stays in search until the user witnesses this one.${url ? `\n${url}` : ""}`,
+        );
       },
     );
 

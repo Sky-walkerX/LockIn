@@ -49,6 +49,16 @@ export function useCreateMilestone() {
         source: "web",
         witnessedAt: new Date(),
         page: null, // the server assigns it
+        anchorRepo: null,
+        anchorCommit: null,
+        anchorFiles: [],
+        checkedAt: null,
+        checkedBy: null,
+        staleReason: null,
+        staleAt: null,
+        staleBy: null,
+        supersedesId: null,
+        captureKey: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         subjectId: input.subjectId,
@@ -81,6 +91,8 @@ export type MilestoneUpdate = Partial<{
   /** With `notes`: the bodyRev of the text the edit started from. The save is
    *  refused (409) if the note has changed since. */
   base: string;
+  /** The user's answer to a stale flag: the note still holds, or the flag was wrong. */
+  stale: "checked" | "dismissed";
 }>;
 
 // The optimistic patch plus the server's returned row cover every field here,
@@ -93,9 +105,10 @@ export function useUpdateMilestone() {
     mutationFn: ({ id, data }: { id: string; data: MilestoneUpdate }) =>
       api.put<Milestone>(`/api/milestones/${id}`, data),
     onMutate: async ({ id, data }) => {
-      const { reviewDueAt, witnessed, base, ...rest } = data;
+      const { reviewDueAt, witnessed, base, stale, ...rest } = data;
       void base;
       const patch: Partial<Milestone> = { ...rest };
+      if (stale) Object.assign(patch, { staleReason: null, staleAt: null, staleBy: null });
       if (reviewDueAt !== undefined) patch.reviewDueAt = reviewDueAt ? new Date(reviewDueAt) : null;
       if (witnessed) patch.witnessedAt = new Date();
       const prev = await patchSubjectCaches(qc, (s) => ({
@@ -111,10 +124,13 @@ export function useUpdateMilestone() {
       if (data.isCompleted !== undefined || data.reviewDueAt !== undefined) {
         qc.invalidateQueries({ queryKey: ["reviews"] });
       }
-      if (data.witnessed || data.title !== undefined || data.notes !== undefined) {
+      if (data.witnessed || data.stale || data.title !== undefined || data.notes !== undefined) {
         qc.invalidateQueries({ queryKey: ["notes"] });
         qc.invalidateQueries({ queryKey: ["inbox"] });
       }
+      // Witnessing a replacement retires the note it replaces, which may be
+      // in another cached subject.
+      if (data.witnessed && milestone.supersedesId) qc.invalidateQueries({ queryKey: ["subject"] });
     },
     // A failed save still refetches, so the rolled-back cache can't drift from a
     // server that may have applied part of the write.

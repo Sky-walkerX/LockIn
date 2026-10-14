@@ -16,7 +16,13 @@ export type SubtaskWithChildren = Subtask & { children: Subtask[] };
 
 export type TaskWithSubtasks = Task & { subtasks: SubtaskWithChildren[] };
 
-export type MilestoneWithTasks = Milestone & { tasks: TaskWithSubtasks[] };
+export type NoteLink = { id: string; page: number | null; title: string; subjectId: string };
+export type MilestoneWithTasks = Milestone & {
+  tasks: TaskWithSubtasks[];
+  // Loaded with the subject; absent on a note just made in the browser.
+  supersedes?: NoteLink | null;
+  supersededBy?: (NoteLink & { source: string | null; witnessedAt: Date | string | null })[];
+};
 
 export type SubjectDetail = Subject & {
   milestones: MilestoneWithTasks[];

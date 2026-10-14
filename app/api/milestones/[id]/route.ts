@@ -3,7 +3,8 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { setClause } from "@/lib/sql";
 import { firstReview } from "@/lib/review/schedule";
-import { appendBlockToNote, saveNoteBody } from "@/lib/notes/write";
+import { appendBlockToNote, confirmNote, dismissStale, saveNoteBody } from "@/lib/notes/write";
+import { WEB_SOURCE } from "@/lib/notes/source";
 import { ZONE_COOKIE, localDay } from "@/lib/zone";
 import type { Milestone } from "@/app/generated/prisma/client";
 import { z } from "zod";
@@ -26,6 +27,9 @@ const UpdateMilestoneSchema = z.object({
   base: z.string().max(64).optional(),
   // A labelled block added to the end of the body ("from chat", "highlight").
   append: z.object({ text: z.string().trim().min(1).max(100_000), label: z.string().trim().min(1).max(40) }).optional(),
+  // The user's answer to an agent's stale flag: the note still holds
+  // ("checked"), or the flag was wrong ("dismissed"). Either clears it.
+  stale: z.enum(["checked", "dismissed"]).optional(),
 });
 
 // See the tasks route: an enum column needs its placeholder cast, or Postgres
@@ -46,7 +50,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { reviewDueAt, witnessed, base, append, ...rest } = parsed.data;
+  const { reviewDueAt, witnessed, base, append, stale, ...rest } = parsed.data;
+
+  // Checking a note isn't writing it: these leave updatedAt alone (lib/notes/write.ts).
+  if (stale) {
+    const done = stale === "checked" ? await confirmNote(userId, id, WEB_SOURCE) : await dismissStale(userId, id);
+    if (!done) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(await prisma.milestone.findUnique({ where: { id } }));
+  }
 
   // Both of these build on what the note says now, so they go through the
   // row lock in lib/notes/write.ts rather than the single statement below.

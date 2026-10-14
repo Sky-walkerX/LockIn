@@ -40,6 +40,13 @@ describe("formatSearch", () => {
     expect(text).toContain("1. Ownership (note, p. 12, in Rust) id m1");
     expect(text).toContain("2. Read ch. 4 (task, in Rust) id t1");
   });
+  it("marks notes to check before reading", () => {
+    const hit = { kind: "milestone", id: "m1", title: "Auth", path: ["Rust"], snippet: null, href: "/x", page: 3 };
+    expect(formatSearch("auth", [{ ...hit, anchorCommit: "abc1234ff", stale: true, proposed: true }], null, "keyword")).toContain(
+      "id m1 [anchored @abc1234, flagged stale, replacement proposed]",
+    );
+    expect(formatSearch("auth", [hit], null, "keyword")).toContain("id m1\n");
+  });
   it("reports no matches plainly", () => {
     expect(formatSearch("zzz", [], null, "meaning")).toBe('Nothing in the notebook matches "zzz".');
   });
@@ -54,6 +61,16 @@ describe("formatNote", () => {
     updatedAt: "2026-10-02T10:00:00Z",
     subject: { title: "Distributed Systems", isInbox: false },
     tasks: [{ id: "t1", title: "Try it", isCompleted: true, description: null, subtasks: [] }],
+    anchorRepo: null,
+    anchorCommit: null,
+    anchorFiles: [],
+    checkedAt: null,
+    checkedBy: null,
+    staleReason: null,
+    staleAt: null,
+    staleBy: null,
+    supersededBy: [],
+    supersedes: null,
   };
   it("marks an agent's unwitnessed note and lists its plan", () => {
     const text = formatNote({ ...base, source: "claude-code", witnessedAt: null }, null);
@@ -67,6 +84,26 @@ describe("formatNote", () => {
   });
   it("calls the user's own note theirs", () => {
     expect(formatNote({ ...base, source: "web", witnessedAt: null }, "https://x/n")).toContain("Written by the user");
+  });
+  it("gives the code a note is about, and how to check it", () => {
+    const text = formatNote(
+      { ...base, source: "codex", witnessedAt: null, anchorRepo: "sky-walkerx/lockin", anchorCommit: "abc1234ff", anchorFiles: ["lib/auth.ts"] },
+      null,
+    );
+    expect(text).toContain("Code: sky-walkerx/lockin @ abc1234: lib/auth.ts.");
+    expect(text).toContain("`git diff --stat abc1234 -- lib/auth.ts`");
+  });
+  it("says when a note is replaced, proposed for replacing, or flagged", () => {
+    const by = { id: "m2", page: 40, title: "Advisory locks, again", source: "codex" };
+    const own = { ...base, source: "web", witnessedAt: null };
+    expect(formatNote({ ...own, supersededBy: [{ ...by, witnessedAt: "2026-10-03" }] }, null)).toContain(
+      'REPLACED: p. 40, "Advisory locks, again" (id m2) replaces this note',
+    );
+    expect(formatNote({ ...own, supersededBy: [{ ...by, witnessedAt: null }] }, null)).toContain("Codex proposed a replacement");
+    expect(formatNote({ ...own, staleReason: "locks moved", staleBy: "codex", staleAt: "2026-10-04T00:00:00Z" }, null)).toContain(
+      "Flagged as possibly out of date by Codex on 2026-10-04: locks moved",
+    );
+    expect(formatNote({ ...own, supersedes: { id: "m0", page: 3, title: "Old" } }, null)).toContain('This note replaces p. 3, "Old" (id m0).');
   });
 });
 

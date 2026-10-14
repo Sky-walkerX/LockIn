@@ -48,6 +48,7 @@ export function Contents() {
               <div className="flex items-center gap-2.5">
                 <span className="lk-contents-title">{n.title}</span>
                 {awaitingWitness(n) && <span className="lk-stamp flex-none">Awaiting witness</span>}
+                {n.replaced && <span className="lk-anchor-label flex-none">Replaced</span>}
               </div>
               {(n.excerpt || !isOwnNote(n.source)) && (
                 <div className="lk-contents-excerpt">

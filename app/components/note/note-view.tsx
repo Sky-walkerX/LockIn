@@ -9,6 +9,7 @@ import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useDeleteMilestone, useUpdateMilestone } from "@/hooks/useMilestones";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
 import { NoteConflict } from "./note-conflict";
+import { NoteStatus } from "./note-status";
 import { useChatPanel } from "@/app/components/chat/chat-provider";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
@@ -171,6 +172,8 @@ export function NoteView({
           )}
         </div>
       )}
+
+      <NoteStatus note={note} />
 
       <div className="lk-note-bar">
         {planHref && (

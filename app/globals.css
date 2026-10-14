@@ -574,6 +574,23 @@
   /* A save was refused because the note changed under the edit. The newer
      note is kept a click away, on its own sheet, while the editor holds the
      user's text. */
+  /* Under the provenance: whether the note still stands, and its code. */
+  .lk-note-status { display: grid; gap: 6px; margin: -6px 0 14px; }
+  .lk-status { font-size: 14.5px; line-height: 1.45; color: var(--muted-foreground); }
+  .lk-status b { font-weight: 600; color: var(--lk-live); }
+  .lk-status-strong {
+    padding: 8px 12px; border: 1px solid color-mix(in oklab, var(--lk-live) 45%, var(--border));
+    border-radius: 2px; background: var(--card); color: var(--foreground);
+  }
+  .lk-status-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .lk-status-link { color: var(--lk-live); text-decoration: underline; text-underline-offset: 3px; }
+  .lk-anchor { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; font-size: 13px; color: var(--muted-foreground); }
+  .lk-anchor code { font-size: 12.5px; }
+  .lk-anchor-label {
+    font-family: var(--lk-font-display); font-weight: 700; font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--lk-live);
+  }
+
   .lk-note-conflict {
     margin-bottom: 14px; padding: 10px 14px;
     border: 1px solid var(--lk-stamp); border-radius: 2px; background: var(--card);

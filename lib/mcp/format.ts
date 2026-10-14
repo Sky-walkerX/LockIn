@@ -3,6 +3,8 @@
 // without a server.
 
 import { sourceLabel, awaitingWitness, isOwnNote } from "@/lib/notes/source";
+import { anchorForAgent, shortCommit, type Anchor } from "@/lib/notes/anchor";
+import { noteStatus, type StatusInput } from "@/lib/notes/status";
 
 export type SubjectLine = { id: string; title: string; isInbox: boolean; noteCount: number };
 
@@ -25,7 +27,21 @@ export type FoundLine = {
   href: string;
   /** The note's or resource's page, so an agent can cite it as the user sees it. */
   page?: number | null;
+  /** For a note: the commit it's anchored at, whether it's flagged, whether a replacement waits. */
+  anchorCommit?: string | null;
+  stale?: boolean;
+  proposed?: boolean;
 };
+
+/** Short marks after a hit, so an agent sees which notes to check before it reads them. */
+function marks(h: FoundLine): string {
+  const out = [
+    h.anchorCommit ? `anchored @${shortCommit(h.anchorCommit)}` : null,
+    h.stale ? "flagged stale" : null,
+    h.proposed ? "replacement proposed" : null,
+  ].filter(Boolean);
+  return out.length ? ` [${out.join(", ")}]` : "";
+}
 
 const KIND_WORD: Record<string, string> = {
   milestone: "note",
@@ -41,7 +57,7 @@ export function formatSearch(query: string, hits: FoundLine[], origin: string | 
   const lines = hits.map((h, i) => {
     const where = h.path.length > 0 ? `, in ${h.path.join(" › ")}` : "";
     const page = h.page != null ? `, p. ${h.page}` : "";
-    const parts = [`${i + 1}. ${h.title} (${KIND_WORD[h.kind] ?? h.kind}${page}${where}) id ${h.id}`];
+    const parts = [`${i + 1}. ${h.title} (${KIND_WORD[h.kind] ?? h.kind}${page}${where}) id ${h.id}${marks(h)}`];
     if (h.snippet) parts.push(`   ${h.snippet.replace(/\s+/g, " ").trim()}`);
     if (origin) parts.push(`   ${origin}${h.href}`);
     return parts.join("\n");
@@ -100,17 +116,37 @@ export function formatTasks(tasks: PlanTask[], notesLimit?: number): string {
   return lines.join("\n");
 }
 
-export type NoteForAgent = {
-  id: string;
-  page: number | null;
-  title: string;
-  notes: string;
-  source: string | null;
-  witnessedAt: Date | string | null;
-  updatedAt: Date | string;
-  subject: { title: string; isInbox: boolean };
-  tasks: PlanTask[];
-};
+export type NoteForAgent = Anchor &
+  StatusInput & {
+    id: string;
+    page: number | null;
+    title: string;
+    notes: string;
+    source: string | null;
+    witnessedAt: Date | string | null;
+    updatedAt: Date | string;
+    subject: { title: string; isInbox: boolean };
+    tasks: PlanTask[];
+    supersedes: { id: string; page: number | null; title: string } | null;
+  };
+
+const pageOf = (n: { page: number | null; title: string; id: string }) =>
+  `${n.page != null ? `p. ${n.page}, ` : ""}"${n.title}" (id ${n.id})`;
+
+/** What stands against a note, said plainly enough that an agent acts on it. */
+function standing(note: NoteForAgent): string | null {
+  const status = noteStatus(note);
+  switch (status.kind) {
+    case "replaced":
+      return `REPLACED: ${pageOf(status.by)} replaces this note, and the user has witnessed it. Read that one instead; this is history.`;
+    case "proposed":
+      return `${sourceLabel(status.by.source)} proposed a replacement, ${pageOf(status.by)}, which waits for the user to witness it. Until then this note stands.`;
+    case "stale":
+      return `Flagged as possibly out of date by ${sourceLabel(status.by)}${status.at ? ` on ${new Date(status.at).toISOString().slice(0, 10)}` : ""}: ${status.reason}`;
+    case "current":
+      return null;
+  }
+}
 
 export function formatNote(note: NoteForAgent, url: string | null): string {
   const meta = [
@@ -120,10 +156,15 @@ export function formatNote(note: NoteForAgent, url: string | null): string {
     awaitingWitness(note) ? "Not yet witnessed by the user" : null,
     `Updated ${new Date(note.updatedAt).toISOString().slice(0, 10)}`,
   ].filter(Boolean);
+  const about = [
+    standing(note),
+    note.supersedes ? `This note replaces ${pageOf(note.supersedes)}.` : null,
+    anchorForAgent(note, sourceLabel),
+  ].filter(Boolean);
   const plan =
     note.tasks.length > 0 ? `\n\nPlan (${doneOf(note.tasks)} tasks done):\n${formatTasks(note.tasks)}` : "";
   const body = note.notes.trim() || "(This note has no body yet.)";
-  return `# ${note.title}\n${meta.join(" · ")}${url ? `\n${url}` : ""}\n\n${body}${plan}`;
+  return `# ${note.title}\n${meta.join(" · ")}${url ? `\n${url}` : ""}${about.length ? `\n\n${about.join("\n")}` : ""}\n\n${body}${plan}`;
 }
 
 export type PlanItemForAgent = {

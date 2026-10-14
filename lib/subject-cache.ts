@@ -136,7 +136,8 @@ export function addMilestoneToSubject(s: SubjectDetail, m: MilestoneWithTasks): 
 
 export function replaceMilestone(s: SubjectDetail, tmpId: string, real: Milestone): SubjectDetail {
   const milestones = mapList(s.milestones, (m) =>
-    m.id === tmpId ? { ...real, tasks: m.tasks } : m,
+    // The server's row has no relations: the note's tasks and what replaces it carry over.
+    m.id === tmpId ? { ...m, ...real, tasks: m.tasks } : m,
   );
   return milestones === s.milestones ? s : { ...s, milestones };
 }

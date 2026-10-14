@@ -3,6 +3,7 @@ import { Prisma } from "@/app/generated/prisma/client";
 import { chunkSource, hashContent, type Chunk, type ChunkSourceType } from "./chunk";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "./embedding-model";
 import type { PageRef } from "@/lib/chat/refs";
+import { notReplacedSql } from "@/lib/notes/status";
 
 export { EMBEDDING_DIMS, EMBEDDING_MODEL };
 
@@ -236,6 +237,9 @@ async function pageRefs(userId: string, rows: { source: ChunkSourceType; sourceI
  * of that and runs in the database. Past a few hundred thousand passages per
  * user this wants pgvector, which the stored vectors can move to as they are.
  *
+ * A note that a witnessed note replaces isn't scored: Ask and search answer
+ * from the page that's true now, not from the one it retired.
+ *
  * Only the current embedding model's rows are scored, so a stale vector space
  * is never ranked alongside the current one. `perSource` caps how many
  * passages one note or document may contribute, so a long PDF can't fill the
@@ -262,6 +266,7 @@ export async function rankChunks(
         AND c."embeddingModel" = ${EMBEDDING_MODEL}
         AND c."dims" = ${EMBEDDING_DIMS}
         ${inSubjects}
+        AND (c."source" <> 'MILESTONE' OR ${Prisma.raw(notReplacedSql('c."sourceId"'))})
     ),
     ranked AS (
       SELECT *, row_number() OVER (PARTITION BY "source", "sourceId" ORDER BY score DESC, "ordinal") AS nth

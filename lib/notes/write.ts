@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { takePage } from "./page";
-import type { Milestone } from "@/app/generated/prisma/client";
+import { Prisma, type Milestone } from "@/app/generated/prisma/client";
+import { cleanFiles, normalizeRepo } from "./anchor";
 import { getOrCreateInbox } from "@/lib/subjects/inbox";
 import { appendNote, continueNote } from "./append";
 import { chunkSourcesOf } from "./move";
@@ -62,10 +63,29 @@ export async function nextOrder(subjectId: string): Promise<number> {
  * written; anyone else's wait. The caller has already checked the subject
  * belongs to the user.
  */
+export type AnchorInput = { repo?: string | null; commit?: string | null; files?: string[] };
+
+/** The columns an anchor is stored in, normalised. Empty when nothing usable was given. */
+function anchorData(anchor: AnchorInput | undefined) {
+  if (!anchor) return {};
+  const repo = normalizeRepo(anchor.repo);
+  const commit = anchor.commit?.trim() || null;
+  if (!repo && !commit) return {};
+  return { anchorRepo: repo, anchorCommit: commit, anchorFiles: cleanFiles(anchor.files) };
+}
+
 export async function insertNote(
   userId: string,
   subjectId: string,
-  input: { title: string; notes?: string; order?: number; source?: string },
+  input: {
+    title: string;
+    notes?: string;
+    order?: number;
+    source?: string;
+    anchor?: AnchorInput;
+    supersedesId?: string;
+    captureKey?: string;
+  },
 ): Promise<Milestone> {
   const source = input.source ?? WEB_SOURCE;
   const [order, page] = await Promise.all([input.order ?? nextOrder(subjectId), takePage(userId)]);
@@ -78,8 +98,86 @@ export async function insertNote(
       order,
       source,
       witnessedAt: source === WEB_SOURCE ? new Date() : null,
+      ...anchorData(input.anchor),
+      supersedesId: input.supersedesId,
+      captureKey: input.captureKey,
     },
   });
+}
+
+/**
+ * A new note that replaces one of the user's notes, in the same subject and
+ * about the same code unless it says otherwise. The old note stays as it is:
+ * it's retired only when the user witnesses this one (lib/notes/status.ts).
+ * Null when the old note isn't the user's.
+ */
+export async function supersedeNote(
+  userId: string,
+  oldId: string,
+  input: { title: string; notes: string; source: string; anchor?: AnchorInput },
+) {
+  const old = await prisma.milestone.findFirst({
+    where: { id: oldId, subject: { userId } },
+    select: { id: true, page: true, title: true, subjectId: true, anchorRepo: true, anchorCommit: true, anchorFiles: true },
+  });
+  if (!old) return null;
+  // What the agent gives wins, field by field; the rest carries over.
+  const given = input.anchor ?? {};
+  const anchor = {
+    repo: given.repo || old.anchorRepo,
+    commit: given.commit || old.anchorCommit,
+    files: given.files?.length ? given.files : old.anchorFiles,
+  };
+  const note = await insertNote(userId, old.subjectId, {
+    title: input.title,
+    notes: input.notes,
+    source: input.source,
+    anchor,
+    supersedesId: old.id,
+  });
+  return { note, old };
+}
+
+type MetaRow = { id: string; title: string; subjectId: string; subjectTitle: string; isInbox: boolean };
+
+/**
+ * Changes a note's anchor and stale flag without touching what it says, so
+ * `updatedAt` stays put: checking a note isn't writing it, and it shouldn't
+ * jump to the top of the recent notes. Null when the note isn't the user's.
+ */
+async function setNoteMeta(userId: string, noteId: string, set: Prisma.Sql): Promise<MetaRow | null> {
+  const [row] = await prisma.$queryRaw<MetaRow[]>`
+    UPDATE "Milestone" m SET ${set}
+    FROM "Subject" s
+    WHERE m."id" = ${noteId} AND s."id" = m."subjectId" AND s."userId" = ${userId}
+    RETURNING m."id", m."title", m."subjectId", s."title" AS "subjectTitle", s."isInbox"`;
+  return row ?? null;
+}
+
+/**
+ * Someone checked the note against the code and it still holds: it's now
+ * true as of `commit`, and any flag on it is cleared. A note without an
+ * anchor gets one this way. `by` is the agent, or "web" for the user.
+ */
+export function confirmNote(userId: string, noteId: string, by: string, anchor: AnchorInput = {}) {
+  const data = anchorData(anchor);
+  const sets = [
+    Prisma.sql`"checkedAt" = now(), "checkedBy" = ${by}, "staleReason" = NULL, "staleAt" = NULL, "staleBy" = NULL`,
+  ];
+  if (data.anchorCommit) sets.push(Prisma.sql`"anchorCommit" = ${data.anchorCommit}`);
+  if (data.anchorRepo) sets.push(Prisma.sql`"anchorRepo" = ${data.anchorRepo}`);
+  if (data.anchorFiles?.length) sets.push(Prisma.sql`"anchorFiles" = ${data.anchorFiles}::text[]`);
+  return setNoteMeta(userId, noteId, Prisma.join(sets, ", "));
+}
+
+/** An agent thinks the note may no longer hold, and says why, for the user to look at. */
+export function flagStale(userId: string, noteId: string, by: string, reason: string) {
+  return setNoteMeta(userId, noteId, Prisma.sql`"staleReason" = ${reason}, "staleAt" = now(), "staleBy" = ${by}`);
+}
+
+/** The user looked at a flagged note and it's fine as it is. */
+export function dismissStale(userId: string, noteId: string) {
+  return setNoteMeta(userId, noteId, Prisma.sql`"staleReason" = NULL, "staleAt" = NULL, "staleBy" = NULL`);
 }
 
 const WITH_SUBJECT = { subject: { select: { id: true, title: true, isInbox: true } } } as const;
