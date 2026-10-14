@@ -11,6 +11,7 @@ import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
 import { useAgo } from "@/app/components/clock";
 import { isOwnNote, sourceLabel } from "@/lib/notes/source";
 import { pageLabel } from "@/lib/notes/page-label";
+import * as m from "motion/react-m";
 
 // One note and nothing else: the whole window becomes the page. It also asks
 // the browser for real full screen, and falls back to just covering the window
@@ -82,7 +83,10 @@ export function NoteFullscreen({
   }, [opener]);
 
   return createPortal(
-    <div
+    <m.div
+      initial={{ opacity: 0, scale: 0.985 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.99, transition: { duration: 0.16 } }}
       ref={sheetRef}
       tabIndex={-1}
       role="dialog"
@@ -133,7 +137,7 @@ export function NoteFullscreen({
           <p className="lk-note-empty">Nothing written yet. Press Edit to start.</p>
         )}
       </article>
-    </div>,
+    </m.div>,
     document.body,
   );
 }

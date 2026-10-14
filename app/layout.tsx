@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { BRAND } from "@/lib/brand";
 import { ZoneCookie } from "./components/zone-cookie";
+import { MotionProvider } from "./components/motion-provider";
 import { fontVariables } from "./fonts";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning style={fontVariables as React.CSSProperties}>
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </ThemeProvider>
         <ZoneCookie />
       </body>

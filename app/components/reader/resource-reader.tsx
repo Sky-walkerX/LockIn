@@ -8,6 +8,8 @@ import { findSection, splitSections } from "@/lib/reader/sections";
 import { useIngestResource, useResourceContent } from "@/hooks/useResources";
 import type { SubjectDetail } from "@/hooks/useSubjects";
 import { Markdown } from "@/app/components/subject/markdown";
+import * as m from "motion/react-m";
+import { fade, sheet } from "@/lib/motion";
 
 // How many sections render up front, and how many more each time the reader
 // scrolls near the end of what's rendered.
@@ -102,8 +104,16 @@ export function ResourceReader({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[55] flex justify-end bg-black/40 backdrop-blur-[1px]" onMouseDown={onClose}>
-      <aside
+    <m.div
+      className="fixed inset-0 z-[55] flex justify-end bg-black/40 backdrop-blur-[1px]"
+      onMouseDown={onClose}
+      variants={fade}
+      initial="hidden"
+      animate="shown"
+      exit="exit"
+    >
+      <m.aside
+        variants={sheet}
         role="dialog"
         aria-modal="true"
         aria-label={resource ? `Reading ${resource.title}` : "Reader"}
@@ -209,8 +219,8 @@ export function ResourceReader({
             )}
           </div>
         )}
-      </aside>
-    </div>
+      </m.aside>
+    </m.div>
   );
 }
 

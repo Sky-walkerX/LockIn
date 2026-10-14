@@ -20,6 +20,9 @@ import { MoveNoteMenu } from "./move-note-menu";
 import { NoteFullscreen } from "./note-fullscreen";
 import { pageLabel } from "@/lib/notes/page-label";
 import { PASSAGE_HIGHLIGHT_CSS, usePassageHighlight } from "@/hooks/usePassageHighlight";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { fade } from "@/lib/motion";
 
 // One note as a page: a running head, the title, then the body on clean paper.
 // Reading is the default; the editor opens in place.
@@ -87,9 +90,11 @@ export function NoteView({
 
   return (
     <article ref={pageRef} className="lk-note-page" aria-labelledby="note-title">
-      {fullscreen && (
-        <NoteFullscreen note={note} sectionTitle={sectionTitle} color={fullscreen.color} onClose={() => setFullscreen(null)} />
-      )}
+      <AnimatePresence>
+        {fullscreen && (
+          <NoteFullscreen note={note} sectionTitle={sectionTitle} color={fullscreen.color} onClose={() => setFullscreen(null)} />
+        )}
+      </AnimatePresence>
       <div className="lk-runhead">
         <Link href={backHref} scroll={false} className="lk-note-back">
           <ArrowLeft size={13} /> All notes
@@ -233,7 +238,9 @@ export function NoteView({
 
       <div className="lk-note-body">
         {draft.editing && draft.conflict && <NoteConflict note={note} />}
+        <AnimatePresence mode="wait" initial={false}>
         {draft.editing ? (
+          <m.div key="editing" variants={fade} initial="hidden" animate="shown" exit="exit">
           <NotesEditor
             value={draft.failed ?? note.notes}
             breadcrumb={note.title}
@@ -242,19 +249,21 @@ export function NoteView({
             onSave={draft.save}
             onCancel={draft.cancel}
           />
+          </m.div>
         ) : note.notes.trim() ? (
-          <div ref={readingRef} className="lk-reading">
+          <m.div key="reading" ref={readingRef} className="lk-reading" variants={fade} initial="hidden" animate="shown" exit="exit">
             {quote && <style>{PASSAGE_HIGHLIGHT_CSS}</style>}
             <Markdown page={note.page}>{note.notes}</Markdown>
-          </div>
+          </m.div>
         ) : (
-          <div className="lk-note-empty">
+          <m.div key="empty" className="lk-note-empty" variants={fade} initial="hidden" animate="shown" exit="exit">
             <p>Nothing written yet.</p>
             <button type="button" onClick={draft.open} disabled={pending} className="lk-btn px-3 py-2 text-2xs">
               Write this note
             </button>
-          </div>
+          </m.div>
         )}
+        </AnimatePresence>
       </div>
     </article>
   );

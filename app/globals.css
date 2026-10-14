@@ -286,7 +286,7 @@
     padding: 6px 8px; border-radius: 3px;
     font-size: 15px; line-height: 1.3; text-align: left;
     color: var(--lk-cloth-ink-2);
-    transition: background 0.12s ease, color 0.12s ease;
+    transition: background var(--lk-dur-1) var(--lk-ease-settle), color var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-spine-item > svg { flex: none; }
   .lk-spine-item:hover { background: rgb(255 255 255 / 0.06); color: var(--lk-cloth-ink); }
@@ -378,7 +378,7 @@
     font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--muted-foreground);
   }
-  .lk-contents-row { border-bottom: 1px solid var(--border); transition: background 0.12s ease; }
+  .lk-contents-row { border-bottom: 1px solid var(--border); transition: background var(--lk-dur-1) var(--lk-ease-settle); }
   a.lk-contents-row:hover { background: var(--muted); }
   .lk-contents-title { font-family: var(--lk-font-prose); font-size: 18px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   a.lk-contents-row:hover .lk-contents-title { text-decoration: underline; text-decoration-color: var(--c-eff); text-decoration-thickness: 2px; text-underline-offset: 4px; }
@@ -402,10 +402,18 @@
     font-family: var(--lk-font-display); font-weight: 600;
     font-size: 14.5px; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--muted-foreground);
-    transition: color 0.12s ease;
+    transition: color var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-tab:hover { color: var(--foreground); }
-  .lk-tab[aria-current="page"] { color: var(--foreground); box-shadow: inset 0 -3px 0 var(--c-eff, var(--foreground)); }
+  .lk-tab[aria-current="page"] { color: var(--foreground); }
+  /* The underline draws out from the middle when a tab becomes current. */
+  .lk-tab { position: relative; }
+  .lk-tab::after {
+    content: ""; position: absolute; inset: auto 0 0; height: 3px;
+    background: var(--c-eff, var(--foreground));
+    transform: scaleX(0); transition: transform var(--lk-dur-2) var(--lk-ease-settle);
+  }
+  .lk-tab[aria-current="page"]::after { transform: scaleX(1); }
   .lk-tab-count { font-family: var(--lk-font-body); font-size: 12.5px; letter-spacing: 0; font-weight: 500; font-variant-numeric: tabular-nums; }
 
   /* Notes tab: the list on grid paper, the open note on clean paper. Side by
@@ -448,7 +456,7 @@
     display: grid; gap: 1px;
     padding: 9px 10px; border-bottom: 1px solid var(--border);
     background: color-mix(in oklab, var(--card) 70%, transparent);
-    transition: background 0.12s ease;
+    transition: background var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-note-item:hover { background: var(--muted); }
   .lk-note-item[aria-current="page"] { background: var(--card); box-shadow: 0 1px 2px rgb(20 40 35 / 0.1), 0 6px 14px -10px rgb(20 40 35 / 0.35); }
@@ -492,7 +500,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 11px; border: 1px solid var(--input); border-radius: 2px;
     font-size: 14px; font-weight: 500; background: var(--card);
-    transition: background 0.12s ease, border-color 0.12s ease;
+    transition: background var(--lk-dur-1) var(--lk-ease-settle), border-color var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-note-bar-btn:hover { border-color: var(--lk-ink-strong); }
   .lk-note-bar-primary { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
@@ -543,10 +551,7 @@
     background: var(--card); color: var(--foreground);
     padding: 0 20px 96px;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .lk-fullscreen { animation: lk-fullscreen-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-  }
-  @keyframes lk-fullscreen-in { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+  /* Comes and goes through Motion (note-fullscreen.tsx). */
   .lk-fullscreen-bar {
     position: sticky; top: 0; z-index: 1;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -609,7 +614,7 @@
     color: var(--primary-foreground);
     border: 1px solid var(--primary);
     border-radius: 2px;
-    transition: transform 0.08s ease, filter 0.12s ease;
+    transition: transform 0.08s ease, filter var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-btn:hover { filter: brightness(1.15); }
   .lk-btn:active { transform: translateY(1px); }
@@ -672,7 +677,7 @@
     width: 26px; height: 26px; flex: none;
     border-radius: 3px;
     color: var(--muted-foreground);
-    transition: color 0.1s ease, background 0.1s ease;
+    transition: color var(--lk-dur-1) var(--lk-ease-settle), background var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-iconbtn:hover { color: var(--foreground); background: var(--accent); }
   .lk-iconbtn:disabled { opacity: 0.35; pointer-events: none; }
@@ -684,7 +689,7 @@
     border-radius: 2px;
     color: var(--muted-foreground); opacity: 0.25;
     cursor: grab; touch-action: none;
-    transition: opacity 0.1s ease, color 0.1s ease, background 0.1s ease;
+    transition: opacity var(--lk-dur-1) var(--lk-ease-settle), color var(--lk-dur-1) var(--lk-ease-settle), background var(--lk-dur-1) var(--lk-ease-settle);
   }
   .group:hover > .lk-grip, .lk-grip:hover { opacity: 1; }
   .lk-grip:hover { color: var(--foreground); background: var(--accent); }
@@ -757,7 +762,7 @@
     padding: 2px 5px; margin: 0 1px; vertical-align: 1px;
     border: 1px solid var(--input); border-radius: 3px;
     color: var(--muted-foreground); text-decoration: none;
-    transition: color 120ms, border-color 120ms;
+    transition: color var(--lk-dur-1) var(--lk-ease-settle), border-color var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-cite:hover,
   .lk-prose a.lk-cite:hover { color: var(--foreground); border-color: var(--foreground); }
@@ -817,7 +822,7 @@
     background: var(--background);
     border: 1px solid var(--border);
     opacity: 0;
-    transition: opacity 0.1s ease, color 0.1s ease;
+    transition: opacity var(--lk-dur-1) var(--lk-ease-settle), color var(--lk-dur-1) var(--lk-ease-settle);
   }
   .lk-prose .lk-code:hover .lk-copy,
   .lk-prose .lk-copy:focus-visible,
@@ -884,6 +889,22 @@
   .lk-prose th { background: var(--muted); font-family: var(--lk-font-display); font-weight: 600; letter-spacing: 0.06em; }
   .lk-prose input[type="checkbox"] { margin-right: 0.45em; accent-color: var(--c-eff, var(--lk-live)); }
   .lk-prose ul:has(> li > input[type="checkbox"]) { list-style: none; padding-left: 0.2em; }
+  /* Footnotes ([^1]): a small raised number, and the notes themselves under a
+     rule at the foot of the note, a size down. */
+  .lk-prose sup { font-size: 0.72em; line-height: 0; }
+  .lk-prose a[data-footnote-ref] { text-decoration: none; font-variant-numeric: tabular-nums; padding: 0 0.1em; }
+  .lk-prose a[data-footnote-ref]::before { content: "["; }
+  .lk-prose a[data-footnote-ref]::after { content: "]"; }
+  .lk-prose section[data-footnotes] {
+    margin-top: 1.6em; padding-top: 0.6em; border-top: 1px solid var(--border);
+    font-size: 0.88em; color: var(--muted-foreground);
+  }
+  .lk-prose section[data-footnotes] > h2 {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .lk-prose section[data-footnotes] ol { margin: 0; }
+  .lk-prose section[data-footnotes] p { margin: 0.2em 0; }
+  .lk-prose a[data-footnote-backref] { text-decoration: none; margin-left: 0.25em; }
 
   /* ---- Syntax highlighting (rehype-highlight / highlight.js `hljs-*`) ----
      One palette, read from the --syntax-* tokens, so light and dark switch
@@ -1066,5 +1087,67 @@
 
   @media (prefers-reduced-motion: reduce) {
     .lk-ghost-pending { animation: none; }
+  }
+}
+
+/* ================================ Motion ================================ */
+/* DESIGN.md: things settle rather than bounce, in 200-520ms; the stamp is the
+   one overshoot. lib/motion.ts holds the same curves for Motion components. */
+:root {
+  --lk-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --lk-ease-stamp: cubic-bezier(0.2, 1.4, 0.4, 1);
+  --lk-dur-1: 140ms;
+  --lk-dur-2: 260ms;
+  --lk-dur-3: 420ms;
+}
+
+/* View transitions animate what they name; the page around them holds still.
+   A theme switch reveals the new page through a growing circle, drawn from
+   app/components/theme/use-theme-switch.ts, so neither snapshot animates here. */
+::view-transition { pointer-events: none; }
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.lk-theme-wipe::view-transition-group(*) { animation: none; }
+
+/* Turning a page (app/(app)/template.tsx): the old page fades quickly, the new
+   one rises 10px and settles as it arrives. */
+::view-transition-old(.lk-page-out) {
+  animation: var(--lk-dur-1) ease-in both lk-page-fade reverse;
+}
+::view-transition-new(.lk-page-in) {
+  animation:
+    var(--lk-dur-2) var(--lk-ease-settle) 60ms both lk-page-fade,
+    var(--lk-dur-3) var(--lk-ease-settle) both lk-page-rise;
+}
+@keyframes lk-page-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lk-page-rise { from { translate: 0 10px; } to { translate: 0 0; } }
+
+/* Without view transitions, a theme switch eases the colours across. */
+html.lk-theme-shift,
+html.lk-theme-shift *,
+html.lk-theme-shift *::before,
+html.lk-theme-shift *::after {
+  transition:
+    background-color 360ms var(--lk-ease-settle),
+    color 360ms var(--lk-ease-settle),
+    border-color 360ms var(--lk-ease-settle),
+    fill 360ms var(--lk-ease-settle),
+    stroke 360ms var(--lk-ease-settle) !important;
+}
+
+/* Reduced motion turns every animation off, everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -53,11 +53,17 @@
 .bar .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
 .home { font-size: 19px; text-decoration: none; }
 .nav { display: flex; gap: 22px; font-size: 15px; color: var(--ink-2); }
-.nav a { text-decoration: none; }
-.nav a:hover { color: var(--ink); }
+.nav a, .link { text-decoration: none; position: relative; transition: color var(--lk-dur-1) var(--lk-ease-settle); }
+/* A rule drawn in under a link on hover, from the left, like a pen stroke. */
+.nav a::after, .link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1.5px;
+  background: currentColor; transform: scaleX(0); transform-origin: left;
+  transition: transform var(--lk-dur-2) var(--lk-ease-settle);
+}
+.nav a:hover, .link:hover { color: var(--ink); }
+.nav a:hover::after, .link:hover::after, .nav a:focus-visible::after, .link:focus-visible::after { transform: scaleX(1); }
 .right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
-.link { font-size: 15px; color: var(--ink-2); text-decoration: none; white-space: nowrap; }
-.link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+.link { font-size: 15px; color: var(--ink-2); white-space: nowrap; }
 .toggle {
   display: inline-grid; place-items: center; width: 32px; height: 32px;
   color: var(--ink-2); border-radius: 2px;
@@ -80,13 +86,77 @@
   padding: 10px 16px; border-radius: 2px; text-decoration: none;
   border: 1px solid var(--ink); white-space: nowrap;
 }
+.btn { transition: background var(--lk-dur-1) var(--lk-ease-settle), filter var(--lk-dur-1) var(--lk-ease-settle), transform var(--lk-dur-1) var(--lk-ease-settle); }
+.btn:active { transform: translateY(1px); }
 .btnInk { background: var(--ink); color: var(--background); }
 .btnInk:hover { filter: brightness(1.15); }
 .btnLine { background: var(--card); color: var(--ink); }
 .btnLine:hover { background: var(--sunk); }
 
+/* ── The film ──────────────────────────────────────────────────────────── */
+/* The first screen: the film on the notebook's cloth, as big as the window
+   allows at 16:9, with the sound plate and the way down under it. */
+.film {
+  min-height: calc(100svh - 64px);
+  display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center;
+  gap: 18px; padding: 28px 20px 22px;
+}
+.screen {
+  position: relative;
+  width: min(100%, 1280px, calc((100svh - 64px - 140px) * 16 / 9));
+  aspect-ratio: 16 / 9;
+  background: #0a1011;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.25), 0 30px 70px -20px rgb(0 0 0 / 0.7);
+  border-radius: 3px; overflow: hidden;
+}
+/* On a tall screen a 16:9 film can't fill it: it sits at the top, and the
+   page carries on under it. */
+@media (max-aspect-ratio: 1 / 1) {
+  .film { min-height: 0; align-items: start; padding-top: 20px; }
+}
+.video { display: block; width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
+.playBtn {
+  position: absolute; inset: 0; margin: auto; width: 76px; height: 76px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--lk-label); color: var(--lk-label-ink);
+  box-shadow: 0 10px 30px -8px rgb(0 0 0 / 0.6);
+  transition: transform var(--lk-dur-2) var(--lk-ease-settle);
+}
+.playBtn:hover { transform: scale(1.06); }
+.playBtn svg { width: 30px; height: 30px; margin-left: 4px; }
+.filmBar {
+  width: min(100%, 1280px, calc((100svh - 64px - 140px) * 16 / 9));
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+/* The sound control, printed like the notebook's cover label. */
+.plateBtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--lk-label); color: var(--lk-label-ink);
+  font-family: var(--lk-font-display); font-weight: 700; font-size: 13px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 9px 14px 8px; border-radius: 2px;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.25);
+  transition: transform var(--lk-dur-1) var(--lk-ease-settle), box-shadow var(--lk-dur-1) var(--lk-ease-settle);
+}
+.plateBtn:hover { transform: translateY(-1px); box-shadow: 0 3px 0 rgb(0 0 0 / 0.25); }
+.plateBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 rgb(0 0 0 / 0.25); }
+.scrollCue {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--lk-font-display); font-weight: 600; font-size: 13px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--lk-cloth-ink); text-decoration: none; padding: 8px 4px;
+}
+.scrollCue:hover { color: #fff; }
+@media (prefers-reduced-motion: no-preference) {
+  .scrollCue svg { animation: drift 2.4s var(--lk-ease-settle) infinite; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(4px); opacity: 0.6; }
+}
+
 /* ── Hero ──────────────────────────────────────────────────────────────── */
-.hero { padding: 64px 0 72px; }
+.hero { padding: 64px 0 72px; scroll-margin-top: 64px; border-top: 1px solid var(--rule); }
 .hero > .wrap {
   display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
   gap: 56px; align-items: start;
@@ -350,5 +420,21 @@
 .closing .btnInk { background: var(--lk-label); color: var(--lk-label-ink); border-color: var(--lk-label); }
 .closing .btnLine { background: transparent; color: var(--lk-cloth-ink); border-color: var(--lk-cloth-ink-2); }
 .closing .btnLine:hover { background: rgb(255 255 255 / 0.08); }
-.footer { padding: 28px 0 40px; font-size: 14px; color: var(--ink-3); }
-.footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+.footer { padding: 36px 0 44px; font-size: 14px; color: var(--ink-3); border-top: 1px solid var(--rule); }
+.footer .wrap { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; justify-content: space-between; }
+.footNote { margin: 0; flex: 1 1 280px; }
+.footLinks { display: flex; flex-wrap: wrap; gap: 12px; }
+/* Each one a thing to press: its own box, a clear hit area, a hover you can see. */
+.footLink {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border: 1px solid var(--rule); border-radius: 2px; background: var(--card);
+  font-family: var(--lk-font-display); font-weight: 600; font-size: 13px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); text-decoration: none;
+  transition: border-color var(--lk-dur-1) var(--lk-ease-settle), background var(--lk-dur-1) var(--lk-ease-settle), transform var(--lk-dur-1) var(--lk-ease-settle);
+}
+.footLink:hover { border-color: var(--ink); background: var(--sunk); }
+.footLink:active { transform: translateY(1px); }
+.footLink:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.footLegal { display: flex; gap: 18px; flex-basis: 100%; }
+.quiet { color: var(--ink-3); text-decoration: none; font-size: 13.5px; }
+.quiet:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }

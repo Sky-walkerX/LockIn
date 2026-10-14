@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
+import { clickPoint, useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { useMounted } from "@/hooks/useMounted";
 import {
   Activity,
@@ -52,7 +52,7 @@ export function Spine({
   const router = useRouter();
   const { open: openChat } = useChatPanel();
   const { running, clock } = useFocus();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, switchTheme } = useThemeSwitch();
   const mounted = useMounted();
 
   const { data: subjects = [] } = useSubjects();
@@ -81,12 +81,12 @@ export function Spine({
     </Link>
   );
 
-  const action = (onClick: () => void, icon: React.ReactNode, label: string, kbd?: string) => (
+  const action = (onClick: (e: React.MouseEvent) => void, icon: React.ReactNode, label: string, kbd?: string) => (
     <button
       type="button"
-      onClick={() => {
+      onClick={(e) => {
         onNavigate?.();
-        onClick();
+        onClick(e);
       }}
       title={collapsed ? `${label}${kbd ? ` (${kbd})` : ""}` : undefined}
       className="lk-spine-item"
@@ -200,7 +200,7 @@ export function Spine({
         {signedIn && action(() => openChat(), <MessageSquareQuote size={16} strokeWidth={1.75} />, "Ask", "⌘J")}
         {mounted &&
           action(
-            () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
+            (e) => switchTheme(resolvedTheme === "dark" ? "light" : "dark", clickPoint(e)),
             <SunMoon size={16} strokeWidth={1.75} />,
             resolvedTheme === "dark" ? "Light paper" : "Dark paper",
           )}

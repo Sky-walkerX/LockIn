@@ -5,20 +5,17 @@ import { useAccountOptions } from "@/hooks/useAccount";
 
 // Links to the privacy and terms pages, which exist only on an instance that
 // names its operator (lib/operator.ts). Everywhere else this renders nothing.
-// `lead` is what goes before the links when they show: a separator, a sentence.
-export function LegalLinks({ lead, className }: { lead?: string; className?: string }) {
+export function LegalLinks({ className, linkClassName }: { className?: string; linkClassName?: string }) {
   const { data: options } = useAccountOptions();
   if (!options?.legal) return null;
   return (
-    <>
-      {lead}
-      <Link className={className} href="/privacy">
+    <span className={className}>
+      <Link className={linkClassName} href="/privacy">
         Privacy
-      </Link>{" "}
-      ·{" "}
-      <Link className={className} href="/terms">
+      </Link>
+      <Link className={linkClassName} href="/terms">
         Terms
       </Link>
-    </>
+    </span>
   );
 }

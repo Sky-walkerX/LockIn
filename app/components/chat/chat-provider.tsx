@@ -6,6 +6,9 @@ import { useLatest } from "@/hooks/useLatest";
 import { useStoredValue } from "@/hooks/useStoredValue";
 import { useChromeless } from "@/hooks/useChromeless";
 import { ChatRail } from "./chat-rail";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { SETTLE, fade } from "@/lib/motion";
 
 // Mirrors the quick-add provider: the panel is global, so the hotkey lives with
 // the provider rather than in any one page.
@@ -87,14 +90,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         {!hidden && (
           <div className="sticky top-0 z-40 flex h-screen flex-none">
             {mounted && (
-              <div className={isOpen ? "contents" : "hidden"}>
+              <m.div
+                className="flex h-full"
+                initial={false}
+                animate={isOpen ? "shown" : "hidden"}
+                variants={{
+                  shown: { opacity: 1, x: 0, display: "flex", transition: { duration: 0.32, ease: SETTLE } },
+                  hidden: { opacity: 0, x: 24, transition: { duration: 0.18, ease: SETTLE }, transitionEnd: { display: "none" } },
+                }}
+              >
                 <ChatPanel
                   isOpen={isOpen}
                   onClose={() => setIsOpen(false)}
                   onStreamingChange={onStreamingChange}
                   seed={seed}
                 />
-              </div>
+              </m.div>
             )}
             <ChatRail
               isOpen={isOpen}
@@ -107,13 +118,20 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
         {/* Below `sm` the panel is an overlay again, so it needs its scrim back.
             Under the panel's z-40 container, or it covers the panel too. */}
-        {mounted && isOpen && !hidden && (
-          <div
-            className="fixed inset-0 z-30 bg-black/30 sm:hidden"
-            onClick={() => setIsOpen(false)}
-            aria-hidden
-          />
-        )}
+        <AnimatePresence>
+          {mounted && isOpen && !hidden && (
+            <m.div
+              key="scrim"
+              className="fixed inset-0 z-30 bg-black/30 sm:hidden"
+              onClick={() => setIsOpen(false)}
+              aria-hidden
+              variants={fade}
+              initial="hidden"
+              animate="shown"
+              exit="exit"
+            />
+          )}
+        </AnimatePresence>
       </div>
     </ChatContext.Provider>
   );

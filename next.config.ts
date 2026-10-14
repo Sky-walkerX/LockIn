@@ -70,6 +70,13 @@ const nextConfig: NextConfig = {
         source: "/ort/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
+      // The landing film and its poster (public/media). A week, and a day
+      // more of serving the old copy while a new one is fetched: a recut
+      // film keeps its name, so it can't be cached for good.
+      {
+        source: "/media/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
       // "Allow" on this page is a form whose answer sends the browser on to
       // the app that asked, at an address checked against the ones that app
       // registered. Chrome counts that redirect as the form's destination,

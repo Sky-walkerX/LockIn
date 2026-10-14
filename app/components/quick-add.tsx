@@ -26,6 +26,9 @@ import { useSubjects, useSubject } from "@/hooks/useSubjects";
 import { useCreateTask } from "@/hooks/useTasks";
 import { useCreateResource } from "@/hooks/useResources";
 import type { Priority, Recurrence, ResourceType } from "@/app/generated/prisma/browser";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { card, fade } from "@/lib/motion";
 
 // ── Context ────────────────────────────────────────────────────────────────
 type Mode = "task" | "resource";
@@ -52,7 +55,9 @@ export function QuickAddProvider({ children }: { children: React.ReactNode }) {
   return (
     <QuickAddContext.Provider value={{ open }}>
       {children}
-      {isOpen && !hidden && <QuickAddPanel initialMode={initialMode} onClose={() => setIsOpen(false)} />}
+      <AnimatePresence>
+        {isOpen && !hidden && <QuickAddPanel key="quick-add" initialMode={initialMode} onClose={() => setIsOpen(false)} />}
+      </AnimatePresence>
     </QuickAddContext.Provider>
   );
 }
@@ -154,13 +159,18 @@ function QuickAddPanel({ initialMode, onClose }: { initialMode: Mode; onClose: (
   );
 
   return (
-    <div
+    <m.div
       className="fixed inset-0 z-[60] flex items-start justify-center bg-black/40 px-4 backdrop-blur-sm"
       onMouseDown={onClose}
+      variants={fade}
+      initial="hidden"
+      animate="shown"
+      exit="exit"
     >
-      <div
+      <m.div
         className="lk-card mt-[12vh] w-full max-w-lg overflow-hidden p-0"
         onMouseDown={(e) => e.stopPropagation()}
+        variants={card}
       >
         {/* Header: mode toggle + close */}
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5">
@@ -332,7 +342,7 @@ function QuickAddPanel({ initialMode, onClose }: { initialMode: Mode; onClose: (
             </>
           )}
         </form>
-      </div>
-    </div>
+      </m.div>
+    </m.div>
   );
 }

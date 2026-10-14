@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
+import { useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { format } from "date-fns";
 import {
   ArrowRight,
@@ -28,6 +28,9 @@ import { parseQuickAdd, type ParsedTask } from "@/lib/quickadd/parse";
 import { useQuickAdd } from "../quick-add";
 import { useChatPanel } from "../chat/chat-provider";
 import { useFocus } from "../focus/focus-provider";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { card, fade } from "@/lib/motion";
 
 const FALLBACK = "#8b8f9e";
 
@@ -62,7 +65,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   return (
     <PaletteContext.Provider value={{ open }}>
       {children}
-      {isOpen && !hidden && <CommandPanel onClose={() => setIsOpen(false)} />}
+      <AnimatePresence>{isOpen && !hidden && <CommandPanel key="palette" onClose={() => setIsOpen(false)} />}</AnimatePresence>
     </PaletteContext.Provider>
   );
 }
@@ -119,7 +122,7 @@ const matchesAll = (label: string, words: string[]) => {
 function CommandPanel({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, switchTheme } = useThemeSwitch();
   const quickAdd = useQuickAdd();
   const chat = useChatPanel();
   const focus = useFocus();
@@ -228,7 +231,8 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
       label: isDark ? "Switch to light paper" : "Switch to dark paper",
       tag: "theme",
       icon: isDark ? Sparkles : Moon,
-      run: () => (setTheme(isDark ? "light" : "dark"), onClose()),
+      // Closed first, so the new paper is revealed without the palette on it.
+      run: () => (onClose(), requestAnimationFrame(() => switchTheme(isDark ? "light" : "dark"))),
     },
   ];
   // Typed words filter actions by label. "Ask …" always matches what was
@@ -337,15 +341,20 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
   let index = 0;
 
   return (
-    <div
+    <m.div
       className="fixed inset-0 z-[60] flex items-start justify-center bg-black/40 px-4 backdrop-blur-sm"
       onMouseDown={onClose}
+      variants={fade}
+      initial="hidden"
+      animate="shown"
+      exit="exit"
     >
-      <div
+      <m.div
         role="dialog"
         aria-label="Command palette"
         className="lk-card mt-[12vh] w-full max-w-xl overflow-hidden p-0"
         onMouseDown={(e) => e.stopPropagation()}
+        variants={card}
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
           <SearchIcon size={14} className="flex-none text-muted-foreground" />
@@ -418,8 +427,8 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
           <span>↑↓ move</span>
           <span className="hidden sm:inline"># subject · @ note · !h · fri · 2h · daily</span>
         </div>
-      </div>
-    </div>
+      </m.div>
+    </m.div>
   );
 }
 

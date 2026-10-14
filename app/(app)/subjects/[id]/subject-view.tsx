@@ -18,6 +18,9 @@ import { NoteView } from "@/app/components/note/note-view";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { parseOpen, revealPath, type RevealTarget } from "@/lib/search/path";
 import { ResourceReader } from "@/app/components/reader/resource-reader";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { fade } from "@/lib/motion";
 
 const FALLBACK = "#8b8f9e";
 type Tab = "notes" | "resources" | "plan";
@@ -158,6 +161,8 @@ export function SubjectView() {
         ))}
       </nav>
 
+      <AnimatePresence mode="wait" initial={false}>
+      <m.div key={tab} variants={fade} initial="hidden" animate="shown" exit="exit">
       {tab === "notes" && (
         <div className="lk-notes-frame">
           <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
@@ -198,8 +203,12 @@ export function SubjectView() {
           <PlanTab subject={subject} />
         </RevealProvider>
       )}
+      </m.div>
+      </AnimatePresence>
 
-      {readId && <ResourceReader resourceId={readId} subject={subject} passage={passage} onClose={closeReader} />}
+      <AnimatePresence>
+        {readId && <ResourceReader key="reader" resourceId={readId} subject={subject} passage={passage} onClose={closeReader} />}
+      </AnimatePresence>
     </main>
   );
 }

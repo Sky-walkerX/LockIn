@@ -1,20 +1,28 @@
 import Link from "next/link";
-import { ArrowRight, Cpu, KeyRound, Scale, Search, Server, Star } from "lucide-react";
+import { ArrowRight, CodeXml, Cpu, KeyRound, LogIn, Scale, Search, Server, Star } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { LiveInbox } from "./live-inbox";
 import { FullscreenDemo } from "./fullscreen-demo";
 import { ThemeToggle } from "./theme-toggle";
 import { LegalLinks } from "@/app/components/legal-links";
+import { FilmHero } from "./film-hero";
+import { Reveal, RiseWords } from "./reveal";
 import s from "./landing.module.css";
 
-// What `/` shows a visitor: the mechanism first (agents' notes arriving in the
-// Inbox, waiting to be witnessed), then how to connect, ask, read and self-host.
-// Only the example Inbox, the full-screen demo and the theme button run on the
-// client.
+// What `/` shows a visitor: the launch film first, then the mechanism (agents'
+// notes arriving in the Inbox, waiting to be witnessed), then how to connect,
+// ask, read and self-host. The film, the example Inbox, the full-screen demo,
+// the theme button and the parts that move into place (Reveal) run on the
+// client; the rest is static.
+//
+// Things that move in start hidden, so without scripts a <noscript> style
+// shows them where they are.
+const NO_SCRIPT = "<style>[data-reveal],[data-reveal] *{opacity:1!important;transform:none!important;filter:none!important}</style>";
 export function Landing() {
   return (
     <div className={s.root}>
+      <noscript dangerouslySetInnerHTML={{ __html: NO_SCRIPT }} />
       <header className={s.bar}>
         <div className={s.wrap}>
           <Link href="/" className={s.home} aria-label={`${BRAND.name} home`}>
@@ -39,23 +47,27 @@ export function Landing() {
       </header>
 
       <main>
-        <div className={`lk-paper ${s.hero}`}>
+        <FilmHero />
+
+        <div id="notebook" className={`lk-paper ${s.hero}`}>
           <div className={s.wrap}>
             <div>
-              <h1 className={s.h1}>The notebook your AI tools write to.</h1>
-              <p className={s.lede}>
+              <h1 className={s.h1}>
+                <RiseWords text="The notebook your AI tools write to." />
+              </h1>
+              <Reveal as="p" className={s.lede} i={3}>
                 You learn things in Claude, Codex and Cursor every day, and most of it is gone when the session ends.{" "}
                 <b>{BRAND.name} keeps it.</b> Your agents save notes over MCP, you read and witness each one, and file it
                 under the subject it belongs to.
-              </p>
-              <div className={s.ctas}>
+              </Reveal>
+              <Reveal className={s.ctas} i={4}>
                 <Link className={`${s.btn} ${s.btnInk}`} href="/signup">
                   Start your notebook <ArrowRight className={s.icon} aria-hidden />
                 </Link>
                 <a className={`${s.btn} ${s.btnLine}`} href="#self-host">
                   Run it yourself
                 </a>
-              </div>
+              </Reveal>
               <ul className={s.fine}>
                 <li>
                   <Scale className={s.icon} aria-hidden />
@@ -71,19 +83,23 @@ export function Landing() {
                 </li>
               </ul>
             </div>
-            <LiveInbox />
+            <Reveal variant="sheet" i={2}>
+              <LiveInbox />
+            </Reveal>
           </div>
         </div>
 
         <section id="how" className={`${s.section} ${s.plain}`} aria-labelledby="how-title">
           <div className={s.wrap}>
-            <h2 id="how-title" className={s.h2}>
+            <Reveal as="h2" id="how-title" className={s.h2}>
               How it works
-            </h2>
+            </Reveal>
             <p className={s.sub}>Three steps, and the first one takes a minute.</p>
             <ol className={s.steps}>
-              <li className={s.step}>
-                <span className={s.n}>Step 1</span>
+              <Reveal as="li" className={s.step} i={0}>
+                <Reveal as="span" variant="stamp" className={s.n} i={2}>
+                  Step 1
+                </Reveal>
                 <h3>Connect an agent</h3>
                 <p>
                   Make a token in Settings, named after the agent. {BRAND.name} shows the setup for Claude Code, Codex and
@@ -92,9 +108,11 @@ export function Landing() {
                 <pre className={s.code}>{`claude mcp add --transport http lockin \\
   https://your-lockin/api/mcp \\
   --header "Authorization: Bearer lk_pat_…"`}</pre>
-              </li>
-              <li className={s.step}>
-                <span className={s.n}>Step 2</span>
+              </Reveal>
+              <Reveal as="li" className={s.step} i={1}>
+                <Reveal as="span" variant="stamp" className={s.n} i={3}>
+                  Step 2
+                </Reveal>
                 <h3>It saves what you learn</h3>
                 <p>
                   Ask it to &ldquo;save that to my Rust notes&rdquo;. It can also search your notebook and read a note
@@ -105,15 +123,17 @@ search_notes(query)
 get_note(id)
 get_plan(subject)
 append_to_note(id, text)`}</pre>
-              </li>
-              <li className={s.step}>
-                <span className={s.n}>Step 3</span>
+              </Reveal>
+              <Reveal as="li" className={s.step} i={2}>
+                <Reveal as="span" variant="stamp" className={s.n} i={4}>
+                  Step 3
+                </Reveal>
                 <h3>You witness it</h3>
                 <p>
                   Every note an agent writes is stamped with its name and waits for you to read and sign it. Revoke an
                   agent&apos;s token any time.
                 </p>
-              </li>
+              </Reveal>
             </ol>
           </div>
         </section>
@@ -121,9 +141,9 @@ append_to_note(id, text)`}</pre>
         <section id="ask" className={`lk-paper ${s.section}`} aria-labelledby="ask-title">
           <div className={`${s.wrap} ${s.two}`}>
             <div>
-              <h2 id="ask-title" className={s.h2}>
+              <Reveal as="h2" id="ask-title" className={s.h2}>
                 Ask your notes
-              </h2>
+              </Reveal>
               <p className={`${s.sub} ${s.subTight}`}>
                 Chat with any model about what you&apos;ve written, and see which pages each answer came from.
               </p>
@@ -149,7 +169,7 @@ append_to_note(id, text)`}</pre>
                 </li>
               </ul>
             </div>
-            <figure className={s.sheet} aria-label="Example question and answer">
+            <Reveal as="figure" variant="sheet" className={s.sheet} aria-label="Example question and answer">
               <div className={s.runhead}>
                 <span>Ask · Rust</span>
                 <span>Example</span>
@@ -178,13 +198,13 @@ append_to_note(id, text)`}</pre>
                   Qwen3 1.7B, running in this browser
                 </p>
               </div>
-            </figure>
+            </Reveal>
           </div>
         </section>
 
         <section className={`${s.section} ${s.plain}`} aria-labelledby="read-title">
           <div className={`${s.wrap} ${s.two}`}>
-            <article className={`${s.sheet} ${s.read}`} aria-label="Example note">
+            <Reveal as="article" variant="sheet" className={`${s.sheet} ${s.read}`} aria-label="Example note">
               <div className={s.runhead}>
                 <span className={s.rust}>Rust · Note</span>
                 <span>Example</span>
@@ -196,11 +216,11 @@ append_to_note(id, text)`}</pre>
                 <span className={s.kw}>let</span> s2 = s1;{"   "}
                 <span className={s.cm}>{"// ownership moves to s2"}</span>
               </pre>
-            </article>
+            </Reveal>
             <div className={s.copyFirst}>
-              <h2 id="read-title" className={s.h2}>
+              <Reveal as="h2" id="read-title" className={s.h2}>
                 Read without distraction
-              </h2>
+              </Reveal>
               <p className={`${s.sub} ${s.subTight}`}>
                 Any note opens full screen: the title, your words and your code on clean paper, and nothing else. Esc
                 brings you back.
@@ -239,17 +259,17 @@ append_to_note(id, text)`}</pre>
 
         <section id="self-host" className={`lk-paper ${s.section}`} aria-labelledby="self-host-title">
           <div className={s.wrap}>
-            <h2 id="self-host-title" className={s.h2}>
+            <Reveal as="h2" id="self-host-title" className={s.h2}>
               Yours to keep
-            </h2>
+            </Reveal>
             <p className={s.sub}>
               {BRAND.name} is open source under AGPL-3.0. Use the hosted notebook, or run your own with Docker: Postgres,
               the app, and an optional service for PDF text and server-side search.
             </p>
-            <pre className={`${s.code} ${s.codeLarge}`}>{`git clone ${BRAND.repoUrl}.git && cd LockIn
+            <Reveal as="pre" className={`${s.code} ${s.codeLarge}`} i={1}>{`git clone ${BRAND.repoUrl}.git && cd LockIn
 cp .env.example .env        # set AUTH_SECRET: openssl rand -base64 32
-docker compose up -d        # http://localhost:3000`}</pre>
-            <dl className={s.facts}>
+docker compose up -d        # http://localhost:3000`}</Reveal>
+            <Reveal as="dl" className={s.facts} i={2}>
               <div>
                 <dt className={s.k}>License</dt>
                 <dd className={s.v}>AGPL-3.0</dd>
@@ -266,15 +286,15 @@ docker compose up -d        # http://localhost:3000`}</pre>
                 <dt className={s.k}>Agents</dt>
                 <dd className={s.v}>Any MCP client</dd>
               </div>
-            </dl>
+            </Reveal>
           </div>
         </section>
 
         <section className={`lk-cloth ${s.section} ${s.closing}`} aria-labelledby="closing-title">
           <div className={s.wrap}>
-            <h2 id="closing-title" className={s.h2}>
+            <Reveal as="h2" id="closing-title" className={s.h2}>
               Start a notebook that keeps up with you.
-            </h2>
+            </Reveal>
             <p className={s.sub}>Connect your first agent in a minute. Your notes stay exportable, and the code stays open.</p>
             <div className={s.ctas}>
               <Link className={`${s.btn} ${s.btnInk}`} href="/signup">
@@ -291,19 +311,20 @@ docker compose up -d        # http://localhost:3000`}</pre>
 
       <footer className={s.footer}>
         <div className={s.wrap}>
-          <span>
+          <p className={s.footNote}>
             {BRAND.name}, {BRAND.tagline.charAt(0).toLowerCase() + BRAND.tagline.slice(1)}. AGPL-3.0.
-          </span>
-          <span>
-            <a className={s.link} href={BRAND.repoUrl}>
-              Source
-            </a>{" "}
-            ·{" "}
-            <Link className={s.link} href="/login">
+          </p>
+          <nav className={s.footLinks} aria-label="Elsewhere">
+            <a className={s.footLink} href={BRAND.repoUrl}>
+              <CodeXml className={s.icon} aria-hidden />
+              Source on GitHub
+            </a>
+            <Link className={s.footLink} href="/login">
+              <LogIn className={s.icon} aria-hidden />
               Sign in
             </Link>
-            <LegalLinks lead=" · " className={s.link} />
-          </span>
+          </nav>
+          <LegalLinks className={s.footLegal} linkClassName={s.quiet} />
         </div>
       </footer>
     </div>

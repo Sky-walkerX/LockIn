@@ -2,7 +2,7 @@
 
 import { useMounted } from "@/hooks/useMounted";
 import { useSession, signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
+import { clickPoint, useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { Download, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { FocusSettings } from "@/app/components/focus/focus-settings";
 import { AgentConnections } from "@/app/components/settings/agent-connections";
@@ -17,7 +17,7 @@ const THEMES = [
 
 export function SettingsView() {
   const { data: session, status } = useSession({ required: true });
-  const { theme, setTheme } = useTheme();
+  const { theme, switchTheme } = useThemeSwitch();
   // next-themes only knows the stored theme after hydration.
   const mounted = useMounted();
 
@@ -71,7 +71,7 @@ export function SettingsView() {
                   type="button"
                   role="radio"
                   aria-checked={active}
-                  onClick={() => setTheme(value)}
+                  onClick={(e) => switchTheme(value, clickPoint(e))}
                   className={`lk-card flex items-center gap-3 p-4 text-left transition-colors ${
                     active ? "ring-2 ring-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
