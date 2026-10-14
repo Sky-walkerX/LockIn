@@ -3,13 +3,14 @@
 import type React from "react";
 
 import { Suspense, useState } from "react";
-import { getProviders, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Input } from "@/app/components/ui/input";
-import { AuthShell, AuthBrand, GoogleMark } from "@/app/components/auth-shell";
+import { AuthShell, AuthBrand } from "@/app/components/auth-shell";
+import { GoogleSignIn } from "@/app/components/google-sign-in";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
 import { api } from "@/lib/fetcher";
@@ -26,9 +27,6 @@ function LoginForm({ nextParam, errorParam }: { nextParam: string | null; errorP
   // The password was right but the address was never confirmed: offer the link again.
   const [unverified, setUnverified] = useState(false);
   const { data: options } = useAccountOptions();
-  // Google shows only where it's configured (self-hosted copies often aren't).
-  const { data: providers } = useQuery({ queryKey: ["auth-providers"], queryFn: getProviders, staleTime: Infinity });
-  const googleEnabled = !!providers?.google;
 
   const loginMutation = useMutation({
     mutationFn: async () => {
@@ -161,23 +159,7 @@ function LoginForm({ nextParam, errorParam }: { nextParam: string | null; errorP
             </button>
           </form>
 
-          {googleEnabled && (
-            <>
-              <div className="my-5 flex items-center gap-3">
-                <div className="h-px flex-1 bg-border" />
-                <span className="lk-print text-2xs uppercase tracking-wide text-muted-foreground">or</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => signIn("google", { callbackUrl: next })}
-                className="flex w-full items-center justify-center gap-2 rounded-md border border-border py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-              >
-                <GoogleMark /> Continue with Google
-              </button>
-            </>
-          )}
+          <GoogleSignIn callbackUrl={next} />
 
           {options?.signup !== false && (
             <p className="mt-6 text-center text-sm text-muted-foreground">

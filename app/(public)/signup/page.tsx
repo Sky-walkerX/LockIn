@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/app/components/ui/input";
 import { AuthShell, AuthBrand } from "@/app/components/auth-shell";
+import { GoogleSignIn } from "@/app/components/google-sign-in";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { safeNext } from "@/lib/safe-next";
 import { useAccountOptions } from "@/hooks/useAccount";
@@ -100,7 +101,7 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
             <>
               <div className="mb-6">
                 <h2 className="lk-display text-2xl font-black tracking-tight">Create account</h2>
-                <p className="mt-1 text-sm text-muted-foreground">It starts empty, and you can export all of it whenever you like.</p>
+                <p className="mt-1 text-sm text-muted-foreground">It starts with a short tutorial, and you can export all of it whenever you like.</p>
               </div>
 
               {error && (
@@ -139,6 +140,8 @@ function SignupForm({ nextParam }: { nextParam: string | null }) {
                   {isLoading ? "Creating account…" : "Create account"}
                 </button>
               </form>
+
+              <GoogleSignIn callbackUrl={safeNext(nextParam)} />
 
               {options?.legal && (
                 <p className="mt-4 text-center text-xs text-muted-foreground">
