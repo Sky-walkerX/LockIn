@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Sky-walkerX/lockin",
+  "title": "LockIn",
+  "description": "A notebook your coding agents write to: notes that track the code's commit, and handoffs.",
+  "websiteUrl": "https://lockin.namankhandelwal.dev",
+  "repository": {
+    "url": "https://github.com/Sky-walkerX/LockIn",
+    "source": "github"
+  },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/Sky-walkerX/LockIn/main/docs/media/logo/lockin-mark-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://lockin.namankhandelwal.dev/api/mcp"
+    }
+  ]
+}
