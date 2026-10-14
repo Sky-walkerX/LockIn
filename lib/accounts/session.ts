@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import type { Prisma } from "@/app/generated/prisma/client";
 
 // Sessions are signed tokens the server doesn't store, so on their own they
 // would keep working after a password change, or after the account was
@@ -37,9 +38,44 @@ async function accountState(userId: string): Promise<Kept> {
  */
 export async function sessionStands(userId: string, signedInAt: number | undefined): Promise<boolean> {
   const state = await accountState(userId);
-  if (!state.exists) return false;
-  if (state.changedAt === null) return true;
-  return typeof signedInAt === "number" && signedInAt >= state.changedAt;
+  return state.exists && outlives(signedInAt, state.changedAt);
+}
+
+const outlives = (signedInAt: number | undefined, changedAt: number | null) =>
+  changedAt === null || (typeof signedInAt === "number" && signedInAt >= changedAt);
+
+/** What a transaction is given to write with. */
+export type Tx = Prisma.TransactionClient;
+
+/**
+ * Holds an account still for the rest of a transaction: a password can't be
+ * set on it until the transaction is over. Whatever standing access the
+ * transaction hands out is then either there before the password is set, and
+ * revoked with the rest (lib/connections.ts), or is asked for after, when the
+ * session asking has ended.
+ */
+export async function holdAccount(tx: Tx, userId: string): Promise<void> {
+  await tx.$queryRaw`SELECT 1 FROM "User" WHERE "id" = ${userId} FOR SHARE`;
+}
+
+/**
+ * Runs `mint` only if the session stands at this moment, by the database's
+ * word rather than what's remembered here, and holds the account still while
+ * it runs. Null when the session has ended.
+ *
+ * For handing out access that outlives the session: an agent token, an app's
+ * sign-in. The half minute for which an ended session is still believed
+ * (above) is harmless for reading a page. It is not harmless here: whoever
+ * was signed in when the owner reset the password could use it to make a
+ * token after every token was revoked.
+ */
+export async function whileSessionStands<T>(userId: string, signedInAt: number | undefined, mint: (tx: Tx) => Promise<T>): Promise<T | null> {
+  return prisma.$transaction(async (tx) => {
+    await holdAccount(tx, userId);
+    const row = await tx.user.findUnique({ where: { id: userId }, select: { passwordChangedAt: true } });
+    if (!row || !outlives(signedInAt, row.passwordChangedAt?.getTime() ?? null)) return null;
+    return mint(tx);
+  });
 }
 
 /** Drop what's remembered about an account that just changed or went. */

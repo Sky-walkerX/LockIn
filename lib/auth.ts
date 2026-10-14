@@ -12,9 +12,17 @@ import { sessionStands } from "@/lib/accounts/session";
  * one from before a password change, or for a deleted account, is nobody.
  */
 export async function getUserId(request: NextRequest): Promise<string | null> {
+  return (await getSession(request))?.userId ?? null;
+}
+
+/**
+ * The same, with when the session's holder signed in: what a route that hands
+ * out standing access checks again, afresh (`whileSessionStands`).
+ */
+export async function getSession(request: NextRequest): Promise<{ userId: string; signedInAt: number | undefined } | null> {
   const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
   if (!token?.sub) return null;
-  return (await sessionStands(token.sub, token.signedInAt)) ? token.sub : null;
+  return (await sessionStands(token.sub, token.signedInAt)) ? { userId: token.sub, signedInAt: token.signedInAt } : null;
 }
 
 export type TokenAuth = {

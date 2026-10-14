@@ -5,8 +5,11 @@
 #   scripts/set-password.sh someone@example.com
 #
 # It asks for the password and has Postgres hash it (bcrypt, from pgcrypto)
-# and store it. The account is signed out everywhere, and its agents and
-# connected apps are disconnected, as after a reset by email.
+# and store it. The account's agents and connected apps are disconnected, as
+# after a reset by email, and it is signed out everywhere: within half a
+# minute, which is how long the app remembers a session it has checked. In
+# that half minute an old session can still read the notebook, but can't make
+# a token or connect an app.
 set -eu
 
 email="${1:?Usage: scripts/set-password.sh someone@example.com}"
@@ -30,21 +33,25 @@ changed=$(LK_EMAIL="$email" LK_PASSWORD="$password" docker compose exec -T -e LK
 \getenv password LK_PASSWORD
 SET client_min_messages = warning;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-WITH account AS (
-  UPDATE "User"
-  SET "password" = crypt(:'password', gen_salt('bf', 10)), "passwordChangedAt" = (now() AT TIME ZONE 'UTC')
-  WHERE lower("email") = lower(:'email')
-  RETURNING "id", "email"
-), tokens AS (
-  UPDATE "ApiToken" SET "revokedAt" = (now() AT TIME ZONE 'UTC')
-  WHERE "revokedAt" IS NULL AND "userId" IN (SELECT "id" FROM account)
-), apps AS (
-  UPDATE "OAuthGrant" SET "revokedAt" = (now() AT TIME ZONE 'UTC')
-  WHERE "revokedAt" IS NULL AND "userId" IN (SELECT "id" FROM account)
-), codes AS (
-  DELETE FROM "OAuthCode" WHERE "userId" IN (SELECT "id" FROM account)
-)
-SELECT "email" FROM account;
+BEGIN;
+-- The password first, and on its own: this waits for any token or app sign-in
+-- being handed out at the same moment, and the statements after it then see
+-- that one and revoke it too. (No apostrophes in here: macOS sh trips on one
+-- inside a here-document inside a command substitution.)
+UPDATE "User"
+SET "password" = crypt(:'password', gen_salt('bf', 10)), "passwordChangedAt" = (now() AT TIME ZONE 'UTC')
+WHERE lower("email") = lower(:'email')
+RETURNING "id" AS account_id, "email" AS account_email \gset
+\if :{?account_id}
+  UPDATE "ApiToken" SET "revokedAt" = (now() AT TIME ZONE 'UTC') WHERE "revokedAt" IS NULL AND "userId" = :'account_id';
+  UPDATE "OAuthGrant" SET "revokedAt" = (now() AT TIME ZONE 'UTC') WHERE "revokedAt" IS NULL AND "userId" = :'account_id';
+  DELETE FROM "OAuthCode" WHERE "userId" = :'account_id';
+  DELETE FROM "EmailToken" WHERE "userId" = :'account_id' AND "purpose" = 'reset';
+  COMMIT;
+  \echo :account_email
+\else
+  ROLLBACK;
+\endif
 SQL
 )
 

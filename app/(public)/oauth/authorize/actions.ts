@@ -32,12 +32,10 @@ export async function decide(formData: FormData) {
   if (formData.get("decision") !== "allow") {
     redirect(responseUrl(check.redirectUri, { error: "access_denied", state: check.state, iss: origin }));
   }
-  const code = await createCode({
-    clientId: check.client.id,
-    userId,
-    redirectUri: check.redirectUri,
-    codeChallenge: check.codeChallenge,
-    resource: check.resource,
-  });
+  const code = await createCode(
+    { clientId: check.client.id, userId, redirectUri: check.redirectUri, codeChallenge: check.codeChallenge, resource: check.resource },
+    session.signedInAt,
+  );
+  if (!code) redirect("/login");
   redirect(responseUrl(check.redirectUri, { code, state: check.state, iss: origin }));
 }

@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import prisma from "@/lib/prisma";
 import { hashToken } from "@/lib/tokens";
 import { fetchPublicJson } from "./public-fetch";
+import { holdAccount, whileSessionStands } from "@/lib/accounts/session";
 import {
   ACCESS_TTL_SECONDS,
   CODE_TTL_SECONDS,
@@ -87,19 +88,20 @@ export async function registerClient(body: unknown): Promise<{ ok: true; client:
 
 export { redirectMatches };
 
-/** A one-time code for an approved request, bound to its PKCE challenge. */
-export async function createCode(input: {
-  clientId: string;
-  userId: string;
-  redirectUri: string;
-  codeChallenge: string;
-  resource: string | null;
-}): Promise<string> {
+/**
+ * A one-time code for an approved request, bound to its PKCE challenge. Null
+ * when the session approving it has ended: a code becomes an app's standing
+ * access, so the session is checked afresh as the code is written.
+ */
+export async function createCode(
+  input: { clientId: string; userId: string; redirectUri: string; codeChallenge: string; resource: string | null },
+  signedInAt: number | undefined,
+): Promise<string | null> {
   const code = secret(CODE_PREFIX);
-  await prisma.oAuthCode.create({
-    data: { ...input, codeHash: hashToken(code), scope: SCOPE, expiresAt: later(CODE_TTL_SECONDS) },
-  });
-  return code;
+  const made = await whileSessionStands(input.userId, signedInAt, (tx) =>
+    tx.oAuthCode.create({ data: { ...input, codeHash: hashToken(code), scope: SCOPE, expiresAt: later(CODE_TTL_SECONDS) } }),
+  );
+  return made ? code : null;
 }
 
 export type TokenResponse = {
@@ -141,13 +143,16 @@ export async function exchangeCode(input: {
   if (!pkceMatches(input.codeVerifier, row.codeChallenge)) return bad("invalid_grant", "code_verifier doesn't match the challenge");
   if (input.resource && row.resource && input.resource !== row.resource) return bad("invalid_target", "resource doesn't match");
 
-  // Spend it atomically: of two racing exchanges, only one gets the row.
-  const spent = await prisma.oAuthCode.updateMany({ where: { codeHash: row.codeHash, usedAt: null }, data: { usedAt: new Date() } });
-  if (spent.count === 0) return bad("invalid_grant", "The code was already used");
-
-  const grant = await prisma.oAuthGrant.create({
-    data: { userId: row.userId, clientId: row.clientId, name: row.client.name, scope: row.scope },
+  // Spend it atomically: of two racing exchanges, only one gets the row. The
+  // account is held still meanwhile, so a password reset either comes first
+  // and has taken the code away, or comes after and revokes the grant.
+  const grant = await prisma.$transaction(async (tx) => {
+    await holdAccount(tx, row.userId);
+    const spent = await tx.oAuthCode.updateMany({ where: { codeHash: row.codeHash, usedAt: null }, data: { usedAt: new Date() } });
+    if (spent.count === 0) return null;
+    return tx.oAuthGrant.create({ data: { userId: row.userId, clientId: row.clientId, name: row.client.name, scope: row.scope } });
   });
+  if (!grant) return bad("invalid_grant", "The code was already used");
   return issue(grant.id);
 }
 

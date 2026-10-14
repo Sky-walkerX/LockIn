@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import prisma from "@/lib/prisma";
-import { getUserId } from "@/lib/auth";
+import { getSession, getUserId } from "@/lib/auth";
+import { whileSessionStands } from "@/lib/accounts/session";
 import { generateToken, hashToken, tokenPreview } from "@/lib/tokens";
 import { TOKEN_PUBLIC_FIELDS, listTokens } from "@/lib/connections";
 
@@ -16,10 +16,12 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/tokens { name } - create a token. The secret is in this response
-// and nowhere else, ever: only its hash is stored.
+// and nowhere else, ever: only its hash is stored. A token outlives the
+// session that made it, so the session is checked against the database as the
+// token is written, not against what's remembered of it.
 export async function POST(request: NextRequest) {
-  const userId = await getUserId(request);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession(request);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const parsed = CreateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
@@ -27,9 +29,12 @@ export async function POST(request: NextRequest) {
   }
 
   const secret = generateToken();
-  const token = await prisma.apiToken.create({
-    data: { userId, name: parsed.data.name, tokenHash: hashToken(secret), preview: tokenPreview(secret) },
-    select: TOKEN_PUBLIC_FIELDS,
-  });
+  const token = await whileSessionStands(session.userId, session.signedInAt, (tx) =>
+    tx.apiToken.create({
+      data: { userId: session.userId, name: parsed.data.name, tokenHash: hashToken(secret), preview: tokenPreview(secret) },
+      select: TOKEN_PUBLIC_FIELDS,
+    }),
+  );
+  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   return NextResponse.json({ ...token, secret }, { status: 201 });
 }

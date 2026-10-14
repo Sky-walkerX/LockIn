@@ -24,8 +24,10 @@ export function listConnectedApps(userId: string) {
 /**
  * Cuts off every agent and app that could reach this notebook: tokens and
  * connected apps are revoked, and a sign-in an app had started can't be
- * finished. Returns the writes, to go in one transaction with whatever else
- * is changing. The first two say how many they revoked.
+ * finished. Returns the writes, to go in one transaction after the write that
+ * sets the password: that one waits for anything being handed out at the same
+ * moment (holdAccount, lib/accounts/session.ts), and these then see it and
+ * revoke it. The first two say how many they revoked.
  *
  * It goes with a password set from outside the account: an emailed reset link,
  * or the operator's script. That's what the owner does after someone else got

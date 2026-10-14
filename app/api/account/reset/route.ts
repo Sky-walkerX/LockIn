@@ -45,6 +45,8 @@ export async function POST(request: Request) {
       select: { email: true },
     }),
     ...disconnectEverything(userId, now),
+    // Any other reset link still out for this account is dead too.
+    prisma.emailToken.deleteMany({ where: { userId, purpose: "reset" } }),
   ]);
   forgetAccount(userId);
   return Response.json({ email: user.email, disconnected: tokens.count + apps.count });

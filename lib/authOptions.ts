@@ -109,6 +109,7 @@ export const authOptions: NextAuthOptions = {
       if (token.id) session.user.id = token.id as string;
       if (token.email) session.user.email = token.email as string;
       if (token.name) session.user.name = token.name as string;
+      session.signedInAt = token.signedInAt;
       return session;
     },
   },
@@ -116,6 +117,8 @@ export const authOptions: NextAuthOptions = {
 
 declare module "next-auth" {
   interface Session {
+    /** When the holder signed in (ms): what a password change is compared with. */
+    signedInAt?: number;
     user: {
       id: string;
       name?: string | null;
