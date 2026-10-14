@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { mailConfigured } from "@/lib/mail";
 import { NO_ACCOUNT_HASH, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
-import { sessionStands } from "@/lib/accounts/session";
+import { type SessionMark, sessionMark, sessionStands } from "@/lib/accounts/session";
 import { EMAIL_NOT_VERIFIED, TOO_MANY_ATTEMPTS } from "@/lib/accounts/errors";
 import { clientAddress, countPasswordTry } from "@/lib/limits/rate";
 
@@ -47,7 +47,8 @@ export const authOptions: NextAuthOptions = {
         // there's no link to send, so an unconfirmed address signs in.
         if (!user.emailVerifiedAt && mailConfigured()) throw new Error(EMAIL_NOT_VERIFIED);
 
-        return { id: user.id, name: user.name, email: user.email };
+        // The mark comes from the row the password was just checked against.
+        return { id: user.id, name: user.name, email: user.email, mark: sessionMark(user) };
       },
     }),
   ],
@@ -79,6 +80,7 @@ export const authOptions: NextAuthOptions = {
         }
         // The session carries the notebook's own id, not Google's.
         user.id = existing.id;
+        user.mark = sessionMark(existing);
         return true;
       } catch (error) {
         console.error("Signing in with Google failed", error);
@@ -94,12 +96,14 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         // Written once: what a later password change is compared with.
-        token.signedInAt = Date.now();
+        const mark = user.mark ?? { signedInAt: Date.now() };
+        token.signedInAt = mark.signedInAt;
+        token.passwordVersion = mark.passwordVersion;
         return token;
       }
       // Every later read of the session: it ends when the password changes or
       // the account is deleted. Throwing makes NextAuth clear the cookie.
-      if (token.sub && !(await sessionStands(token.sub, token.signedInAt))) {
+      if (token.sub && !(await sessionStands(token.sub, { passwordVersion: token.passwordVersion, signedInAt: token.signedInAt }))) {
         throw new Error("This session has ended");
       }
       return token;
@@ -109,7 +113,7 @@ export const authOptions: NextAuthOptions = {
       if (token.id) session.user.id = token.id as string;
       if (token.email) session.user.email = token.email as string;
       if (token.name) session.user.name = token.name as string;
-      session.signedInAt = token.signedInAt;
+      session.mark = { passwordVersion: token.passwordVersion, signedInAt: token.signedInAt };
       return session;
     },
   },
@@ -117,8 +121,8 @@ export const authOptions: NextAuthOptions = {
 
 declare module "next-auth" {
   interface Session {
-    /** When the holder signed in (ms): what a password change is compared with. */
-    signedInAt?: number;
+    /** What the session is checked by when it hands out standing access. */
+    mark?: SessionMark;
     user: {
       id: string;
       name?: string | null;
@@ -129,6 +133,8 @@ declare module "next-auth" {
 
   interface User {
     id: string;
+    /** Set at sign-in, from the account row it signed in against. */
+    mark?: SessionMark;
     name?: string | null;
     email?: string | null;
   }
@@ -141,5 +147,7 @@ declare module "next-auth/jwt" {
     name?: string | null;
     /** When this session's holder signed in (ms). */
     signedInAt?: number;
+    /** The account's passwordChangedAt (ms) when it did: see SessionMark. */
+    passwordVersion?: number | null;
   }
 }

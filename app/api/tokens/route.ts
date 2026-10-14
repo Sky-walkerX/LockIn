@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   }
 
   const secret = generateToken();
-  const token = await whileSessionStands(session.userId, session.signedInAt, (tx) =>
+  const token = await whileSessionStands(session.userId, session.mark, (tx) =>
     tx.apiToken.create({
       data: { userId: session.userId, name: parsed.data.name, tokenHash: hashToken(secret), preview: tokenPreview(secret) },
       select: TOKEN_PUBLIC_FIELDS,

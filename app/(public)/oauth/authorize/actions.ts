@@ -34,7 +34,7 @@ export async function decide(formData: FormData) {
   }
   const code = await createCode(
     { clientId: check.client.id, userId, redirectUri: check.redirectUri, codeChallenge: check.codeChallenge, resource: check.resource },
-    session.signedInAt,
+    session.mark ?? {},
   );
   if (!code) redirect("/login");
   redirect(responseUrl(check.redirectUri, { code, state: check.state, iss: origin }));

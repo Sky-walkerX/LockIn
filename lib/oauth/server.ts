@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import prisma from "@/lib/prisma";
 import { hashToken } from "@/lib/tokens";
 import { fetchPublicJson } from "./public-fetch";
-import { holdAccount, whileSessionStands } from "@/lib/accounts/session";
+import { type SessionMark, holdAccount, whileSessionStands } from "@/lib/accounts/session";
 import {
   ACCESS_TTL_SECONDS,
   CODE_TTL_SECONDS,
@@ -95,10 +95,10 @@ export { redirectMatches };
  */
 export async function createCode(
   input: { clientId: string; userId: string; redirectUri: string; codeChallenge: string; resource: string | null },
-  signedInAt: number | undefined,
+  session: SessionMark,
 ): Promise<string | null> {
   const code = secret(CODE_PREFIX);
-  const made = await whileSessionStands(input.userId, signedInAt, (tx) =>
+  const made = await whileSessionStands(input.userId, session, (tx) =>
     tx.oAuthCode.create({ data: { ...input, codeHash: hashToken(code), scope: SCOPE, expiresAt: later(CODE_TTL_SECONDS) } }),
   );
   return made ? code : null;

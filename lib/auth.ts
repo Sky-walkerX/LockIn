@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { TOKEN_PREFIX, hashToken, sourceFromTokenName } from "@/lib/tokens";
 import { ACCESS_PREFIX, authenticateAccessToken } from "@/lib/oauth/server";
-import { sessionStands } from "@/lib/accounts/session";
+import { type SessionMark, sessionStands } from "@/lib/accounts/session";
 
 /**
  * Returns the authenticated user's id (JWT `sub`) for an API route, or null.
@@ -16,13 +16,14 @@ export async function getUserId(request: NextRequest): Promise<string | null> {
 }
 
 /**
- * The same, with when the session's holder signed in: what a route that hands
- * out standing access checks again, afresh (`whileSessionStands`).
+ * The same, with what the session is checked by: a route that hands out
+ * standing access checks it again, afresh (`whileSessionStands`).
  */
-export async function getSession(request: NextRequest): Promise<{ userId: string; signedInAt: number | undefined } | null> {
+export async function getSession(request: NextRequest): Promise<{ userId: string; mark: SessionMark } | null> {
   const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
   if (!token?.sub) return null;
-  return (await sessionStands(token.sub, token.signedInAt)) ? { userId: token.sub, signedInAt: token.signedInAt } : null;
+  const mark = { passwordVersion: token.passwordVersion, signedInAt: token.signedInAt };
+  return (await sessionStands(token.sub, mark)) ? { userId: token.sub, mark } : null;
 }
 
 export type TokenAuth = {

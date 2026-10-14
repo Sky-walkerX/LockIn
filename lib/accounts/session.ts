@@ -4,8 +4,8 @@ import type { Prisma } from "@/app/generated/prisma/client";
 // Sessions are signed tokens the server doesn't store, so on their own they
 // would keep working after a password change, or after the account was
 // deleted, until they expired a month later. Each one is checked against the
-// account instead: it stands only while the account exists and the password
-// hasn't changed since the session was issued.
+// account instead: it stands only while the account exists and its password
+// is still the one the session signed in against (`SessionMark`).
 //
 // The answer is kept for half a minute per account, so a page that makes ten
 // requests asks the database once. The instance that handles a password
@@ -29,20 +29,41 @@ async function accountState(userId: string): Promise<Kept> {
 }
 
 /**
- * Whether a session for this account still stands. `signedInAt` is when its
- * holder signed in (ms), written into the token once and never refreshed.
- * The token's own `iat` won't do: NextAuth re-issues the token, with a new
- * `iat`, every time the browser asks for its session, so an old session would
- * look new again the moment it was next used. A session from before sign-in
- * times were recorded stands until the password first changes.
+ * What a session carries to be checked with.
+ *
+ * `passwordVersion` is the account's `passwordChangedAt` (ms, or null) as it
+ * stood in the very row whose password the session signed in with. The
+ * session stands while the account still says the same. Comparing times
+ * instead ("did it sign in after the password changed?") leaves gaps: the
+ * time a change is stamped with is taken a moment before the change lands,
+ * and the database's clock needn't agree with this server's. A sign-in with
+ * the old password in such a gap would look newer than the change that was
+ * meant to end it. A sign-in that read the old password read the old value
+ * with it, whatever the clocks say.
+ *
+ * `signedInAt` is when the holder signed in (ms). Sessions from before
+ * `passwordVersion` existed carry only this, and are held to the older rule:
+ * they stand until the password next changes. The token's own `iat` won't do
+ * for it: NextAuth re-issues the token, with a new `iat`, every time the
+ * browser asks for its session.
  */
-export async function sessionStands(userId: string, signedInAt: number | undefined): Promise<boolean> {
-  const state = await accountState(userId);
-  return state.exists && outlives(signedInAt, state.changedAt);
+export type SessionMark = { passwordVersion?: number | null; signedInAt?: number };
+
+/** The mark a new session gets, from the account row it signed in against. */
+export function sessionMark(account: { passwordChangedAt: Date | null }): Required<SessionMark> {
+  return { passwordVersion: account.passwordChangedAt?.getTime() ?? null, signedInAt: Date.now() };
 }
 
-const outlives = (signedInAt: number | undefined, changedAt: number | null) =>
-  changedAt === null || (typeof signedInAt === "number" && signedInAt >= changedAt);
+/** Whether a session for this account still stands. */
+export async function sessionStands(userId: string, mark: SessionMark): Promise<boolean> {
+  const state = await accountState(userId);
+  return state.exists && outlives(mark, state.changedAt);
+}
+
+const outlives = (mark: SessionMark, changedAt: number | null) =>
+  mark.passwordVersion !== undefined
+    ? mark.passwordVersion === changedAt
+    : changedAt === null || (typeof mark.signedInAt === "number" && mark.signedInAt >= changedAt);
 
 /** What a transaction is given to write with. */
 export type Tx = Prisma.TransactionClient;
@@ -69,11 +90,11 @@ export async function holdAccount(tx: Tx, userId: string): Promise<void> {
  * was signed in when the owner reset the password could use it to make a
  * token after every token was revoked.
  */
-export async function whileSessionStands<T>(userId: string, signedInAt: number | undefined, mint: (tx: Tx) => Promise<T>): Promise<T | null> {
+export async function whileSessionStands<T>(userId: string, mark: SessionMark, mint: (tx: Tx) => Promise<T>): Promise<T | null> {
   return prisma.$transaction(async (tx) => {
     await holdAccount(tx, userId);
     const row = await tx.user.findUnique({ where: { id: userId }, select: { passwordChangedAt: true } });
-    if (!row || !outlives(signedInAt, row.passwordChangedAt?.getTime() ?? null)) return null;
+    if (!row || !outlives(mark, row.passwordChangedAt?.getTime() ?? null)) return null;
     return mint(tx);
   });
 }
