@@ -1,5 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { clientAddress, wait } from "./rate";
+
+// Counting is one statement against Postgres; here it only notes the key.
+const counted: string[] = [];
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    $queryRaw: async (_: TemplateStringsArray, key: string) => {
+      counted.push(key);
+      return [{ count: 1, retryAfter: 1 }];
+    },
+    $executeRaw: async () => 0,
+  },
+}));
+
+const { clientAddress, countPasswordTry, wait } = await import("./rate");
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -46,3 +59,17 @@ describe("wait", () => {
     expect(wait(601)).toBe("11 minutes");
   });
 });
+
+describe("countPasswordTry", () => {
+  it("counts an address typed with another's key in it as itself", async () => {
+    counted.length = 0;
+    await countPasswordTry("ada@example.com", "203.0.113.7");
+    const hers = [...counted];
+    counted.length = 0;
+    // Typed from somewhere else, shaped like her address and her network.
+    await countPasswordTry("ada@example.com:203.0.113.7", "198.51.100.9");
+    await countPasswordTry("ada@example.com", "198.51.100.9:203.0.113.7");
+    expect(counted.filter((key) => hers.includes(key))).toEqual(["login:ada%40example.com"]);
+  });
+});
+

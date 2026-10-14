@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
 import { publicOrigin } from "@/lib/http/origin";
 import { BUCKETS, createUpload, storageDriver } from "@/lib/storage";
-import { fitsQuota, quotaMessage, recordFile } from "@/lib/storage/quota";
+import { MAX_PDF_BYTES as MAX_BYTES, fitsQuota, holdUpload, quotaMessage, releaseHold } from "@/lib/storage/quota";
 import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 /**
@@ -19,9 +19,6 @@ import { countAgainst, tooMany } from "@/lib/limits/rate";
  * fetch without a second credential.
  */
 
-// Mirrors service/app/config.py's MAX_DOWNLOAD_BYTES — a file too large for
-// the parser to fetch is a file too large to accept here.
-const MAX_BYTES = 50 * 1024 * 1024;
 const EXT: Record<string, string> = {
   "application/pdf": "pdf",
 };
@@ -43,19 +40,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `File must be under ${MAX_BYTES / 1024 / 1024}MB` }, { status: 413 });
   }
 
-  if (!(await fitsQuota(userId, size))) return NextResponse.json({ error: quotaMessage() }, { status: 413 });
+  // On local disk the file is counted when it arrives, at its real size
+  // (/api/files/upload). Supabase takes the upload itself and its link can't
+  // be held to the size the browser gave, so room for the most the link
+  // allows is held from here until saving the resource settles it.
+  const objectPath = `${userId}/${crypto.randomUUID()}.${ext}`;
+  const key = `${BUCKETS.docs}/${objectPath}`;
+  const held = storageDriver() === "supabase";
+  if (!(held ? await holdUpload(userId, key, size) : await fitsQuota(userId, size))) {
+    return NextResponse.json({ error: quotaMessage() }, { status: 413 });
+  }
 
   try {
-    const objectPath = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const target = await createUpload("docs", objectPath, MAX_BYTES, publicOrigin(request), size);
-    // On local disk the file is counted when it arrives, at its real size
-    // (/api/files/upload). Supabase takes the upload itself and its link
-    // can't be held to the size the browser gave, so the file is counted at
-    // the most the link allows until saving the resource settles it
-    // (settleUpload).
-    if (storageDriver() === "supabase") await recordFile(userId, `${BUCKETS.docs}/${objectPath}`, MAX_BYTES);
-    return NextResponse.json(target);
+    return NextResponse.json(await createUpload("docs", objectPath, MAX_BYTES, publicOrigin(request), size));
   } catch {
+    if (held) await releaseHold(key).catch(() => {});
     return NextResponse.json({ error: "Could not prepare the upload" }, { status: 502 });
   }
 }

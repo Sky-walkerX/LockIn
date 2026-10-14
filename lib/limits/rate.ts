@@ -59,12 +59,17 @@ export function wait(seconds: number): string {
  * case), per network across addresses, and per address across networks, which
  * is loose enough that a stranger can't lock someone out of their own notebook
  * by guessing at it. Returns the limit that was passed, or null.
+ *
+ * The address is whatever was typed into the form, so it's escaped before it
+ * goes into a key. Left as typed, "a@b.c:203.0.113.7" would count against
+ * a@b.c's tries from 203.0.113.7, and anyone could use theirs up for them.
  */
 export async function countPasswordTry(email: string, address: string): Promise<Limit | null> {
+  const who = encodeURIComponent(email);
   const tries = await Promise.all([
-    countAgainst(`login:${email}:${address}`, 10, 10 * 60),
+    countAgainst(`login:${who}:${address}`, 10, 10 * 60),
     countAgainst(`login-from:${address}`, 100, 10 * 60),
-    countAgainst(`login:${email}`, 200, 60 * 60),
+    countAgainst(`login:${who}`, 200, 60 * 60),
   ]);
   return tries.find((t) => !t.ok) ?? null;
 }

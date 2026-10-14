@@ -2,8 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { z } from "zod";
-import { deleteObject, keyFromUrl, ownerOfKey } from "@/lib/storage";
-import { forgetFile } from "@/lib/storage/quota";
+import { keyFromUrl, ownerOfKey } from "@/lib/storage";
+import { removeFile } from "@/lib/storage/quota";
 import * as f from "@/lib/http/fields";
 
 const UpdateResourceSchema = z.object({
@@ -46,8 +46,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   // still points at it.
   const key = keyFromUrl(resource.url);
   if (key && ownerOfKey(key) === userId && (await prisma.resource.count({ where: { userId, url: resource.url } })) === 0) {
-    await deleteObject(key).catch((error) => console.error("Removing a deleted resource's file failed", error));
-    await forgetFile(key);
+    await removeFile(key, "Removing a deleted resource's file failed");
   }
   return NextResponse.json({ success: true });
 }

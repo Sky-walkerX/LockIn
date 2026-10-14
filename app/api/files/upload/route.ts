@@ -2,7 +2,7 @@ import { mkdir, open, rm } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { CONTENT_TYPES, localPath, ownerOfKey, storageDriver, verifyUpload } from "@/lib/storage";
-import { recordFile } from "@/lib/storage/quota";
+import { forgetFile, quotaMessage, recordFile, withinQuota } from "@/lib/storage/quota";
 
 // PUT /api/files/upload?key=…&exp=…&max=…&sig=… — the local stand-in for a
 // Supabase signed upload URL. The signed query names the one key the browser
@@ -55,8 +55,24 @@ export async function PUT(request: Request) {
       { status: tooLarge ? 413 : 500 },
     );
   }
-  // Counted against its owner's quota, at the size that really arrived.
+  // Counted against its owner's quota, at the size that really arrived, and
+  // only then held against it: links handed out in the same moment were each
+  // told there was room. A file that can't be counted isn't kept.
   const owner = ownerOfKey(key);
-  if (owner) await recordFile(owner, key, written).catch((error) => console.error("Recording an upload failed", error));
+  if (owner) {
+    const fits = await recordFile(owner, key, written)
+      .then(() => withinQuota(owner))
+      .catch((error) => {
+        console.error("Counting an upload failed", error);
+        return null;
+      });
+    if (!fits) {
+      await rm(full, { force: true });
+      await forgetFile(key).catch((error) => console.error("Forgetting a refused upload failed", error));
+      return fits === null
+        ? NextResponse.json({ error: "Upload failed" }, { status: 500 })
+        : NextResponse.json({ error: quotaMessage() }, { status: 413 });
+    }
+  }
   return new Response(null, { status: 201 });
 }

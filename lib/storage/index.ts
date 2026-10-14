@@ -200,20 +200,27 @@ export function ownerOfKey(key: string): string | null {
 }
 
 /**
- * How big a file in Supabase Storage really is, or null when it isn't there
- * (or can't be asked about). The browser uploads PDFs to Supabase directly,
- * so this is the only way the server learns what arrived.
+ * How big a file in Supabase Storage really is: "gone" when there's no such
+ * file, null when it can't be told (and for local disk, which counts a file
+ * as it arrives). The browser uploads PDFs to Supabase directly, so this is
+ * the only way the server learns what arrived.
  */
-export async function storedSize(key: string): Promise<number | null> {
+export async function storedSize(key: string): Promise<number | "gone" | null> {
   if (!isValidKey(key) || storageDriver() !== "supabase") return null;
   const { base, key: token } = supabase();
   const res = await fetch(`${base}/storage/v1/object/info/${key}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
-  if (!res?.ok) return null;
-  const size = ((await res.json().catch(() => null)) as { size?: unknown } | null)?.size;
-  return typeof size === "number" && Number.isFinite(size) ? size : null;
+  if (!res) return null;
+  const body = (await res.json().catch(() => null)) as { size?: unknown; statusCode?: unknown } | null;
+  // A missing file is a 400 whose body says 404 (checked against Supabase directly).
+  if (res.status === 404 || String(body?.statusCode) === "404") return "gone";
+  if (!res.ok) return null;
+  return typeof body?.size === "number" && Number.isFinite(body.size) ? body.size : null;
 }
 
-/** Removes one stored file. Quiet when it's already gone. */
+/**
+ * Removes one stored file. Quiet when it's already gone, and throws when it
+ * couldn't be removed, so that nobody stops counting a file that's still there.
+ */
 export async function deleteObject(key: string): Promise<void> {
   if (!isValidKey(key)) return;
   if (storageDriver() === "local") {
@@ -222,7 +229,8 @@ export async function deleteObject(key: string): Promise<void> {
     return;
   }
   const { base, key: token } = supabase();
-  await fetch(`${base}/storage/v1/object/${key}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+  const res = await fetch(`${base}/storage/v1/object/${key}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok && (await storedSize(key)) !== "gone") throw new Error(`Removing a stored file failed (${res.status})`);
 }
 
 /**

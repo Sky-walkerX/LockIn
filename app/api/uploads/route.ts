@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
 import { publicOrigin } from "@/lib/http/origin";
 import { BUCKETS, putObject } from "@/lib/storage";
-import { fitsQuota, quotaMessage, recordFile } from "@/lib/storage/quota";
+import { fitsQuota, quotaMessage, recordFile, removeFile, withinQuota } from "@/lib/storage/quota";
 import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 // POST /api/uploads — store a pasted/dropped notes image. Where it goes
@@ -41,7 +41,14 @@ export async function POST(request: NextRequest) {
   try {
     const objectPath = `${userId}/${crypto.randomUUID()}.${ext}`;
     const url = await putObject("notes", objectPath, file, publicOrigin(request));
-    await recordFile(userId, `${BUCKETS.notes}/${objectPath}`, file.size);
+    const key = `${BUCKETS.notes}/${objectPath}`;
+    await recordFile(userId, key, file.size);
+    // Asked again now that it's counted: images sent in the same moment were
+    // each told there was room.
+    if (!(await withinQuota(userId))) {
+      await removeFile(key, "Removing an image over quota failed");
+      return NextResponse.json({ error: quotaMessage() }, { status: 413 });
+    }
     return NextResponse.json({ url }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Upload to storage failed" }, { status: 502 });
