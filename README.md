@@ -10,7 +10,7 @@
   <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/Sky-walkerX/LockIn?style=flat-square&labelColor=1b2a2f&color=24453b"></a>
 </p>
 <p>
-  <img alt="MCP: 17 tools" src="https://img.shields.io/badge/MCP-17_tools-24453b?style=flat-square&labelColor=1b2a2f">
+  <img alt="MCP: 18 tools" src="https://img.shields.io/badge/MCP-18_tools-24453b?style=flat-square&labelColor=1b2a2f">
   <img alt="Self-hosted with Docker Compose" src="https://img.shields.io/badge/self--hosted-docker_compose-24453b?style=flat-square&labelColor=1b2a2f&logo=docker&logoColor=white">
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-24453b?style=flat-square&labelColor=1b2a2f&logo=nextdotjs&logoColor=white">
   <img alt="Postgres 17" src="https://img.shields.io/badge/Postgres-17-24453b?style=flat-square&labelColor=1b2a2f&logo=postgresql&logoColor=white">
@@ -233,15 +233,16 @@ Tools:
 | `search_notes` | By meaning when the ingest service runs, and always by keyword. Notes and resources come with their page. |
 | `get_note` | One note, task or subtask in full by its id. A note comes with its plan: tasks, their notes and nested subtasks. |
 | `get_plan` | A subject's whole plan: each note's tasks and subtasks with what's done, plus tasks under no note. |
-| `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. A note about code can say which repo, commit and files it describes. |
+| `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. A note about code can say which repo, commit (and its date) and files it describes. The reply lists notes that look related, so the agent can say if its note replaces one. |
 | `append_to_note` | Adds to the end of a note. Never replaces anything. On a note the same agent recorded it just continues it; on anyone else's it goes under a dated "From Codex" line. |
 | `edit_note` | Retitles a note, or replaces one exact passage in it. Only notes that agent recorded; yours stay append-only. The note goes back to "To witness". |
 | `confirm_note` | Says a note still matches the code: its anchor moves to the agent's commit and any stale flag clears. |
+| `link_replacement` | Says a note the agent saved replaces an older one it makes wrong. The note waits for your witness again, and its Witness button names the page it retires. |
 | `flag_stale` | Marks a note as possibly out of date, with why, for you to look at. |
 | `supersede_note` | Writes a new note that replaces an out-of-date one. The old page retires only when you witness the new one; then search and Ask leave it out. |
 | `save_handoff` | Leaves a baton for the next agent: the goal, where the work stands, what was ruled out, the next step and the pages to read first. |
 | `pickup_handoff` | Takes the open baton for a subject or repo, with the text of the pages it pins. Also an MCP prompt, `pickup`. |
-| `capture_session` | Files a session's summary as one note per session. The Claude Code plugin calls it when a session compacts. |
+| `capture_session` | Files a session's summary as one note per session. The Claude Code plugin calls it when a session compacts and when it ends. |
 | `move_note` | Files a note under another subject, or the Inbox. Its tasks go with it. |
 | `add_task` | A task under a note, or in a subject's tasks that aren't under a note. |
 | `add_subtask` | A subtask under a task, or under one of its top-level subtasks. |
@@ -249,16 +250,18 @@ Tools:
 
 Agents can't delete anything.
 
-When an agent reads a note anchored to code, `get_note` gives it the `git diff` to run, so it can tell whether the code has moved on before it relies on the note.
+When an agent reads a note anchored to code, `get_note` gives it the `git diff` to run, so it can tell whether the code has moved on before it relies on the note. Notes carry their commit's date, so when two notes disagree you can see which describes the later code: the note page shows both commits and dates on a replacement.
 
 ### Claude Code plugin
 
-The plugin in [`integrations/claude-code`](integrations/claude-code) files each session into your notebook before Claude Code compacts it, and adds `/lockin:handoff` and `/lockin:pickup` for passing unfinished work from one agent to another. It uses the `lockin` server added above:
+The plugin in [`integrations/claude-code`](integrations/claude-code) files each session into your notebook when Claude Code compacts it and when it ends, and adds `/lockin:handoff` and `/lockin:pickup` for passing unfinished work from one agent to another. It uses the `lockin` server added above:
 
 ```bash
 claude plugin marketplace add Sky-walkerX/LockIn
 claude plugin install lockin@lockin
 ```
+
+The capture at the end is a short background run of Claude on Haiku that summarises the session. It counts against your Claude usage; `LOCKIN_CAPTURE_ON_EXIT=0` turns it off. The [plugin's README](integrations/claude-code/README.md) has the details.
 
 Each agent gets its own token. Its notes are stamped with the token's name, and you can revoke one without touching the others. Only a hash of each token is stored. A token can make 60 requests a minute; past that it gets `429` with `Retry-After`.
 

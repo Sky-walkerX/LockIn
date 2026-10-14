@@ -291,7 +291,7 @@ function ClaudeCodePlugin() {
     <div className="grid gap-2">
       <h3 className="lk-sec">Claude Code plugin</h3>
       <p className="text-sm text-muted-foreground">
-        Files each session into your notebook before Claude Code compacts it, and adds <code>/{SERVER_NAME}:handoff</code> and{" "}
+        Files each session into your notebook when Claude Code compacts it and when it ends, and adds <code>/{SERVER_NAME}:handoff</code> and{" "}
         <code>/{SERVER_NAME}:pickup</code> for passing unfinished work from one agent to the next. It uses the server the Claude Code
         command above adds, named <code>{SERVER_NAME}</code>.
       </p>
