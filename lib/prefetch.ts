@@ -7,6 +7,7 @@ import { listSubjects } from "@/lib/subjects/list";
 import { getInboxSummary } from "@/lib/subjects/inbox";
 import { listTasksDue } from "@/lib/tasks/list";
 import { listDueReviews } from "@/lib/review/due";
+import { getAccount } from "@/lib/accounts/account";
 import { ZONE_COOKIE, resolveZone, todayIn } from "@/lib/zone";
 
 // Data the server puts in a page so it arrives with the page instead of
@@ -41,14 +42,15 @@ export async function viewerClock(): Promise<{ zone: string; now: number }> {
 }
 
 /**
- * What the spine shows on every page: subjects, the Inbox's counts, and
- * what's due today. Today is the user's date in their zone at `now`, the same
- * values the notebook layout hands the browser's clock (app/components/clock.tsx),
+ * What the spine shows on every page: the account (for its photo), subjects,
+ * the Inbox's counts, and what's due today. Today is the user's date in their
+ * zone at `now`, the same values the notebook layout hands the browser's clock (app/components/clock.tsx),
  * so these land under the keys the spine's hooks ask for.
  */
 export function spinePrefetches(userId: string, zone: string, now: number): Prefetch[] {
   const today = todayIn(zone, new Date(now))!;
   return [
+    [queryKeys.account, () => getAccount(userId)],
     [queryKeys.subjects, () => listSubjects(userId)],
     [queryKeys.inbox, () => getInboxSummary(userId)],
     [queryKeys.todayTasks(today.day), () => listTasksDue(userId, today.endOfDay)],

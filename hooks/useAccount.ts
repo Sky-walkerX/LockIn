@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/fetcher";
+import { queryKeys } from "@/lib/query-keys";
 
 export type AccountOptions = {
   /** New accounts can be made on this instance. */
@@ -20,8 +21,8 @@ export function useAccountOptions() {
   });
 }
 
-export type Account = { email: string; name: string | null; hasPassword: boolean; createdAt: string };
+export type Account = { email: string; name: string | null; image: string | null; hasPassword: boolean; createdAt: string };
 
 export function useAccount() {
-  return useQuery({ queryKey: ["account"], queryFn: () => api.get<Account>("/api/account") });
+  return useQuery({ queryKey: queryKeys.account, queryFn: () => api.get<Account>("/api/account") });
 }

@@ -310,6 +310,7 @@
     background: var(--lk-label); color: var(--lk-label-ink);
     font-family: var(--lk-font-display); font-weight: 700; font-size: 12px; text-transform: uppercase;
   }
+  .lk-avatar-photo { object-fit: cover; background: var(--muted); }
 
   /* Grid paper for list pages, with the red margin rule once there's room for
      it to sit clear of the content. Reading surfaces sit on opaque paper. */

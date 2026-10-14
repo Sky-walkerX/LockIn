@@ -10,6 +10,7 @@ export const queryKeys = {
   todayTasks: (day: string) => ["tasks", { today: true, day }],
   dueReviews: (day: string) => ["reviews", { day }],
   recentNotes: (limit: number) => ["notes", "recent", limit],
+  account: ["account"],
   tokens: ["tokens"],
   connectedApps: ["oauth-grants"],
 } as const;

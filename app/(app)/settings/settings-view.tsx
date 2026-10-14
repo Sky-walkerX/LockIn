@@ -7,6 +7,7 @@ import { Download, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { FocusSettings } from "@/app/components/focus/focus-settings";
 import { AgentConnections } from "@/app/components/settings/agent-connections";
 import { AccountSecurity } from "@/app/components/settings/account-security";
+import { ProfilePhoto } from "@/app/components/settings/profile-photo";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
 const THEMES = [
@@ -41,10 +42,10 @@ export function SettingsView() {
         <section>
           <div className="lk-sec mb-3">account</div>
           <div className="lk-card flex items-center justify-between gap-4 p-4">
-            <div className="min-w-0">
-              <div className="truncate font-semibold">{session?.user?.name || "No name set"}</div>
-              <div className="lk-print truncate text-xs text-muted-foreground">{session?.user?.email}</div>
-            </div>
+            <ProfilePhoto name={session?.user?.name || session?.user?.email || "?"}>
+              <div className="w-full truncate font-semibold">{session?.user?.name || "No name set"}</div>
+              <div className="lk-print w-full truncate text-xs text-muted-foreground">{session?.user?.email}</div>
+            </ProfilePhoto>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Code2, LogOut, Settings } from "lucide-react";
 import { BRAND } from "@/lib/brand";
+import { useAccount } from "@/hooks/useAccount";
+import { Avatar } from "@/app/components/account/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +17,7 @@ import {
 
 export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
   const { data: session } = useSession();
+  const { data: account } = useAccount();
   const user = session?.user;
   if (!user) return null;
   const name = user.name || user.email || "Account";
@@ -22,9 +25,7 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="lk-spine-item" title={collapsed ? name : undefined}>
-        <span className="lk-avatar" aria-hidden>
-          {name.charAt(0)}
-        </span>
+        <Avatar name={name} image={account?.image} />
         {!collapsed && <span className="truncate">{name}</span>}
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" align="start" className="w-56">

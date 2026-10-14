@@ -7,6 +7,8 @@ import { mailConfigured } from "@/lib/mail";
 import { NO_ACCOUNT_HASH, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
 import { type SessionMark, sessionMark, sessionStands } from "@/lib/accounts/session";
 import { createTutorial } from "@/lib/accounts/tutorial";
+import { copyGooglePhoto } from "@/lib/accounts/photo";
+import { after } from "next/server";
 import { EMAIL_NOT_VERIFIED, TOO_MANY_ATTEMPTS } from "@/lib/accounts/errors";
 import { clientAddress, countPasswordTry } from "@/lib/limits/rate";
 
@@ -79,6 +81,12 @@ export const authOptions: NextAuthOptions = {
             data: { email: normalizeEmail(email), name: user.name, emailVerifiedAt: new Date() },
           });
           await createTutorial(existing.id);
+        }
+        // An account without a photo takes a copy of the Google one, after
+        // the sign-in has been answered.
+        if (!existing.image) {
+          const accountId = existing.id;
+          after(() => copyGooglePhoto(accountId, (profile as GoogleProfile | undefined)?.picture));
         }
         // The session carries the notebook's own id, not Google's.
         user.id = existing.id;

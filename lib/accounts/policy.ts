@@ -27,14 +27,20 @@ export async function canCreateAccount(): Promise<boolean> {
  * address is used, so local development needs no setting.
  */
 export function appOrigin(request: Request): string {
-  const configured = process.env.NEXTAUTH_URL?.trim().replace(/\/+$/, "");
+  const configured = configuredOrigin();
   if (configured) return configured;
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercel) return `https://${vercel}`;
   if (process.env.NODE_ENV === "production") {
     throw new Error("Set NEXTAUTH_URL to the address LockIn is opened at; without it no email link can be built safely.");
   }
   return publicOrigin(request);
+}
+
+/** The address this instance is set to be opened at, when it's set. */
+export function configuredOrigin(): string | null {
+  const configured = process.env.NEXTAUTH_URL?.trim().replace(/\/+$/, "");
+  if (configured) return configured;
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  return vercel ? `https://${vercel}` : null;
 }
 
 /** Addresses are compared and stored in lower case, so Ada@ and ada@ are one account. */

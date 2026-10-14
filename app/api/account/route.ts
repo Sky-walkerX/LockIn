@@ -4,22 +4,19 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 import { forgetAccount } from "@/lib/accounts/session";
+import { getAccount } from "@/lib/accounts/account";
 import { deleteUserFiles } from "@/lib/storage";
 import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 const Body = z.object({ confirm: z.string().max(254), password: z.string().max(200).optional() });
 
-// GET /api/account - what Settings shows about the account. Never the password itself.
+// GET /api/account - what Settings and the spine show about the account.
 export async function GET(request: NextRequest) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true, name: true, password: true, createdAt: true },
-  });
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  return NextResponse.json({ email: user.email, name: user.name, hasPassword: !!user.password, createdAt: user.createdAt });
+  const account = await getAccount(userId);
+  if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return NextResponse.json(account);
 }
 
 // DELETE /api/account { confirm: <your email> } - delete the account and

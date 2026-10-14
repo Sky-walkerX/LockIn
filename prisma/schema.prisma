@@ -54,6 +54,8 @@ model User {
   email     String   @unique
   name      String?
   password  String? // hashed password
+  // The profile photo's address: a file this app stores (lib/accounts/photo.ts).
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
