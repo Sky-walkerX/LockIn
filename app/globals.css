@@ -591,6 +591,25 @@
     letter-spacing: 0.14em; text-transform: uppercase; color: var(--lk-live);
   }
 
+  /* Home → Batons: an agent's unfinished work, for the next one to pick up. */
+  .lk-baton { padding: 10px 0 12px; border-top: 1px solid var(--border); }
+  .lk-baton:first-child { border-top: 0; padding-top: 4px; }
+  .lk-baton-from { font-size: 14px; }
+  .lk-baton-from b { font-weight: 600; color: var(--lk-live); }
+  .lk-baton-goal { margin-top: 2px; font-family: var(--lk-font-prose); font-size: 19px; line-height: 1.3; }
+  .lk-baton-fields { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin-top: 8px; font-size: 14.5px; line-height: 1.45; }
+  .lk-baton-fields dt {
+    font-family: var(--lk-font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted-foreground); padding-top: 3px;
+  }
+  .lk-baton-fields code, .lk-baton-cmd { font-size: 12.5px; }
+  .lk-baton-cmd { padding: 3px 8px; border: 1px solid var(--border); border-radius: 2px; background: var(--background); }
+  .lk-baton-history { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 14px; }
+  .lk-baton-history summary { cursor: pointer; color: var(--muted-foreground); }
+  .lk-baton-history summary:hover { color: var(--foreground); }
+  .lk-baton-history ul { display: grid; gap: 4px; margin-top: 6px; }
+  @media (max-width: 640px) { .lk-baton-fields { grid-template-columns: 1fr; } .lk-baton-fields dt { padding-top: 6px; } }
+
   .lk-note-conflict {
     margin-bottom: 14px; padding: 10px 14px;
     border: 1px solid var(--lk-stamp); border-radius: 2px; background: var(--card);

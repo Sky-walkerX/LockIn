@@ -82,6 +82,7 @@ model User {
   emailTokens    EmailToken[]
   storedFiles    StoredFile[]
   indexedSources IndexedSource[]
+  handoffs       Handoff[]
 }
 
 // How many times something was done lately, for the limits in lib/limits: one
@@ -275,6 +276,7 @@ model Subject {
   tasks         Task[]
   conversations Conversation[]
   noteChunks    NoteChunk[]
+  handoffs      Handoff[]
 
   // Postgres does not index foreign keys automatically; every list/detail read
   // filters on them. Composite order mirrors the query's where + orderBy.
@@ -342,7 +344,8 @@ model Milestone {
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId String
 
-  tasks Task[]
+  tasks    Task[]
+  handoffs Handoff[]
 
   @@index([subjectId, order])
   @@index([subjectId, updatedAt(sort: Desc)])
@@ -376,6 +379,7 @@ model Task {
 
   subtasks      Subtask[]
   timerSessions TimerSession[]
+  handoffs      Handoff[]
 
   // Loose-task list on the subject detail (milestoneId null) and the tasks
   // nested under each milestone.
@@ -595,4 +599,49 @@ model IndexedSource {
 
   @@id([source, sourceId])
   @@index([userId])
+}
+
+enum HandoffStatus {
+  OPEN
+  PICKED_UP
+  SUPERSEDED // a newer baton for the same subject or repo took its place
+}
+
+// A baton: where an agent left a piece of work, written for the next agent
+// to pick up, in another tool or after a usage cap. Working state, not a
+// page: it takes no page number, isn't searched, and isn't witnessed. Kept
+// short (lib/handoff/card.ts) so picking it up costs a few hundred tokens.
+model Handoff {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // The agent that wrote it (its token's name, as on notes).
+  source String
+
+  goal   String
+  state  String
+  tried  String[] @default([]) // what was tried and ruled out
+  next   String // the exact next step
+  nextAt String? // where it starts, e.g. "lib/auth.ts:42"
+  pages  Int[]    @default([]) // notebook pages to read first
+
+  subjectId String?
+  subject   Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  taskId    String?
+  task      Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  noteId    String?
+  note      Milestone? @relation(fields: [noteId], references: [id], onDelete: SetNull)
+
+  repo   String? // normalised (lib/notes/anchor.ts)
+  branch String?
+  commit String?
+
+  status     HandoffStatus @default(OPEN)
+  pickedUpAt DateTime?
+  pickedUpBy String?
+  createdAt  DateTime      @default(now())
+
+  @@index([userId, status, createdAt(sort: Desc)])
+  @@index([userId, repo])
 }

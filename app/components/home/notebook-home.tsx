@@ -7,6 +7,8 @@ import { useSubjects } from "@/hooks/useSubjects";
 import { useClock } from "@/app/components/clock";
 import { RuledBoxes } from "../notebook/ruled-boxes";
 import { Contents } from "./contents";
+import { BatonCard } from "./baton-card";
+import { NeedsALook } from "./needs-a-look";
 import { TodayStrip } from "./today-strip";
 import { NewSubject } from "./new-subject";
 import { Skeleton } from "../ui/skeleton";
@@ -67,6 +69,8 @@ export function NotebookHome() {
         )}
       </header>
 
+      <BatonCard />
+      <NeedsALook />
       <TodayStrip />
 
       {list.length > 0 && <Contents />}

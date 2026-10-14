@@ -27,6 +27,8 @@ import { searchKeyword } from "@/lib/search/keyword";
 import { searchSemantic } from "@/lib/search/semantic";
 import { formatNote, formatPlan, formatPlanItem, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
 import { noteMarks, readById, readPlan } from "@/lib/mcp/read";
+import { formatHandoff } from "@/lib/handoff/card";
+import { latestOpen, markPickedUp, pinnedPages, saveHandoff, type Find } from "@/lib/handoff/store";
 
 // The notebook's MCP server: agents (Claude Code, Codex, Cursor…) list
 // subjects, search, read notes and plans, save and add to notes, edit the
@@ -80,6 +82,28 @@ const ANCHOR = {
     .optional()
     .describe("The files it describes, relative to the repo root"),
 };
+
+/**
+ * The open baton for a subject or repo (else the newest), as the agent picking
+ * it up reads it, with the pages it pins. Marks it taken unless `peek`, which
+ * is how a session's start shows it without claiming it.
+ */
+async function pickUp({ userId, source, origin }: Caller, find: Find, peek: boolean): Promise<string | null> {
+  const baton = await latestOpen(userId, find);
+  if (!baton) return null;
+  const pinned = await pinnedPages(userId, baton.pages);
+  if (!peek) await markPickedUp(userId, baton.id, source);
+  const card = formatHandoff(baton, pinned, origin ? `${origin}/contents` : null);
+  return peek
+    ? `${card}\n\nThis baton is open: call pickup_handoff to take it and carry on from Next.`
+    : `${card}\n\nYou've picked this up. Carry on from Next. When you stop before it's done, leave a baton with save_handoff.`;
+}
+
+const noBaton = (find: Find) =>
+  `No baton is open${find.subject ? ` for "${find.subject}"` : find.repo ? ` for ${find.repo}` : ""}.${find.subject || find.repo ? " Call pickup_handoff with nothing to get the newest one." : ""}`;
+
+// A hook passes everything as text, so "true" counts as true.
+const flag = z.union([z.boolean(), z.enum(["true", "false"])]).optional().transform((v) => v === true || v === "true");
 
 const handler = createMcpHandler(
   (server) => {
@@ -349,6 +373,86 @@ const handler = createMcpHandler(
     );
 
     server.registerTool(
+      "save_handoff",
+      {
+        title: "Hand your work to the next agent",
+        description:
+          "Leave a baton for whoever carries on: another tool, or a new session after a usage cap or a /clear. Call it when you stop with work unfinished, or when the user says they're switching. It's a short card, not a note: the goal, where it stands, what you tried and ruled out, the exact next step and where it starts (file:line), and up to 5 notebook pages to read first. Long fields are cut short, so say the essentials first. A newer baton for the same subject or repo replaces this one.",
+        inputSchema: z.object({
+          goal: z.string().trim().min(1).max(2000).describe("What the work is for, in a line (~160 characters)"),
+          state: z.string().trim().min(1).max(4000).describe("Where it stands: what's done and what isn't (~400 characters)"),
+          tried: z.array(z.string().trim().min(1).max(1000)).max(10).optional().describe("Approaches tried and ruled out, each with why (up to 4)"),
+          next: z.string().trim().min(1).max(2000).describe("The exact next step (~200 characters)"),
+          next_at: z.string().trim().max(500).optional().describe("Where the next step starts, e.g. \"lib/auth.ts:42\""),
+          pages: z.array(z.number().int().positive()).max(10).optional().describe("Notebook page numbers to read first (up to 5)"),
+          subject: z.string().trim().max(200).optional().describe("The subject it belongs to, by name or id"),
+          task_id: z.string().min(1).max(64).optional().describe("The plan task it's for"),
+          note_id: z.string().min(1).max(64).optional().describe("The note it's about"),
+          repo: ANCHOR.repo,
+          branch: z.string().trim().max(200).optional().describe("The branch: `git branch --show-current`"),
+          commit: ANCHOR.commit,
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false },
+      },
+      async ({ goal, state, tried, next, next_at, pages, subject, task_id, note_id, repo, branch, commit }, ctx) => {
+        const { userId, source, origin } = caller(ctx.http?.authInfo);
+        const saved = await saveHandoff(userId, source, {
+          goal, state, tried, next, nextAt: next_at, pages, subject, taskId: task_id, noteId: note_id, repo, branch, commit,
+        });
+        if (saved === "no-subject") return noSubject(subject!);
+        if (saved === "no-task") return failed(`No task with id ${task_id} in this notebook.`);
+        if (saved === "no-note") return failed(`No note with id ${note_id} in this notebook.`);
+        const pick = saved.subject && !saved.subject.isInbox ? saved.subject.title : saved.repo ?? null;
+        return text(
+          `Baton saved${pick ? ` for ${pick}` : ""}. The next agent picks it up with pickup_handoff${pick ? ` (subject or repo "${pick}")` : ""}, or the user with /lockin:pickup in Claude Code.${origin ? `\n${origin}/contents` : ""}`,
+        );
+      },
+    );
+
+    server.registerTool(
+      "pickup_handoff",
+      {
+        title: "Pick up where another agent stopped",
+        description:
+          "Read the baton another agent left, and take it: the goal, where the work stands, what was ruled out, the exact next step, and the text of the pages it pins. Call it when the user asks you to pick up or continue, or at the start of work in a repo that may have one. Give the subject, or the repo or working folder, to find the right one; with neither you get the newest. peek reads it without taking it.",
+        inputSchema: z.object({
+          subject: z.string().trim().max(200).optional().describe("The subject it was left for"),
+          repo: z.string().trim().max(300).optional().describe("The repo: remote or owner/name"),
+          cwd: z.string().trim().max(1000).optional().describe("Your working folder; its name matches the repo"),
+          peek: flag.describe("true to read it without taking it"),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false },
+      },
+      async ({ subject, repo, cwd, peek }, ctx) => {
+        const who = caller(ctx.http?.authInfo);
+        const find = { subject, repo: repo || cwd };
+        const card = await pickUp(who, find, peek);
+        return text(card ?? noBaton(find));
+      },
+    );
+
+    server.registerPrompt(
+      "pickup",
+      {
+        title: "Pick up the last baton",
+        description: "Carry on from where another agent stopped: the goal, the state, what was ruled out and the next step.",
+        argsSchema: z.object({
+          subject: z.string().optional().describe("The subject it was left for"),
+          repo: z.string().optional().describe("The repo or folder name"),
+        }),
+      },
+      async ({ subject, repo }, ctx) => {
+        const who = caller(ctx.http?.authInfo);
+        const find = { subject: subject || undefined, repo: repo || undefined };
+        const card = await pickUp(who, find, false);
+        const body = card
+          ? `Another agent handed this work to you. Read the baton, then carry on from its Next step.\n\n${card}`
+          : `${noBaton(find)} Tell me so, and ask what to work on.`;
+        return { messages: [{ role: "user" as const, content: { type: "text" as const, text: body } }] };
+      },
+    );
+
+    server.registerTool(
       "move_note",
       {
         title: "Move a note",
@@ -492,7 +596,7 @@ const handler = createMcpHandler(
   },
   {
     serverInfo: { name: BRAND.name, version: "1.0.0" },
-    instructions: `${BRAND.name} is the user's notebook, organised by subject. Search it before answering questions the user may have notes on. Save what's worth keeping (decisions, fixes, explanations) as a note under the right subject; the user reviews and witnesses what you save. You can edit only notes you recorded; anyone else's you can add to with append_to_note. Keep the user's plans current: tick off tasks that are done and add the ones that come up. Notes are GitHub-flavoured markdown that renders LaTeX: write maths as $e_K \\in E$ inline and $$…$$ on lines of their own for display, not as Unicode symbols. To pin something as a numbered figure (code output, a table, a key formula), quote it under a first line of "> [!FIG] caption".`,
+    instructions: `${BRAND.name} is the user's notebook, organised by subject. Search it before answering questions the user may have notes on. Save what's worth keeping (decisions, fixes, explanations) as a note under the right subject; the user reviews and witnesses what you save. You can edit only notes you recorded; anyone else's you can add to with append_to_note. Keep the user's plans current: tick off tasks that are done and add the ones that come up. Notes are GitHub-flavoured markdown that renders LaTeX: write maths as $e_K \\in E$ inline and $$…$$ on lines of their own for display, not as Unicode symbols. To pin something as a numbered figure (code output, a table, a key formula), quote it under a first line of "> [!FIG] caption". When a note is about code in a repo, save it with repo, commit and files; when a note you read has them, check them before relying on it (get_note says how). When you stop with work unfinished, or the user switches tools, leave a baton with save_handoff; when asked to continue someone's work, call pickup_handoff.`,
   },
 );
 

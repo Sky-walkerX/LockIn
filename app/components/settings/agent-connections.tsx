@@ -50,7 +50,7 @@ function snippet(client: Client, url: string, token: string): { where: string; c
   }
 }
 
-function CopyButton({ value, label }: { value: string; label: string }) {
+export function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
