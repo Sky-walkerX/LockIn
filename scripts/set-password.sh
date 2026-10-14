@@ -5,7 +5,8 @@
 #   scripts/set-password.sh someone@example.com
 #
 # It asks for the password and has Postgres hash it (bcrypt, from pgcrypto)
-# and store it. The account is signed out everywhere.
+# and store it. The account is signed out everywhere, and its agents and
+# connected apps are disconnected, as after a reset by email.
 set -eu
 
 email="${1:?Usage: scripts/set-password.sh someone@example.com}"
@@ -29,10 +30,21 @@ changed=$(LK_EMAIL="$email" LK_PASSWORD="$password" docker compose exec -T -e LK
 \getenv password LK_PASSWORD
 SET client_min_messages = warning;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-UPDATE "User"
-SET "password" = crypt(:'password', gen_salt('bf', 10)), "passwordChangedAt" = (now() AT TIME ZONE 'UTC')
-WHERE lower("email") = lower(:'email')
-RETURNING "email";
+WITH account AS (
+  UPDATE "User"
+  SET "password" = crypt(:'password', gen_salt('bf', 10)), "passwordChangedAt" = (now() AT TIME ZONE 'UTC')
+  WHERE lower("email") = lower(:'email')
+  RETURNING "id", "email"
+), tokens AS (
+  UPDATE "ApiToken" SET "revokedAt" = (now() AT TIME ZONE 'UTC')
+  WHERE "revokedAt" IS NULL AND "userId" IN (SELECT "id" FROM account)
+), apps AS (
+  UPDATE "OAuthGrant" SET "revokedAt" = (now() AT TIME ZONE 'UTC')
+  WHERE "revokedAt" IS NULL AND "userId" IN (SELECT "id" FROM account)
+), codes AS (
+  DELETE FROM "OAuthCode" WHERE "userId" IN (SELECT "id" FROM account)
+)
+SELECT "email" FROM account;
 SQL
 )
 
@@ -40,4 +52,4 @@ if [ -z "$changed" ]; then
   echo "No account has the address $email." >&2
   exit 1
 fi
-echo "Password set for $changed. They are signed out everywhere."
+echo "Password set for $changed. They are signed out everywhere, and their agents and connected apps are disconnected."

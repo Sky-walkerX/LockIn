@@ -34,7 +34,9 @@ export async function sendPasswordReset(user: { id: string; email: string }, ori
       "",
       `${origin}/reset?token=${token}`,
       "",
-      "It works for one hour, once. If you didn't ask for it, ignore this email: your password stays as it is.",
+      "It works for one hour, once. Setting a password this way also signs you out everywhere and disconnects your agents and connected apps, which you can connect again in Settings.",
+      "",
+      "If you didn't ask for it, ignore this email: your password stays as it is.",
     ].join("\n"),
   });
   return true;

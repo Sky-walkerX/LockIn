@@ -180,7 +180,7 @@ With `SMTP_HOST` set, LockIn sends two emails. A new account gets a link to conf
 scripts/set-password.sh someone@example.com
 ```
 
-Changing or resetting a password signs that account out everywhere. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access.
+Changing or resetting a password signs that account out everywhere. Resetting one, by the emailed link or with the script, also disconnects every agent and connected app, in case someone else had been in: a token they made would outlast the new password. Connect them again in Settings. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access. Settings has "Change password" and "Delete account", which removes the notebook, its files and every agent's access.
 
 "Continue with Google" makes a new account, or opens the existing one with that address if the address was confirmed. It won't attach to an account made with a password whose address was never confirmed, so nobody can claim an address ahead of its owner.
 

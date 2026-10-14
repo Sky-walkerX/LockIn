@@ -24,7 +24,7 @@ function Reset() {
     retry: false,
   });
   const reset = useMutation({
-    mutationFn: () => api.post<{ email: string }>("/api/account/reset", { token, password }),
+    mutationFn: () => api.post<{ email: string; disconnected: number }>("/api/account/reset", { token, password }),
   });
 
   const submit = (e: React.FormEvent) => {
@@ -39,6 +39,12 @@ function Reset() {
         <p className="mt-3 text-sm text-muted-foreground">
           Sign in with your new password. Anywhere you were signed in before has been signed out.
         </p>
+        {reset.data.disconnected > 0 && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Your agents and connected apps were disconnected too, in case someone else had been in. Connect them again
+            in Settings.
+          </p>
+        )}
         <Link href="/login" className="lk-btn mt-6 inline-block px-4 py-2.5 text-xs">
           Sign in
         </Link>

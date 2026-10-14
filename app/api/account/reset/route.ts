@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { emailTokenStands, redeemEmailToken } from "@/lib/accounts/email-tokens";
 import { PASSWORD_MAX, PASSWORD_MIN } from "@/lib/accounts/policy";
 import { forgetAccount } from "@/lib/accounts/session";
+import { disconnectEverything } from "@/lib/connections";
 
 const Body = z.object({
   token: z.string().min(1).max(200),
@@ -23,7 +24,8 @@ export async function GET(request: Request) {
 }
 
 // POST /api/account/reset { token, password } - set a new password from an
-// emailed link. Every session from before stops working, and the address
+// emailed link. Every session from before stops working, every agent and
+// connected app is cut off (`disconnected` says how many), and the address
 // counts as confirmed: the link could only have been read in its inbox.
 export async function POST(request: Request) {
   const parsed = Body.safeParse(await request.json().catch(() => null));
@@ -36,11 +38,14 @@ export async function POST(request: Request) {
   if (!userId) return Response.json(INVALID, { status: 400 });
 
   const now = new Date();
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: { password: await bcrypt.hash(parsed.data.password, 10), passwordChangedAt: now, emailVerifiedAt: now },
-    select: { email: true },
-  });
+  const [user, tokens, apps] = await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { password: await bcrypt.hash(parsed.data.password, 10), passwordChangedAt: now, emailVerifiedAt: now },
+      select: { email: true },
+    }),
+    ...disconnectEverything(userId, now),
+  ]);
   forgetAccount(userId);
-  return Response.json({ email: user.email });
+  return Response.json({ email: user.email, disconnected: tokens.count + apps.count });
 }
