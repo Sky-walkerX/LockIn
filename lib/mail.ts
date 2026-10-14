@@ -24,8 +24,8 @@ function transporter(): Transporter {
   }));
 }
 
-/** Sends a plain-text email. Throws when the server refuses it. */
-export async function sendMail(message: { to: string; subject: string; text: string }): Promise<void> {
+/** Sends an email, as plain text and, when given, HTML too. Throws when the server refuses it. */
+export async function sendMail(message: { to: string; subject: string; text: string; html?: string }): Promise<void> {
   const from = process.env.SMTP_FROM || `${BRAND.name} <${process.env.SMTP_USER ?? "noreply@localhost"}>`;
   await transporter().sendMail({ from, ...message });
 }
