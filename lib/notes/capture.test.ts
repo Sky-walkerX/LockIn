@@ -10,6 +10,7 @@ describe("captureSection", () => {
   it("dates each compaction and says how it came", () => {
     expect(captureSection("  Wired OAuth refresh.  ", "auto", at)).toBe("## 2026-10-14 16:40 UTC, compacted automatically\n\nWired OAuth refresh.");
     expect(captureSection("x", "manual", at)).toContain("compacted with /compact");
+    expect(captureSection("x", "end", at)).toBe("## 2026-10-14 16:40 UTC, session ended\n\nx");
   });
 
   it("cuts a very long summary short and says so", () => {

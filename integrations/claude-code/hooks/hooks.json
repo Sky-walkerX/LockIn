@@ -1,5 +1,5 @@
 {
-  "description": "LockIn: file the session's summary into the notebook when it compacts, and show any open baton after.",
+  "description": "LockIn: file the session into the notebook when it compacts and when it ends, and show any open baton after a compaction.",
   "hooks": {
     "PostCompact": [
       {
@@ -26,7 +26,20 @@
             "type": "mcp_tool",
             "server": "lockin",
             "tool": "pickup_handoff",
-            "input": { "cwd": "${cwd}", "peek": "true" }
+            "input": {
+              "cwd": "${cwd}",
+              "peek": "true"
+            }
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/capture-on-exit.sh\""
           }
         ]
       }

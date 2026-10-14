@@ -7,8 +7,10 @@ import { insertNote } from "./write";
 // A coding session files itself into the notebook when it compacts. Claude
 // Code summarises the conversation before compacting it, and the LockIn
 // plugin's hook hands that summary here, so what the session learned is kept
-// even though its context is about to go. One note per session: each later
-// compaction adds a dated section, and sends the note back to "To witness".
+// even though its context is about to go. When the session ends, the plugin
+// has a short background run of Claude write the rest down the same way. One
+// note per session: each later compaction, and the end, adds a dated section
+// and sends the note back to "To witness".
 
 export const CAPTURE_LIMIT = 30_000;
 
@@ -21,7 +23,14 @@ export const folderName = (cwd: string | undefined) => cwd?.split(/[\\/]/).filte
 export function captureSection(summary: string, trigger: string | undefined, at: Date): string {
   const body = summary.trim();
   const text = body.length <= CAPTURE_LIMIT ? body : `${body.slice(0, CAPTURE_LIMIT).trimEnd()}\n\n…(cut short)`;
-  const how = trigger === "manual" ? "compacted with /compact" : trigger === "auto" ? "compacted automatically" : "compacted";
+  const how =
+    trigger === "manual"
+      ? "compacted with /compact"
+      : trigger === "auto"
+        ? "compacted automatically"
+        : trigger === "end"
+          ? "session ended"
+          : "compacted";
   return `## ${when(at)}, ${how}\n\n${text}`;
 }
 
