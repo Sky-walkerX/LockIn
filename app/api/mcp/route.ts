@@ -27,6 +27,7 @@ import { searchKeyword } from "@/lib/search/keyword";
 import { searchSemantic } from "@/lib/search/semantic";
 import { formatNote, formatPlan, formatPlanItem, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
 import { noteMarks, readById, readPlan } from "@/lib/mcp/read";
+import { captureSession } from "@/lib/notes/capture";
 import { formatHandoff } from "@/lib/handoff/card";
 import { latestOpen, markPickedUp, pinnedPages, saveHandoff, type Find } from "@/lib/handoff/store";
 
@@ -449,6 +450,32 @@ const handler = createMcpHandler(
           ? `Another agent handed this work to you. Read the baton, then carry on from its Next step.\n\n${card}`
           : `${noBaton(find)} Tell me so, and ask what to work on.`;
         return { messages: [{ role: "user" as const, content: { type: "text" as const, text: body } }] };
+      },
+    );
+
+    server.registerTool(
+      "capture_session",
+      {
+        title: "File a session's summary",
+        description:
+          "Keep what a coding session learned before its context is compacted. The LockIn plugin for Claude Code calls this from its compaction hook with Claude Code's own summary; you don't need to call it yourself. One note per session: a later compaction adds a dated section to it. The user witnesses it like any note you save.",
+        inputSchema: z.object({
+          session_id: z.string().trim().min(1).max(200).describe("The session's id"),
+          summary: z.string().trim().min(1).max(200_000).describe("The session's summary, in markdown"),
+          cwd: z.string().trim().max(1000).optional().describe("The folder the session runs in"),
+          trigger: z.string().trim().max(40).optional().describe("\"auto\" or \"manual\""),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false },
+      },
+      async ({ session_id, summary, cwd, trigger }, ctx) => {
+        const { userId, source, origin } = caller(ctx.http?.authInfo);
+        const note = await captureSession(userId, source, { sessionId: session_id, summary, cwd, trigger });
+        indexAfterReply(userId, note.id);
+        const subject = await prisma.subject.findUnique({ where: { id: note.subjectId }, select: { isInbox: true, title: true } });
+        const url = noteUrl(origin, note.subjectId, subject?.isInbox ?? true, note.id);
+        return text(
+          `${note.added ? "Added this compaction to" : "Saved this session as"} "${note.title}" (page ${note.page}) in ${subject?.isInbox ? "the Inbox" : subject?.title}. It waits for the user to witness it.${url ? `\n${url}` : ""}`,
+        );
       },
     );
 
