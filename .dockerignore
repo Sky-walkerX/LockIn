@@ -12,3 +12,5 @@ service
 Caddyfile
 coverage
 *.log
+
+docs

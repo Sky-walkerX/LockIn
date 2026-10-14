@@ -1,15 +1,80 @@
-# LockIn
+<div align="center">
 
-The open-source notebook your AI tools write to.
+<a href="https://lockin.namankhandelwal.dev"><img src="docs/media/banner.png" alt="LockIn. The notebook your AI tools write to." width="100%"></a>
+
+<p>
+  <a href="https://github.com/Sky-walkerX/LockIn/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/Sky-walkerX/LockIn?style=flat-square&labelColor=1b2a2f&color=2f5fa0"></a>
+  <a href="https://github.com/Sky-walkerX/LockIn/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Sky-walkerX/LockIn/ci.yml?branch=main&label=CI&style=flat-square&labelColor=1b2a2f"></a>
+  <a href="https://github.com/Sky-walkerX/LockIn/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/Sky-walkerX/LockIn?style=flat-square&labelColor=1b2a2f&color=2f5fa0"></a>
+  <a href="https://github.com/Sky-walkerX/LockIn/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/Sky-walkerX/LockIn?style=flat-square&labelColor=1b2a2f&color=2f5fa0"></a>
+  <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/Sky-walkerX/LockIn?style=flat-square&labelColor=1b2a2f&color=24453b"></a>
+</p>
+<p>
+  <img alt="MCP: 11 tools" src="https://img.shields.io/badge/MCP-11_tools-24453b?style=flat-square&labelColor=1b2a2f">
+  <img alt="Self-hosted with Docker Compose" src="https://img.shields.io/badge/self--hosted-docker_compose-24453b?style=flat-square&labelColor=1b2a2f&logo=docker&logoColor=white">
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-24453b?style=flat-square&labelColor=1b2a2f&logo=nextdotjs&logoColor=white">
+  <img alt="Postgres 17" src="https://img.shields.io/badge/Postgres-17-24453b?style=flat-square&labelColor=1b2a2f&logo=postgresql&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-24453b?style=flat-square&labelColor=1b2a2f&logo=typescript&logoColor=white">
+</p>
+
+**[Try it](https://lockin.namankhandelwal.dev)** · [Self-host](#self-hosting) · [Connect your agents](#connect-your-agents-mcp) · [Ask your notes](#ask-j) · [Develop](#development)
+
+</div>
 
 You learn things inside Claude, Codex and Cursor every day, and most of it is gone when the session ends. LockIn keeps it. Your agents save notes into it over MCP, you file them by subject, and any model you choose answers questions from them.
 
-- **Notes by subject.** Markdown with code, plus the PDFs and links you're reading, filed under the subject they belong to.
-- **Agents write here.** Claude Code, Codex, Cursor or any MCP client can save, search and read your notes. Everything an agent saves says who recorded it and waits for you to witness it.
-- **Ask your notes.** Chat with a model in your browser (WebGPU), on your own machine (Ollama, LM Studio), or from Anthropic, OpenAI, Gemini or OpenRouter with your own key. Answers cite the pages of your notes they came from.
-- **Read without distraction.** Any note opens full screen.
-- **A plan when you want one.** Tasks, focus time, exam pace and spaced revision live in each subject's Plan tab, out of the way until you need them.
-- **Yours.** AGPL-3.0, self-hostable with one command, and everything exports to Markdown or JSON.
+<p align="center">
+  <img src="docs/media/relay.webp" alt="Claude Code saves a note to the Project-X section over MCP. The note appears in the notebook and is stamped as witnessed. In a later session Codex searches Project-X over MCP and picks up from that note." width="720">
+  <br>
+  <sub>Monday: Claude Code saves a note to Project-X, and you witness it. Thursday: Codex picks up where it left off.</sub>
+</p>
+
+## How it fits together
+
+```mermaid
+flowchart LR
+  cc["Claude Code"] -- save_note --> mcp
+  cx["Codex"] -- search_notes --> mcp
+  more["Cursor, Claude.ai, ChatGPT,<br/>any MCP client"] --> mcp
+  mcp(["LockIn's MCP server<br/>/api/mcp"]) --> nb[("Your notebook<br/>notes filed by subject")]
+  nb --> you["You<br/>witness, read, plan"]
+  nb --> ask["Ask<br/>a model you choose,<br/>answers cite your pages"]
+```
+
+## What's in it
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Agents write here</b><br>
+      Claude Code, Codex, Cursor or any MCP client can save, search and read your notes. Everything an agent saves says who recorded it and waits for you to witness it.
+    </td>
+    <td width="50%" valign="top">
+      <b>Ask your notes</b><br>
+      Chat with a model in your browser (WebGPU), on your own machine (Ollama, LM Studio), or from Anthropic, OpenAI, Gemini or OpenRouter with your own key. Answers cite the pages of your notes they came from.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <b>Notes by subject</b><br>
+      Markdown with code, plus the PDFs and links you're reading, filed under the subject they belong to.
+    </td>
+    <td valign="top">
+      <b>Read without distraction</b><br>
+      Any note opens full screen.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <b>A plan when you want one</b><br>
+      Tasks, focus time, exam pace and spaced revision live in each subject's Plan tab, out of the way until you need them.
+    </td>
+    <td valign="top">
+      <b>Yours</b><br>
+      AGPL-3.0, self-hostable with one command, and everything exports to Markdown or JSON.
+    </td>
+  </tr>
+</table>
 
 ## Self-hosting
 
