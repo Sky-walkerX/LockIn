@@ -63,7 +63,7 @@ export async function nextOrder(subjectId: string): Promise<number> {
  * written; anyone else's wait. The caller has already checked the subject
  * belongs to the user.
  */
-export type AnchorInput = { repo?: string | null; commit?: string | null; files?: string[] };
+export type AnchorInput = { repo?: string | null; commit?: string | null; commitAt?: Date | null; files?: string[] };
 
 /** The columns an anchor is stored in, normalised. Empty when nothing usable was given. */
 function anchorData(anchor: AnchorInput | undefined) {
@@ -71,7 +71,9 @@ function anchorData(anchor: AnchorInput | undefined) {
   const repo = normalizeRepo(anchor.repo);
   const commit = anchor.commit?.trim() || null;
   if (!repo && !commit) return {};
-  return { anchorRepo: repo, anchorCommit: commit, anchorFiles: cleanFiles(anchor.files) };
+  // A date belongs to its commit: without one it means nothing.
+  const commitAt = commit ? (anchor.commitAt ?? null) : null;
+  return { anchorRepo: repo, anchorCommit: commit, anchorCommitAt: commitAt, anchorFiles: cleanFiles(anchor.files) };
 }
 
 export async function insertNote(
@@ -118,14 +120,25 @@ export async function supersedeNote(
 ) {
   const old = await prisma.milestone.findFirst({
     where: { id: oldId, subject: { userId } },
-    select: { id: true, page: true, title: true, subjectId: true, anchorRepo: true, anchorCommit: true, anchorFiles: true },
+    select: {
+      id: true,
+      page: true,
+      title: true,
+      subjectId: true,
+      anchorRepo: true,
+      anchorCommit: true,
+      anchorCommitAt: true,
+      anchorFiles: true,
+    },
   });
   if (!old) return null;
-  // What the agent gives wins, field by field; the rest carries over.
+  // What the agent gives wins, field by field; the rest carries over. A new
+  // commit brings its own date, or none.
   const given = input.anchor ?? {};
   const anchor = {
     repo: given.repo || old.anchorRepo,
     commit: given.commit || old.anchorCommit,
+    commitAt: given.commit ? (given.commitAt ?? null) : old.anchorCommitAt,
     files: given.files?.length ? given.files : old.anchorFiles,
   };
   const note = await insertNote(userId, old.subjectId, {
@@ -136,6 +149,35 @@ export async function supersedeNote(
     supersedesId: old.id,
   });
   return { note, old };
+}
+
+export type LinkRefused = "missing" | "not-yours" | "old-missing" | "same" | "loop";
+
+/**
+ * An agent says a note it recorded replaces an older one, after saving it
+ * (save_note shows it the notes that look related). The note goes back to
+ * "awaiting witness" so the user signs off on the retirement too: the old
+ * page retires only when they do (lib/notes/status.ts).
+ */
+export async function linkReplacement(userId: string, noteId: string, oldId: string, source: string) {
+  if (noteId === oldId) return "same" satisfies LinkRefused;
+  const [note, old] = await Promise.all([
+    prisma.milestone.findFirst({ where: { id: noteId, subject: { userId } }, select: { id: true, source: true, title: true } }),
+    prisma.milestone.findFirst({
+      where: { id: oldId, subject: { userId } },
+      select: { id: true, page: true, title: true, supersedesId: true, anchorCommit: true, anchorCommitAt: true },
+    }),
+  ]);
+  if (!note) return "missing" satisfies LinkRefused;
+  if (note.source !== source) return "not-yours" satisfies LinkRefused;
+  if (!old) return "old-missing" satisfies LinkRefused;
+  if (old.supersedesId === note.id) return "loop" satisfies LinkRefused;
+  const linked = await prisma.milestone.update({
+    where: { id: note.id },
+    data: { supersedesId: old.id, witnessedAt: null },
+    include: WITH_SUBJECT,
+  });
+  return { note: linked, old };
 }
 
 type MetaRow = { id: string; title: string; subjectId: string; subjectTitle: string; isInbox: boolean };
@@ -164,7 +206,9 @@ export function confirmNote(userId: string, noteId: string, by: string, anchor: 
   const sets = [
     Prisma.sql`"checkedAt" = now(), "checkedBy" = ${by}, "staleReason" = NULL, "staleAt" = NULL, "staleBy" = NULL`,
   ];
-  if (data.anchorCommit) sets.push(Prisma.sql`"anchorCommit" = ${data.anchorCommit}`);
+  if (data.anchorCommit) {
+    sets.push(Prisma.sql`"anchorCommit" = ${data.anchorCommit}, "anchorCommitAt" = ${data.anchorCommitAt}::timestamp`);
+  }
   if (data.anchorRepo) sets.push(Prisma.sql`"anchorRepo" = ${data.anchorRepo}`);
   if (data.anchorFiles?.length) sets.push(Prisma.sql`"anchorFiles" = ${data.anchorFiles}::text[]`);
   return setNoteMeta(userId, noteId, Prisma.join(sets, ", "));

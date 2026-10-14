@@ -311,10 +311,13 @@ model Milestone {
   // The code a note is about, as the agent that saved it saw it: the repo, the
   // commit it was true at, and the files it describes. An agent reading it
   // later compares those files with what it has, then confirms the note
-  // (checkedAt moves on), replaces it, or flags it for the user.
-  anchorRepo   String?
-  anchorCommit String?
-  anchorFiles  String[]  @default([])
+  // (checkedAt moves on), replaces it, or flags it for the user. The commit's
+  // date comes from the agent too (the notebook can't see the repo), so a
+  // reader can tell which of two notes describes the later code.
+  anchorRepo     String?
+  anchorCommit   String?
+  anchorCommitAt DateTime?
+  anchorFiles    String[]  @default([])
   checkedAt    DateTime?
   checkedBy    String?
   staleReason  String?

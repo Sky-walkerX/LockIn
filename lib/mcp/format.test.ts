@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatNote, formatPlan, formatPlanItem, formatSearch, formatSubjects, formatTasks, type PlanTask } from "./format";
+import { formatNote, formatPlan, formatPlanItem, formatRelated, formatSearch, formatSubjects, formatTasks, type PlanTask } from "./format";
 
 describe("formatSubjects", () => {
   it("lists subjects with counts and ids, the Inbox by name", () => {
@@ -45,6 +45,9 @@ describe("formatSearch", () => {
     expect(formatSearch("auth", [{ ...hit, anchorCommit: "abc1234ff", stale: true, proposed: true }], null, "keyword")).toContain(
       "id m1 [anchored @abc1234, flagged stale, replacement proposed]",
     );
+    expect(formatSearch("auth", [{ ...hit, anchorCommit: "abc1234ff", anchorCommitAt: "2026-10-03T09:00:00Z" }], null, "keyword")).toContain(
+      "id m1 [anchored @abc1234, committed 2026-10-03]",
+    );
     expect(formatSearch("auth", [hit], null, "keyword")).toContain("id m1\n");
   });
   it("reports no matches plainly", () => {
@@ -63,6 +66,7 @@ describe("formatNote", () => {
     tasks: [{ id: "t1", title: "Try it", isCompleted: true, description: null, subtasks: [] }],
     anchorRepo: null,
     anchorCommit: null,
+    anchorCommitAt: null,
     anchorFiles: [],
     checkedAt: null,
     checkedBy: null,
@@ -94,7 +98,7 @@ describe("formatNote", () => {
     expect(text).toContain("`git diff --stat abc1234 -- lib/auth.ts`");
   });
   it("says when a note is replaced, proposed for replacing, or flagged", () => {
-    const by = { id: "m2", page: 40, title: "Advisory locks, again", source: "codex" };
+    const by = { id: "m2", page: 40, title: "Advisory locks, again", source: "codex", anchorCommit: null, anchorCommitAt: null };
     const own = { ...base, source: "web", witnessedAt: null };
     expect(formatNote({ ...own, supersededBy: [{ ...by, witnessedAt: "2026-10-03" }] }, null)).toContain(
       'REPLACED: p. 40, "Advisory locks, again" (id m2) replaces this note',
@@ -103,7 +107,20 @@ describe("formatNote", () => {
     expect(formatNote({ ...own, staleReason: "locks moved", staleBy: "codex", staleAt: "2026-10-04T00:00:00Z" }, null)).toContain(
       "Flagged as possibly out of date by Codex on 2026-10-04: locks moved",
     );
-    expect(formatNote({ ...own, supersedes: { id: "m0", page: 3, title: "Old" } }, null)).toContain('This note replaces p. 3, "Old" (id m0).');
+    expect(
+      formatNote({ ...own, supersedes: { id: "m0", page: 3, title: "Old", anchorCommit: null, anchorCommitAt: null } }, null),
+    ).toContain('This note replaces p. 3, "Old" (id m0).');
+  });
+  it("dates both sides of a replacement by their commits", () => {
+    const own = { ...base, source: "web", witnessedAt: null };
+    const by = { id: "m2", page: 19, title: "xact locks", source: "codex", witnessedAt: "2026-10-18", anchorCommit: "9f8e7d6aa", anchorCommitAt: "2026-10-17T09:00:00Z" };
+    expect(formatNote({ ...own, supersededBy: [by] }, null)).toContain(
+      'REPLACED: p. 19, "xact locks" (id m2) (written @ 9f8e7d6, committed 2026-10-17) replaces this note',
+    );
+    const old = { id: "m0", page: 8, title: "Session locks", anchorCommit: "a1b2c3d", anchorCommitAt: "2026-10-03T09:00:00Z" };
+    expect(formatNote({ ...own, supersedes: old }, null)).toContain(
+      'This note replaces p. 8, "Session locks" (id m0) (written @ a1b2c3d, committed 2026-10-03).',
+    );
   });
 });
 
@@ -203,5 +220,27 @@ describe("formatPlan", () => {
     expect(formatPlan({ subject: { title: "Inbox", isInbox: true }, notes: [], loose: [] }, null)).toBe(
       "Nothing is planned in the Inbox yet.",
     );
+  });
+});
+
+describe("formatRelated", () => {
+  it("lists the pages and how to link a replacement", () => {
+    const text = formatRelated("new1", [
+      {
+        id: "m8",
+        page: 8,
+        title: "Use session locks for migrations",
+        source: "claude-code",
+        subjectTitle: "Database",
+        isInbox: false,
+        anchorCommit: "a1b2c3d9",
+        anchorCommitAt: "2026-10-03T09:00:00Z",
+      },
+    ]);
+    expect(text).toContain('- p. 8, "Use session locks for migrations" (id m8), in Database, by Claude Code @ a1b2c3d, committed 2026-10-03');
+    expect(text).toContain("call link_replacement with id new1 and its id");
+  });
+  it("says nothing when no note looks related", () => {
+    expect(formatRelated("new1", [])).toBe("");
   });
 });

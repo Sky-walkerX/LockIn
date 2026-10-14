@@ -25,6 +25,9 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { fade } from "@/lib/motion";
 
+/** The page a replacement retires, as its Witness button names it. */
+const retires = (old: { page: number | null; title: string }) => (old.page != null ? pageLabel(old.page) : `"${old.title}"`);
+
 // One note as a page: a running head, the title, then the body on clean paper.
 // Reading is the default; the editor opens in place.
 export function NoteView({
@@ -160,9 +163,13 @@ export function NoteView({
                 type="button"
                 onClick={() => update.mutate({ id: note.id, data: { witnessed: true } })}
                 className="lk-note-bar-btn"
-                title="Sign off: you've read this and it belongs in your notebook"
+                title={
+                  note.supersedes
+                    ? `Sign off on this page; ${retires(note.supersedes)} becomes history and leaves search`
+                    : "Sign off: you've read this and it belongs in your notebook"
+                }
               >
-                <PenLine size={14} /> Witness
+                <PenLine size={14} /> {note.supersedes ? `Witness and retire ${retires(note.supersedes)}` : "Witness"}
               </button>
             </>
           ) : (

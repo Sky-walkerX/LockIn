@@ -11,6 +11,7 @@ import {
   editAgentNote,
   flagStale,
   insertNote,
+  linkReplacement,
   matchSubject,
   moveNote,
   placeNote,
@@ -19,13 +20,14 @@ import {
 import { createSubtask, createTask } from "@/lib/tasks/create";
 import { appendToSubtask, appendToTask, updateSubtask, updateTask } from "@/lib/tasks/update";
 import { pagesOf } from "@/lib/notes/page";
-import { COMMIT, MAX_ANCHOR_FILES } from "@/lib/notes/anchor";
+import { COMMIT, MAX_ANCHOR_FILES, commitLabel, isEarlierCommit, parseCommitDate } from "@/lib/notes/anchor";
 import { sourceLabel } from "@/lib/notes/source";
 import { embedOnServer } from "@/lib/rag/ingest";
 import { indexNoteOnServer } from "@/lib/rag/index-note";
 import { searchKeyword } from "@/lib/search/keyword";
 import { searchSemantic } from "@/lib/search/semantic";
-import { formatNote, formatPlan, formatPlanItem, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
+import { formatNote, formatPlan, formatPlanItem, formatRelated, formatSearch, formatSubjects, type FoundLine } from "@/lib/mcp/format";
+import { relatedNotes } from "@/lib/notes/related";
 import { noteMarks, readById, readPlan } from "@/lib/mcp/read";
 import { captureSession } from "@/lib/notes/capture";
 import { formatHandoff } from "@/lib/handoff/card";
@@ -77,12 +79,24 @@ const planItemUrl = (origin: string | null, subjectId: string, kind: "task" | "s
 const ANCHOR = {
   repo: z.string().trim().min(1).max(300).optional().describe("The repo it's about: `git remote get-url origin`, or owner/name"),
   commit: z.string().trim().regex(COMMIT, "a commit hash").optional().describe("The commit it's true at: `git rev-parse HEAD`"),
+  commit_date: z
+    .string()
+    .trim()
+    .max(60)
+    .optional()
+    .describe("When that commit was made: `git show -s --format=%cI HEAD`. Readers use it to tell which note describes the later code"),
   files: z
     .array(z.string().trim().min(1).max(300))
     .max(MAX_ANCHOR_FILES)
     .optional()
     .describe("The files it describes, relative to the repo root"),
 };
+
+/** The commit date an agent gave, parsed, and a line telling it when it wasn't usable. */
+function commitDate(given: string | undefined) {
+  const at = parseCommitDate(given);
+  return { at, warning: given && !at ? "\ncommit_date wasn't a date in the past, so it was left out." : "" };
+}
 
 /**
  * The open baton for a subject or repo (else the newest), as the agent picking
@@ -215,7 +229,7 @@ const handler = createMcpHandler(
       {
         title: "Save a note",
         description:
-          "Save a new note to the user's notebook. Write the body as markdown: what was learned, with the code or commands that matter. Name an existing subject to file it there; with no subject, or one that doesn't exist, it goes to the Inbox. The user sees it marked as recorded by you until they witness it. When the note describes code in a repo, give repo, commit and files, so a later agent can tell when the code has moved on.",
+          "Save a new note to the user's notebook. Write the body as markdown: what was learned, with the code or commands that matter. Name an existing subject to file it there; with no subject, or one that doesn't exist, it goes to the Inbox. The user sees it marked as recorded by you until they witness it. When the note describes code in a repo, give repo, commit, commit_date and files, so a later agent can tell when the code has moved on. The reply lists notes that look related: if yours makes one of them wrong, link it with link_replacement.",
         inputSchema: z.object({
           title: z.string().trim().min(1).max(200).describe("A short title that says what the note is about"),
           body: z.string().max(100_000).describe("The note, in markdown. Maths in LaTeX: $…$ inline, $$…$$ on lines of their own"),
@@ -224,10 +238,21 @@ const handler = createMcpHandler(
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
-      async ({ title, body, subject, repo, commit, files }, ctx) => {
+      async ({ title, body, subject, repo, commit, commit_date, files }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
         const place = await placeNote(userId, subject);
-        const note = await insertNote(userId, place.subjectId, { title, notes: body, source, anchor: { repo, commit, files } });
+        const date = commitDate(commit_date);
+        const note = await insertNote(userId, place.subjectId, {
+          title,
+          notes: body,
+          source,
+          anchor: { repo, commit, commitAt: date.at, files },
+        });
+        // Looked up before the note is indexed, so it can't find itself.
+        const related = await relatedNotes(userId, note).catch((e) => {
+          console.error("Finding related notes failed", e);
+          return [];
+        });
         indexAfterReply(userId, note.id);
         const where = place.isInbox
           ? place.requested
@@ -236,7 +261,7 @@ const handler = createMcpHandler(
           : place.subjectTitle;
         const url = noteUrl(origin, place.subjectId, place.isInbox, note.id);
         return text(
-          `Saved "${note.title}" to ${where}, on page ${note.page}. Note id ${note.id}.\nIt shows as recorded by ${sourceLabel(source)} and waits for the user to witness it.${url ? `\n${url}` : ""}`,
+          `Saved "${note.title}" to ${where}, on page ${note.page}. Note id ${note.id}.\nIt shows as recorded by ${sourceLabel(source)} and waits for the user to witness it.${url ? `\n${url}` : ""}${date.warning}${formatRelated(note.id, related)}`,
         );
       },
     );
@@ -310,17 +335,20 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           id: z.string().min(1).max(64).describe("The note's id"),
           commit: z.string().trim().regex(COMMIT, "a commit hash").describe("The commit you checked it at: `git rev-parse HEAD`"),
+          commit_date: ANCHOR.commit_date,
           repo: ANCHOR.repo,
           files: ANCHOR.files,
         }),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
       },
-      async ({ id, commit, repo, files }, ctx) => {
+      async ({ id, commit, commit_date, repo, files }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
-        const note = await confirmNote(userId, id, source, { commit, repo, files });
+        const date = commitDate(commit_date);
+        const note = await confirmNote(userId, id, source, { commit, commitAt: date.at, repo, files });
         if (!note) return failed(`No note with id ${id} in this notebook.`);
         const url = noteUrl(origin, note.subjectId, note.isInbox, note.id);
-        return text(`"${note.title}" is confirmed as true at ${commit.slice(0, 7)}.${url ? `\n${url}` : ""}`);
+        const at = commitLabel({ anchorCommit: commit, anchorCommitAt: date.at })!.slice(2);
+        return text(`"${note.title}" is confirmed as true at ${at}.${url ? `\n${url}` : ""}${date.warning}`);
       },
     );
 
@@ -359,16 +387,65 @@ const handler = createMcpHandler(
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
-      async ({ id, title, body, repo, commit, files }, ctx) => {
+      async ({ id, title, body, repo, commit, commit_date, files }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
-        const done = await supersedeNote(userId, id, { title, notes: body, source, anchor: { repo, commit, files } });
+        const date = commitDate(commit_date);
+        const done = await supersedeNote(userId, id, {
+          title,
+          notes: body,
+          source,
+          anchor: { repo, commit, commitAt: date.at, files },
+        });
         if (!done) return failed(`No note with id ${id} in this notebook.`);
         const { note, old } = done;
+        // A replacement written at an older commit than the note it replaces
+        // is usually an agent on a stale checkout.
+        const older = isEarlierCommit(note, old)
+          ? `\nCareful: your commit (${commitLabel(note)!.slice(2)}) is older than the one page ${old.page} was written at (${commitLabel(old)!.slice(2)}). Pull and check before the user witnesses this.`
+          : "";
         indexAfterReply(userId, note.id);
         const subject = await prisma.subject.findUnique({ where: { id: note.subjectId }, select: { isInbox: true } });
         const url = noteUrl(origin, note.subjectId, subject?.isInbox ?? false, note.id);
         return text(
-          `Saved "${note.title}" on page ${note.page} to replace page ${old.page} ("${old.title}"). Note id ${note.id}.\nThe old note stays in search until the user witnesses this one.${url ? `\n${url}` : ""}`,
+          `Saved "${note.title}" on page ${note.page} to replace page ${old.page} ("${old.title}"). Note id ${note.id}.\nThe old note stays in search until the user witnesses this one.${url ? `\n${url}` : ""}${older}${date.warning}`,
+        );
+      },
+    );
+
+    server.registerTool(
+      "link_replacement",
+      {
+        title: "Say your note replaces an older one",
+        description:
+          "Mark a note you recorded as the replacement for an older note it makes wrong, e.g. one save_note listed as related. Your note goes back to the user to witness; once they do, the old page retires from search and Ask. To write a replacement from scratch, use supersede_note instead.",
+        inputSchema: z.object({
+          id: z.string().min(1).max(64).describe("Your note's id"),
+          replaces: z.string().min(1).max(64).describe("The id of the older note it replaces"),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+      },
+      async ({ id, replaces }, ctx) => {
+        const { userId, source, origin } = caller(ctx.http?.authInfo);
+        const linked = await linkReplacement(userId, id, replaces, source);
+        switch (linked) {
+          case "missing":
+            return failed(`No note with id ${id} in this notebook.`);
+          case "not-yours":
+            return failed("You can only link a note you recorded. To replace someone else's note, write the new one with supersede_note.");
+          case "old-missing":
+            return failed(`No note with id ${replaces} in this notebook.`);
+          case "same":
+            return failed("A note can't replace itself.");
+          case "loop":
+            return failed("That note already replaces yours, so yours can't replace it.");
+        }
+        const { note, old } = linked;
+        const url = noteUrl(origin, note.subject.id, note.subject.isInbox, note.id);
+        const older = isEarlierCommit(note, old)
+          ? `\nCareful: your note's commit (${commitLabel(note)!.slice(2)}) is older than page ${old.page}'s (${commitLabel(old)!.slice(2)}).`
+          : "";
+        return text(
+          `Page ${note.page} ("${note.title}") now replaces page ${old.page} ("${old.title}"). When the user witnesses page ${note.page}, page ${old.page} retires from search.${url ? `\n${url}` : ""}${older}`,
         );
       },
     );
@@ -460,12 +537,12 @@ const handler = createMcpHandler(
       {
         title: "File a session's summary",
         description:
-          "Keep what a coding session learned before its context is compacted. The LockIn plugin for Claude Code calls this from its compaction hook with Claude Code's own summary; you don't need to call it yourself. One note per session: a later compaction adds a dated section to it. The user witnesses it like any note you save.",
+          "Keep what a coding session learned before its context is compacted, or when it ends. The LockIn plugin for Claude Code calls this from its hooks: at compaction with Claude Code's own summary, and at the end through a short background run that writes one. Don't call it yourself unless you were asked to file a session. One note per session: each later call adds a dated section to it. The user witnesses it like any note you save.",
         inputSchema: z.object({
           session_id: z.string().trim().min(1).max(200).describe("The session's id"),
           summary: z.string().trim().min(1).max(200_000).describe("The session's summary, in markdown"),
           cwd: z.string().trim().max(1000).optional().describe("The folder the session runs in"),
-          trigger: z.string().trim().max(40).optional().describe("\"auto\" or \"manual\""),
+          trigger: z.string().trim().max(40).optional().describe("\"auto\" or \"manual\" for a compaction, \"end\" when the session ended"),
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
@@ -476,7 +553,7 @@ const handler = createMcpHandler(
         const subject = await prisma.subject.findUnique({ where: { id: note.subjectId }, select: { isInbox: true, title: true } });
         const url = noteUrl(origin, note.subjectId, subject?.isInbox ?? true, note.id);
         return text(
-          `${note.added ? "Added this compaction to" : "Saved this session as"} "${note.title}" (page ${note.page}) in ${subject?.isInbox ? "the Inbox" : subject?.title}. It waits for the user to witness it.${url ? `\n${url}` : ""}`,
+          `${note.added ? (trigger === "end" ? "Added the session's end to" : "Added this compaction to") : "Saved this session as"} "${note.title}" (page ${note.page}) in ${subject?.isInbox ? "the Inbox" : subject?.title}. It waits for the user to witness it.${url ? `\n${url}` : ""}`,
         );
       },
     );
@@ -625,7 +702,7 @@ const handler = createMcpHandler(
   },
   {
     serverInfo: { name: BRAND.name, version: "1.0.0" },
-    instructions: `${BRAND.name} is the user's notebook, organised by subject. Search it before answering questions the user may have notes on. Save what's worth keeping (decisions, fixes, explanations) as a note under the right subject; the user reviews and witnesses what you save. You can edit only notes you recorded; anyone else's you can add to with append_to_note. Keep the user's plans current: tick off tasks that are done and add the ones that come up. Notes are GitHub-flavoured markdown that renders LaTeX: write maths as $e_K \\in E$ inline and $$…$$ on lines of their own for display, not as Unicode symbols. To pin something as a numbered figure (code output, a table, a key formula), quote it under a first line of "> [!FIG] caption". When a note is about code in a repo, save it with repo, commit and files; when a note you read has them, check them before relying on it (get_note says how). When you stop with work unfinished, or the user switches tools, leave a baton with save_handoff; when asked to continue someone's work, call pickup_handoff.`,
+    instructions: `${BRAND.name} is the user's notebook, organised by subject. Search it before answering questions the user may have notes on. Save what's worth keeping (decisions, fixes, explanations) as a note under the right subject; the user reviews and witnesses what you save. You can edit only notes you recorded; anyone else's you can add to with append_to_note. Keep the user's plans current: tick off tasks that are done and add the ones that come up. Notes are GitHub-flavoured markdown that renders LaTeX: write maths as $e_K \\in E$ inline and $$…$$ on lines of their own for display, not as Unicode symbols. To pin something as a numbered figure (code output, a table, a key formula), quote it under a first line of "> [!FIG] caption". When a note is about code in a repo, save it with repo, commit, commit_date and files; when a note you read has them, check them before relying on it (get_note says how). When you stop with work unfinished, or the user switches tools, leave a baton with save_handoff; when asked to continue someone's work, call pickup_handoff.`,
   },
 );
 

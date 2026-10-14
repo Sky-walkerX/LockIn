@@ -51,6 +51,7 @@ export function useCreateMilestone() {
         page: null, // the server assigns it
         anchorRepo: null,
         anchorCommit: null,
+        anchorCommitAt: null,
         anchorFiles: [],
         checkedAt: null,
         checkedBy: null,

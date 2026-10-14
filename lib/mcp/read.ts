@@ -24,7 +24,7 @@ const PLACE = { select: { id: true, title: true, isInbox: true } } as const;
 
 /** The notes that say they replace one, newest first (lib/notes/status.ts). */
 export const REPLACEMENTS = {
-  select: { id: true, page: true, title: true, source: true, witnessedAt: true },
+  select: { id: true, page: true, title: true, source: true, witnessedAt: true, anchorCommit: true, anchorCommitAt: true },
   orderBy: { createdAt: "desc" },
 } satisfies Prisma.Milestone$supersededByArgs;
 
@@ -34,13 +34,30 @@ export const REPLACEMENTS = {
  * gone from the hits (the searches leave them out).
  */
 export async function noteMarks(userId: string, ids: string[]) {
-  if (ids.length === 0) return new Map<string, { page: number | null; anchorCommit: string | null; stale: boolean; proposed: boolean }>();
+  type Marks = { page: number | null; anchorCommit: string | null; anchorCommitAt: Date | null; stale: boolean; proposed: boolean };
+  if (ids.length === 0) return new Map<string, Marks>();
   const rows = await prisma.milestone.findMany({
     where: { id: { in: ids }, subject: { userId } },
-    select: { id: true, page: true, anchorCommit: true, staleReason: true, _count: { select: { supersededBy: true } } },
+    select: {
+      id: true,
+      page: true,
+      anchorCommit: true,
+      anchorCommitAt: true,
+      staleReason: true,
+      _count: { select: { supersededBy: true } },
+    },
   });
-  return new Map(
-    rows.map((r) => [r.id, { page: r.page, anchorCommit: r.anchorCommit, stale: r.staleReason != null, proposed: r._count.supersededBy > 0 }]),
+  return new Map<string, Marks>(
+    rows.map((r) => [
+      r.id,
+      {
+        page: r.page,
+        anchorCommit: r.anchorCommit,
+        anchorCommitAt: r.anchorCommitAt,
+        stale: r.staleReason != null,
+        proposed: r._count.supersededBy > 0,
+      },
+    ]),
   );
 }
 
@@ -58,7 +75,7 @@ export async function readById(userId: string, id: string): Promise<Found | null
       include: {
         subject: PLACE,
         tasks: TASKS,
-        supersedes: { select: { id: true, page: true, title: true } },
+        supersedes: { select: { id: true, page: true, title: true, anchorCommit: true, anchorCommitAt: true } },
         supersededBy: REPLACEMENTS,
       },
     }),

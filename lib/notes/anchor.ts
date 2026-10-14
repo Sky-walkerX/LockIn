@@ -6,6 +6,8 @@
 export type Anchor = {
   anchorRepo: string | null;
   anchorCommit: string | null;
+  /** When that commit was made, as the agent saw it. */
+  anchorCommitAt: Date | string | null;
   anchorFiles: string[];
   checkedAt: Date | string | null;
   checkedBy: string | null;
@@ -67,6 +69,34 @@ export function cleanFiles(files: string[] | undefined): string[] {
 export const shortCommit = (commit: string) => commit.slice(0, 7);
 
 const day = (d: Date | string) => new Date(d).toISOString().slice(0, 10);
+
+/**
+ * A commit date as an agent passes it (`git show -s --format=%cI`, or any
+ * date the platform parses). Null for nothing usable, or a date more than a
+ * day ahead, which no commit has yet.
+ */
+export function parseCommitDate(input: string | null | undefined, now = new Date()): Date | null {
+  const s = input?.trim();
+  if (!s) return null;
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime()) || d.getTime() > now.getTime() + 86_400_000) return null;
+  return d;
+}
+
+/** "@ abc1234, committed 2026-10-03", or as much of it as is known. */
+export function commitLabel(anchor: Pick<Anchor, "anchorCommit" | "anchorCommitAt">): string | null {
+  if (!anchor.anchorCommit) return null;
+  return `@ ${shortCommit(anchor.anchorCommit)}${anchor.anchorCommitAt ? `, committed ${day(anchor.anchorCommitAt)}` : ""}`;
+}
+
+/** Whether `a` is anchored at an earlier commit than `b`, by their dates. False when either date is unknown. */
+export function isEarlierCommit(
+  a: Pick<Anchor, "anchorCommitAt">,
+  b: Pick<Anchor, "anchorCommitAt">,
+): boolean {
+  if (!a.anchorCommitAt || !b.anchorCommitAt) return false;
+  return new Date(a.anchorCommitAt).getTime() < new Date(b.anchorCommitAt).getTime();
+}
 const quote = (path: string) => (/^[\w./@+-]+$/.test(path) ? path : `'${path.replace(/'/g, "'\\''")}'`);
 
 /** The command that shows what changed in the anchored files since the note was true. */
@@ -83,7 +113,7 @@ export function diffCommand(anchor: Pick<Anchor, "anchorCommit" | "anchorFiles">
  */
 export function anchorForAgent(anchor: Anchor, label: (source: string) => string): string | null {
   if (!anchor.anchorRepo && !anchor.anchorCommit) return null;
-  const at = anchor.anchorCommit ? ` @ ${shortCommit(anchor.anchorCommit)}` : "";
+  const at = anchor.anchorCommit ? ` ${commitLabel(anchor)}` : "";
   const files = anchor.anchorFiles.length > 0 ? `: ${anchor.anchorFiles.join(", ")}` : "";
   const checked = anchor.checkedAt
     ? ` Last checked ${day(anchor.checkedAt)}${anchor.checkedBy ? ` by ${label(anchor.checkedBy)}` : ""}.`

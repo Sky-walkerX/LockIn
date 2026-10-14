@@ -3,8 +3,8 @@
 // without a server.
 
 import { sourceLabel, awaitingWitness, isOwnNote } from "@/lib/notes/source";
-import { anchorForAgent, shortCommit, type Anchor } from "@/lib/notes/anchor";
-import { noteStatus, type StatusInput } from "@/lib/notes/status";
+import { anchorForAgent, commitLabel, type Anchor } from "@/lib/notes/anchor";
+import { noteStatus, type Replacement, type StatusInput } from "@/lib/notes/status";
 
 export type SubjectLine = { id: string; title: string; isInbox: boolean; noteCount: number };
 
@@ -27,8 +27,9 @@ export type FoundLine = {
   href: string;
   /** The note's or resource's page, so an agent can cite it as the user sees it. */
   page?: number | null;
-  /** For a note: the commit it's anchored at, whether it's flagged, whether a replacement waits. */
+  /** For a note: the commit it's anchored at and its date, whether it's flagged, whether a replacement waits. */
   anchorCommit?: string | null;
+  anchorCommitAt?: Date | string | null;
   stale?: boolean;
   proposed?: boolean;
 };
@@ -36,7 +37,7 @@ export type FoundLine = {
 /** Short marks after a hit, so an agent sees which notes to check before it reads them. */
 function marks(h: FoundLine): string {
   const out = [
-    h.anchorCommit ? `anchored @${shortCommit(h.anchorCommit)}` : null,
+    h.anchorCommit ? `anchored ${commitLabel({ anchorCommit: h.anchorCommit, anchorCommitAt: h.anchorCommitAt ?? null })!.replace("@ ", "@")}` : null,
     h.stale ? "flagged stale" : null,
     h.proposed ? "replacement proposed" : null,
   ].filter(Boolean);
@@ -116,8 +117,10 @@ export function formatTasks(tasks: PlanTask[], notesLimit?: number): string {
   return lines.join("\n");
 }
 
+type CommitRef = Pick<Anchor, "anchorCommit" | "anchorCommitAt">;
+
 export type NoteForAgent = Anchor &
-  StatusInput & {
+  StatusInput<Replacement & CommitRef> & {
     id: string;
     page: number | null;
     title: string;
@@ -127,20 +130,26 @@ export type NoteForAgent = Anchor &
     updatedAt: Date | string;
     subject: { title: string; isInbox: boolean };
     tasks: PlanTask[];
-    supersedes: { id: string; page: number | null; title: string } | null;
+    supersedes: ({ id: string; page: number | null; title: string } & CommitRef) | null;
   };
 
 const pageOf = (n: { page: number | null; title: string; id: string }) =>
   `${n.page != null ? `p. ${n.page}, ` : ""}"${n.title}" (id ${n.id})`;
+
+/** " (written @ 9f8e7d6, committed 2026-10-17)" for a note with a commit, else nothing. */
+const writtenAt = (n: CommitRef) => {
+  const label = commitLabel(n);
+  return label ? ` (written ${label})` : "";
+};
 
 /** What stands against a note, said plainly enough that an agent acts on it. */
 function standing(note: NoteForAgent): string | null {
   const status = noteStatus(note);
   switch (status.kind) {
     case "replaced":
-      return `REPLACED: ${pageOf(status.by)} replaces this note, and the user has witnessed it. Read that one instead; this is history.`;
+      return `REPLACED: ${pageOf(status.by)}${writtenAt(status.by)} replaces this note, and the user has witnessed it. Read that one instead; this is history.`;
     case "proposed":
-      return `${sourceLabel(status.by.source)} proposed a replacement, ${pageOf(status.by)}, which waits for the user to witness it. Until then this note stands.`;
+      return `${sourceLabel(status.by.source)} proposed a replacement, ${pageOf(status.by)}${writtenAt(status.by)}, which waits for the user to witness it. Until then this note stands.`;
     case "stale":
       return `Flagged as possibly out of date by ${sourceLabel(status.by)}${status.at ? ` on ${new Date(status.at).toISOString().slice(0, 10)}` : ""}: ${status.reason}`;
     case "current":
@@ -158,7 +167,7 @@ export function formatNote(note: NoteForAgent, url: string | null): string {
   ].filter(Boolean);
   const about = [
     standing(note),
-    note.supersedes ? `This note replaces ${pageOf(note.supersedes)}.` : null,
+    note.supersedes ? `This note replaces ${pageOf(note.supersedes)}${writtenAt(note.supersedes)}.` : null,
     anchorForAgent(note, sourceLabel),
   ].filter(Boolean);
   const plan =
@@ -219,4 +228,31 @@ export function formatPlan(plan: PlanForAgent, url: string | null): string {
   const rest =
     unplanned.length > 0 ? `\n\nNotes with nothing planned: ${unplanned.map((n) => `${n.title} (${n.id})`).join(", ")}` : "";
   return `# Plan for ${name}\n${totals.filter(Boolean).join(", ")}${url ? `\n${url}` : ""}\n\n${sections.join("\n\n")}${rest}`;
+}
+
+export type RelatedLine = CommitRef & {
+  id: string;
+  page: number | null;
+  title: string;
+  source: string | null;
+  subjectTitle: string;
+  isInbox: boolean;
+};
+
+/**
+ * What save_note adds when other notes look like the same subject matter: the
+ * pages, and what to do if the new note replaces one. Empty when none do.
+ */
+export function formatRelated(noteId: string, related: RelatedLine[]): string {
+  if (related.length === 0) return "";
+  const lines = related.map((r) => {
+    const who = isOwnNote(r.source) ? "the user" : sourceLabel(r.source);
+    const label = commitLabel(r);
+    return `- ${pageOf(r)}, in ${r.isInbox ? "the Inbox" : r.subjectTitle}, by ${who}${label ? ` ${label}` : ""}`;
+  });
+  return (
+    `\n\nNotes that look related:\n${lines.join("\n")}\n` +
+    `If your note says something one of these now gets wrong (the code or the facts moved on), call link_replacement with id ${noteId} and its id: ` +
+    "once the user witnesses yours, the old page retires from search. If they still hold alongside yours, there's nothing to do."
+  );
 }

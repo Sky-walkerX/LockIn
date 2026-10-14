@@ -16,7 +16,15 @@ export type SubtaskWithChildren = Subtask & { children: Subtask[] };
 
 export type TaskWithSubtasks = Task & { subtasks: SubtaskWithChildren[] };
 
-export type NoteLink = { id: string; page: number | null; title: string; subjectId: string };
+export type NoteLink = {
+  id: string;
+  page: number | null;
+  title: string;
+  subjectId: string;
+  /** The commit the linked note is anchored at, to show which is the later code. */
+  anchorCommit?: string | null;
+  anchorCommitAt?: Date | string | null;
+};
 export type MilestoneWithTasks = Milestone & {
   tasks: TaskWithSubtasks[];
   // Loaded with the subject; absent on a note just made in the browser.

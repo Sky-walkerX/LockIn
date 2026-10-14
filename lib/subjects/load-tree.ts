@@ -22,9 +22,18 @@ export const subjectTreeInclude = {
     include: {
       tasks: taskInclude,
       // Whether the note still stands (lib/notes/status.ts).
-      supersedes: { select: { id: true, page: true, title: true, subjectId: true } },
+      supersedes: { select: { id: true, page: true, title: true, subjectId: true, anchorCommit: true, anchorCommitAt: true } },
       supersededBy: {
-        select: { id: true, page: true, title: true, source: true, witnessedAt: true, subjectId: true },
+        select: {
+          id: true,
+          page: true,
+          title: true,
+          source: true,
+          witnessedAt: true,
+          subjectId: true,
+          anchorCommit: true,
+          anchorCommitAt: true,
+        },
         orderBy: { createdAt: "desc" as const },
       },
     },
