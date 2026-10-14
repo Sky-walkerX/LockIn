@@ -23,13 +23,17 @@
 
 You learn things inside Claude, Codex and Cursor every day, and most of it is gone when the session ends. LockIn keeps it. Your agents save notes into it over MCP, you file them by subject, and any model you choose answers questions from them.
 
+The launch film, 45 seconds, with sound:
+
+https://github.com/user-attachments/assets/3ae46572-283e-49fd-a3dc-e178dd269e40
+
+## How it fits together
+
 <p align="center">
   <img src="docs/media/relay.webp" alt="Claude Code saves a note to the Project-X section over MCP. The note appears in the notebook and is stamped as witnessed. In a later session Codex searches Project-X over MCP and picks up from that note." width="720">
   <br>
   <sub>Monday: Claude Code saves a note to Project-X, and you witness it. Thursday: Codex picks up where it left off.</sub>
 </p>
-
-## How it fits together
 
 ```mermaid
 flowchart LR
