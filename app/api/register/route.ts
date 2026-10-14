@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
 import { mailConfigured } from "@/lib/mail";
 import { sendVerification } from "@/lib/accounts/emails";
+import { createTutorial } from "@/lib/accounts/tutorial";
 import { PASSWORD_MAX, PASSWORD_MIN, appOrigin, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
 import { clientAddress, countAgainst, wait } from "@/lib/limits/rate";
 
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: { email, password: await bcrypt.hash(password, 10), name: name || null },
     });
+    await createTutorial(user.id);
 
     const verify = mailConfigured();
     if (verify) {

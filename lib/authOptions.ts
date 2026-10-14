@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { mailConfigured } from "@/lib/mail";
 import { NO_ACCOUNT_HASH, canCreateAccount, normalizeEmail, userByEmail } from "@/lib/accounts/policy";
 import { type SessionMark, sessionMark, sessionStands } from "@/lib/accounts/session";
+import { createTutorial } from "@/lib/accounts/tutorial";
 import { EMAIL_NOT_VERIFIED, TOO_MANY_ATTEMPTS } from "@/lib/accounts/errors";
 import { clientAddress, countPasswordTry } from "@/lib/limits/rate";
 
@@ -77,6 +78,7 @@ export const authOptions: NextAuthOptions = {
           existing = await prisma.user.create({
             data: { email: normalizeEmail(email), name: user.name, emailVerifiedAt: new Date() },
           });
+          await createTutorial(existing.id);
         }
         // The session carries the notebook's own id, not Google's.
         user.id = existing.id;
