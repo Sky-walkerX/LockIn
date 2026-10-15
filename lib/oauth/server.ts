@@ -86,6 +86,26 @@ export async function registerClient(body: unknown): Promise<{ ok: true; client:
   return { ok: true, client };
 }
 
+/** How long a self-registered client may sit unused before it's removed. */
+const UNUSED_CLIENT_TTL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Deletes self-registered clients older than a day that nobody ever approved:
+ * no code was issued and no grant made. Their ids stop working, which is fine,
+ * since a real client registers and asks for consent within minutes.
+ */
+export async function pruneUnusedClients(now = new Date()) {
+  const { count } = await prisma.oAuthClient.deleteMany({
+    where: {
+      kind: "dcr",
+      createdAt: { lt: new Date(now.getTime() - UNUSED_CLIENT_TTL_MS) },
+      codes: { none: {} },
+      grants: { none: {} },
+    },
+  });
+  return count;
+}
+
 export { redirectMatches };
 
 /**

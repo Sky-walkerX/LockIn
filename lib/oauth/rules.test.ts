@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
+  impersonates,
   isAcceptableRedirectUri,
   isFetchableHost,
   isMetadataDocumentId,
@@ -89,5 +90,25 @@ describe("client metadata documents", () => {
 
   it("names a client after its host when it gives no name", () => {
     expect(parseClientMetadata(url, { client_id: url, redirect_uris: ["https://claude.ai/cb"] })?.name).toBe("claude.ai");
+  });
+});
+
+describe("impersonates", () => {
+  const own = "lockin.example.com";
+  it("flags a well-known name on someone else's domain", () => {
+    expect(impersonates("Claude", "evil.example", own)).toBe("Claude");
+    expect(impersonates("ChatGPT Connector", "chatgpt.com.evil.example", own)).toBe("ChatGPT");
+    expect(impersonates("LockIn Desktop", "evil.example", own)).toBe("LockIn");
+  });
+  it("lets the real apps through, subdomains included", () => {
+    expect(impersonates("Claude", "claude.ai", own)).toBeNull();
+    expect(impersonates("ChatGPT", "chatgpt.com", own)).toBeNull();
+    expect(impersonates("Cursor", "www.cursor.com", own)).toBeNull();
+    expect(impersonates("LockIn", own, own)).toBeNull();
+  });
+  it("leaves names that claim nothing, and apps on this computer, alone", () => {
+    expect(impersonates("My notes script", "evil.example", own)).toBeNull();
+    expect(impersonates("Claude Code", "localhost", own)).toBeNull();
+    expect(impersonates("Claude Code", "127.0.0.1", own)).toBeNull();
   });
 });

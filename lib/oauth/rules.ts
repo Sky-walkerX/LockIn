@@ -94,3 +94,35 @@ export function parseClientMetadata(url: string, doc: unknown): ClientMetadata |
   const name = typeof d.client_name === "string" && d.client_name.trim() ? d.client_name.trim().slice(0, 80) : new URL(url).hostname;
   return { name, redirectUris };
 }
+
+// Apps people already trust, and the domains they really sign in from. A
+// client that names itself after one of these but sends people somewhere else
+// is the consent-phishing case: the consent page warns about it.
+const KNOWN_APPS: { name: string; match: RegExp; domains: string[] }[] = [
+  { name: "Claude", match: /\b(claude|anthropic)\b/i, domains: ["claude.ai", "claude.com", "anthropic.com"] },
+  { name: "ChatGPT", match: /\b(chat\s*gpt|openai|codex)\b/i, domains: ["chatgpt.com", "openai.com"] },
+  { name: "Cursor", match: /\bcursor\b/i, domains: ["cursor.com", "cursor.sh"] },
+  { name: "Gemini", match: /\b(gemini|google)\b/i, domains: ["google.com", "gemini.google.com"] },
+  { name: "GitHub Copilot", match: /\b(copilot|github)\b/i, domains: ["github.com", "githubcopilot.com"] },
+  { name: "LockIn", match: /\block\s*in\b/i, domains: [] },
+];
+
+const onDomain = (host: string, domain: string) => host === domain || host.endsWith(`.${domain}`);
+
+/**
+ * The well-known app a client's self-chosen name claims to be, when the place
+ * it sends people back to (`host`) isn't that app's domain. Null when the name
+ * claims nothing, or the host fits. An app on this computer (a loopback
+ * redirect) is never flagged: the consent page already says it's local, and a
+ * local app is one the user started. `ownHost` is this instance, for "LockIn".
+ */
+export function impersonates(name: string, host: string, ownHost: string): string | null {
+  const h = host.toLowerCase().replace(/\.+$/, "");
+  if (LOOPBACK.has(h)) return null;
+  for (const app of KNOWN_APPS) {
+    if (!app.match.test(name)) continue;
+    const domains = app.name === "LockIn" ? [ownHost.toLowerCase()] : app.domains;
+    if (!domains.some((d) => onDomain(h, d))) return app.name;
+  }
+  return null;
+}

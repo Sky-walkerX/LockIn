@@ -1,5 +1,6 @@
+import { after } from "next/server";
 import { json, preflight } from "@/lib/oauth/http";
-import { registerClient } from "@/lib/oauth/server";
+import { pruneUnusedClients, registerClient } from "@/lib/oauth/server";
 import { SCOPE } from "@/lib/oauth/rules";
 import { clientAddress, countAgainst } from "@/lib/limits/rate";
 
@@ -21,6 +22,9 @@ export async function POST(req: Request) {
   const result = await registerClient(body);
   if (!result.ok) return json({ error: "invalid_client_metadata", error_description: result.error }, 400);
   const { client } = result;
+  // Registration is open, so registrations nobody signed in with are cleared
+  // out as new ones arrive: the table can't grow without bound.
+  after(() => pruneUnusedClients().catch((e) => console.error("Pruning unused OAuth clients failed", e)));
   return json(
     {
       client_id: client.id,

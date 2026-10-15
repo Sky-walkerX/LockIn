@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/authOptions";
 import { Wordmark } from "@/app/components/brand/wordmark";
 import { AuthShell } from "@/app/components/auth-shell";
 import { checkAuthorizeRequest, readParams } from "@/lib/oauth/authorize";
-import { isMetadataDocumentId } from "@/lib/oauth/rules";
+import { impersonates, isMetadataDocumentId } from "@/lib/oauth/rules";
 import { requestOrigin } from "@/lib/oauth/origin";
 import { decide } from "./actions";
 
@@ -16,6 +16,11 @@ export const metadata: Metadata = { title: "Connect an app" };
 // Where an app such as Claude.ai or ChatGPT asks for access to the notebook
 // over MCP. Signed out, it sends the user to sign in and back. The page says
 // who's asking, what they'll be able to do, and where the user goes next.
+//
+// An app that registered itself chose its own name, so the page leads with
+// what can be checked: where the code is sent. A name that claims to be a
+// well-known app (Claude, ChatGPT…) from somewhere else gets a warning: that's
+// how a consent-phishing link would look.
 export default async function AuthorizePage({
   searchParams,
 }: {
@@ -53,6 +58,13 @@ export default async function AuthorizePage({
   const back = new URL(redirectUri);
   const loopback = back.protocol === "http:";
   const verifiedBy = isMetadataDocumentId(client.id) ? new URL(client.id).hostname : null;
+  const fake = impersonates(client.name, back.hostname, new URL(origin).hostname);
+  const who = verifiedBy ? client.name : "This app";
+  const heading = verifiedBy
+    ? `Connect ${client.name} to your notebook`
+    : loopback
+      ? "Connect an app on this computer to your notebook"
+      : `Connect an app at ${back.host} to your notebook`;
 
   return (
     <AuthShell>
@@ -61,19 +73,33 @@ export default async function AuthorizePage({
           <Link href="/" className="mb-5 block text-2xl">
             <Wordmark />
           </Link>
-          <h1 className="lk-page-title text-3xl">Connect {client.name} to your notebook</h1>
+          <h1 className="lk-page-title text-3xl">{heading}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {verifiedBy ? (
               <>
                 Identified by <b className="text-foreground">{verifiedBy}</b>.
               </>
             ) : (
-              <>This app named itself &ldquo;{client.name}&rdquo;; LockIn can&apos;t check that name.</>
+              <>It calls itself &ldquo;{client.name}&rdquo;; LockIn can&apos;t check that name.</>
             )}{" "}
             Signed in as {session.user?.email}.
           </p>
 
-          <p className="lk-print mt-6 text-2xs uppercase tracking-wide text-muted-foreground">{client.name} will be able to</p>
+          {fake && (
+            <p
+              role="alert"
+              className="mt-5 flex gap-2.5 rounded-md border p-3 text-sm"
+              style={{ borderColor: "var(--lk-warn)", color: "var(--lk-warn)" }}
+            >
+              <ShieldAlert size={16} className="mt-0.5 flex-none" />
+              <span>
+                <b>This may not be {fake}.</b> It calls itself {fake}, but it sends you to {back.host}, which isn&apos;t
+                one of {fake}&apos;s addresses. Don&apos;t allow it unless you set it up yourself.
+              </span>
+            </p>
+          )}
+
+          <p className="lk-print mt-6 text-2xs uppercase tracking-wide text-muted-foreground">{who} will be able to</p>
           <ul className="mt-2 space-y-2.5 text-sm">
             <li className="flex gap-2.5">
               <BookOpenText size={16} className="mt-0.5 flex-none text-muted-foreground" />
@@ -82,8 +108,8 @@ export default async function AuthorizePage({
             <li className="flex gap-2.5">
               <PenLine size={16} className="mt-0.5 flex-none text-muted-foreground" />
               <span>
-                Save new notes and add to existing ones. They&apos;re marked as recorded by {client.name} until you witness
-                them.
+                Save new notes and add to existing ones. They&apos;re marked as recorded by &ldquo;{client.name}&rdquo; until
+                you witness them.
               </span>
             </li>
           </ul>
