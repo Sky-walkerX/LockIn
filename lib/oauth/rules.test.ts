@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
+  cleanClientName,
   impersonates,
   isAcceptableRedirectUri,
   isFetchableHost,
@@ -106,9 +107,32 @@ describe("impersonates", () => {
     expect(impersonates("Cursor", "www.cursor.com", own)).toBeNull();
     expect(impersonates("LockIn", own, own)).toBeNull();
   });
+  it("sees through look-alike and invisible characters", () => {
+    expect(impersonates("Cl\u200Baude", "evil.example", own)).toBe("Claude");
+    expect(impersonates("\u0421laude", "evil.example", own)).toBe("Claude"); // Cyrillic С
+    expect(impersonates("ｃｌａｕｄｅ", "evil.example", own)).toBe("Claude"); // full-width
+    expect(impersonates("C-l-a-u-d-e", "evil.example", own)).toBe("Claude");
+    expect(impersonates("Chat GPT", "evil.example", own)).toBe("ChatGPT");
+    expect(impersonates("Lock In", "evil.example", own)).toBe("LockIn");
+  });
+  it("trusts only exact hosts where a platform serves other people's pages", () => {
+    expect(impersonates("Gemini", "gemini.google.com", own)).toBeNull();
+    expect(impersonates("Gemini", "script.google.com", own)).toBe("Gemini");
+    expect(impersonates("GitHub Copilot", "github.com", own)).toBeNull();
+    expect(impersonates("GitHub Copilot", "someone.github.io", own)).toBe("GitHub Copilot");
+  });
   it("leaves names that claim nothing, and apps on this computer, alone", () => {
     expect(impersonates("My notes script", "evil.example", own)).toBeNull();
     expect(impersonates("Claude Code", "localhost", own)).toBeNull();
     expect(impersonates("Claude Code", "127.0.0.1", own)).toBeNull();
+  });
+});
+
+describe("cleanClientName", () => {
+  it("drops invisible and control characters and keeps the rest", () => {
+    expect(cleanClientName("Cl\u200Baude\u202E")).toBe("Claude");
+    expect(cleanClientName("  My   app\n")).toBe("My app");
+    expect(cleanClientName("\u200B")).toBeNull();
+    expect(cleanClientName(42)).toBeNull();
   });
 });

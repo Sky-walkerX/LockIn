@@ -8,6 +8,7 @@ import {
   CODE_TTL_SECONDS,
   REFRESH_TTL_SECONDS,
   SCOPE,
+  cleanClientName,
   isAcceptableRedirectUri,
   isFetchableHost,
   isMetadataDocumentId,
@@ -79,7 +80,7 @@ export async function registerClient(body: unknown): Promise<{ ok: true; client:
   if (b.token_endpoint_auth_method !== undefined && b.token_endpoint_auth_method !== "none") {
     return { ok: false, error: "Only public clients (token_endpoint_auth_method none) can register" };
   }
-  const name = typeof b.client_name === "string" && b.client_name.trim() ? b.client_name.trim().slice(0, 80) : "MCP client";
+  const name = cleanClientName(b.client_name) ?? "MCP client";
   const client = await prisma.oAuthClient.create({
     data: { id: randomUUID(), name, redirectUris: uris as string[], kind: "dcr" },
   });

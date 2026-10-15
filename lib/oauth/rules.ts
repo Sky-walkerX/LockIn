@@ -77,6 +77,17 @@ export function isFetchableHost(hostname: string): boolean {
   return h.includes(".");
 }
 
+/**
+ * A client's self-chosen name as it may be stored and shown: control and
+ * invisible formatting characters (zero-width spaces, right-to-left marks)
+ * removed, spaces collapsed, 80 characters at most. Null when nothing is left.
+ */
+export function cleanClientName(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const name = raw.replace(/[\p{Cc}\p{Cf}]/gu, "").replace(/\s+/g, " ").trim().slice(0, 80);
+  return name || null;
+}
+
 export type ClientMetadata = { name: string; redirectUris: string[] };
 
 /**
@@ -91,38 +102,62 @@ export function parseClientMetadata(url: string, doc: unknown): ClientMetadata |
   if (!Array.isArray(d.redirect_uris) || d.redirect_uris.length === 0) return null;
   const redirectUris = d.redirect_uris.filter((u): u is string => typeof u === "string");
   if (redirectUris.length !== d.redirect_uris.length || !redirectUris.every(isAcceptableRedirectUri)) return null;
-  const name = typeof d.client_name === "string" && d.client_name.trim() ? d.client_name.trim().slice(0, 80) : new URL(url).hostname;
+  const name = cleanClientName(d.client_name) ?? new URL(url).hostname;
   return { name, redirectUris };
 }
 
-// Apps people already trust, and the domains they really sign in from. A
-// client that names itself after one of these but sends people somewhere else
-// is the consent-phishing case: the consent page warns about it.
-const KNOWN_APPS: { name: string; match: RegExp; domains: string[] }[] = [
-  { name: "Claude", match: /\b(claude|anthropic)\b/i, domains: ["claude.ai", "claude.com", "anthropic.com"] },
-  { name: "ChatGPT", match: /\b(chat\s*gpt|openai|codex)\b/i, domains: ["chatgpt.com", "openai.com"] },
-  { name: "Cursor", match: /\bcursor\b/i, domains: ["cursor.com", "cursor.sh"] },
-  { name: "Gemini", match: /\b(gemini|google)\b/i, domains: ["google.com", "gemini.google.com"] },
-  { name: "GitHub Copilot", match: /\b(copilot|github)\b/i, domains: ["github.com", "githubcopilot.com"] },
-  { name: "LockIn", match: /\block\s*in\b/i, domains: [] },
+// Apps people already trust, and where they really sign in from. A client
+// that names itself after one of these but sends people somewhere else is the
+// consent-phishing case: the consent page warns about it. `domains` covers a
+// domain and its subdomains; `hosts` is exact, for platforms that also serve
+// other people's pages under their domain (script.google.com, *.github.io).
+const KNOWN_APPS: { name: string; match: RegExp; domains: string[]; hosts?: string[] }[] = [
+  { name: "Claude", match: /claude|anthropic/, domains: ["claude.ai", "claude.com", "anthropic.com"] },
+  { name: "ChatGPT", match: /chatgpt|openai|codex/, domains: ["chatgpt.com", "openai.com"] },
+  { name: "Cursor", match: /cursor/, domains: ["cursor.com", "cursor.sh"] },
+  { name: "Gemini", match: /gemini|google/, domains: [], hosts: ["gemini.google.com"] },
+  { name: "GitHub Copilot", match: /copilot|github/, domains: ["githubcopilot.com"], hosts: ["github.com"] },
+  { name: "LockIn", match: /lockin/, domains: [] },
 ];
+
+// Letters from other scripts that look like Latin ones, so "Сlaude" (a
+// Cyrillic С) reads as the name it imitates.
+const LOOKALIKES: Record<string, string> = {
+  а: "a", в: "b", е: "e", к: "k", м: "m", н: "h", о: "o", р: "p", с: "c", т: "t", у: "y", х: "x", і: "i", ј: "j", ѕ: "s", ԁ: "d", ӏ: "l",
+  α: "a", β: "b", ε: "e", η: "n", ι: "i", κ: "k", ν: "v", ο: "o", ρ: "p", τ: "t", υ: "u", χ: "x",
+  "0": "o", "1": "l", "3": "e", "5": "s", "@": "a", "$": "s",
+};
+
+/**
+ * A name reduced to what it looks like, for matching only: compatibility
+ * forms folded (ｃｌａｕｄｅ), accents and invisible characters dropped,
+ * look-alike letters mapped to Latin, and everything but letters removed, so
+ * "C l a u d e", "Cl\u200Baude" and "Сlaude" all read "claude". Pure.
+ */
+export function nameSkeleton(name: string): string {
+  return [...name.normalize("NFKD").toLowerCase()]
+    .map((ch) => LOOKALIKES[ch] ?? ch)
+    .join("")
+    .replace(/[^a-z]/g, "");
+}
 
 const onDomain = (host: string, domain: string) => host === domain || host.endsWith(`.${domain}`);
 
 /**
  * The well-known app a client's self-chosen name claims to be, when the place
- * it sends people back to (`host`) isn't that app's domain. Null when the name
- * claims nothing, or the host fits. An app on this computer (a loopback
- * redirect) is never flagged: the consent page already says it's local, and a
- * local app is one the user started. `ownHost` is this instance, for "LockIn".
+ * it sends people back to (`host`) isn't that app's. Null when the name claims
+ * nothing, or the host fits. An app on this computer (a loopback redirect) is
+ * never flagged: the consent page already says it's local, and a local app is
+ * one the user started. `ownHost` is this instance, for "LockIn".
  */
 export function impersonates(name: string, host: string, ownHost: string): string | null {
   const h = host.toLowerCase().replace(/\.+$/, "");
   if (LOOPBACK.has(h)) return null;
+  const skeleton = nameSkeleton(name);
   for (const app of KNOWN_APPS) {
-    if (!app.match.test(name)) continue;
-    const domains = app.name === "LockIn" ? [ownHost.toLowerCase()] : app.domains;
-    if (!domains.some((d) => onDomain(h, d))) return app.name;
+    if (!app.match.test(skeleton)) continue;
+    const hosts = app.name === "LockIn" ? [ownHost.toLowerCase()] : (app.hosts ?? []);
+    if (!hosts.includes(h) && !app.domains.some((d) => onDomain(h, d))) return app.name;
   }
   return null;
 }
