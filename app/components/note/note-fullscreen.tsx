@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useRef } from "react";
 import { createPortal } from "react-dom";
 import { Minimize2, Pencil } from "lucide-react";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useNoteDraft } from "@/hooks/useNoteDraft";
+import { useImmersiveSheet } from "@/hooks/useImmersiveSheet";
 import { NoteConflict } from "./note-conflict";
 import { Markdown } from "@/app/components/subject/markdown";
 import { NotesEditor } from "@/app/components/subject/notes-editor-lazy";
@@ -13,10 +14,9 @@ import { isOwnNote, sourceLabel } from "@/lib/notes/source";
 import { pageLabel } from "@/lib/notes/page-label";
 import * as m from "motion/react-m";
 
-// One note and nothing else: the whole window becomes the page. It also asks
-// the browser for real full screen, and falls back to just covering the window
-// where that's refused (Safari in some contexts, embedded frames). Esc leaves;
-// while editing, the first Esc cancels the edit and the second leaves.
+// One note and nothing else: the whole window becomes the page
+// (useImmersiveSheet). Esc leaves; while editing, the first Esc cancels the
+// edit and the second leaves.
 export function NoteFullscreen({
   note,
   sectionTitle,
@@ -32,55 +32,14 @@ export function NoteFullscreen({
   const ago = useAgo();
   const draft = useNoteDraft(note);
   const sheetRef = useRef<HTMLDivElement>(null);
-  // Whatever opened the sheet (its Full screen button) gets focus back. Read
-  // on the first render, before the sheet takes focus.
-  const [opener] = useState(() => (document.activeElement instanceof HTMLElement ? document.activeElement : null));
-  const close = useEffectEvent(onClose);
   // Leaving browser full screen mid-edit keeps the page up, so the draft isn't
   // thrown away; Esc again (or Exit) closes it once the edit is done.
-  const browserExit = useEffectEvent(() => {
-    if (!draft.editing) onClose();
+  useImmersiveSheet(sheetRef, {
+    onClose,
+    onBrowserExit: () => {
+      if (!draft.editing) onClose();
+    },
   });
-
-  useEffect(() => {
-    const sheet = sheetRef.current;
-    sheet?.focus();
-    const scrollY = window.scrollY;
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
-
-    sheet?.requestFullscreen?.().catch(() => {});
-
-    // In browser full screen the browser takes Esc itself to leave it, and the
-    // keydown never arrives: follow it out instead.
-    // Entering it moves focus to <body>, so take it back.
-    const onFullscreenChange = () => {
-      if (document.fullscreenElement) sheet?.focus();
-      else browserExit();
-    };
-    // Outside browser full screen Esc comes to us. An editor that used the key
-    // (cancelling the edit) has already claimed it.
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !e.defaultPrevented) close();
-    };
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-      window.scrollTo({ top: scrollY });
-      // Leaving browser full screen resets focus to <body> once it settles, so
-      // hand focus back after that, not before, and only once the sheet is
-      // really gone (React's dev mode runs this cleanup and remounts it).
-      const refocus = () =>
-        requestAnimationFrame(() => {
-          if (!sheet?.isConnected) opener?.focus({ preventScroll: true });
-        });
-      if (document.fullscreenElement) document.exitFullscreen().then(refocus, refocus);
-      else refocus();
-    };
-  }, [opener]);
 
   return createPortal(
     <m.div

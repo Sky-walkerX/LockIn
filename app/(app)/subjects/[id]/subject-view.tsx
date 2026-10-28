@@ -15,6 +15,7 @@ import { SortableList } from "@/app/components/subject/sortable-list";
 import { RevealProvider } from "@/app/components/subject/reveal";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
+import { NoteZen } from "@/app/components/note/note-zen";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { parseOpen, revealPath, type RevealTarget } from "@/lib/search/path";
 import { ResourceReader } from "@/app/components/reader/resource-reader";
@@ -27,6 +28,7 @@ type Tab = "notes" | "resources" | "plan";
 
 // The URL carries everything a link might want to land on:
 //   ?note=<id>            a note on the Notes tab (the default tab)
+//   ?note=<id>&zen=1      that note in Zen, over the Notes tab
 //   ?tab=resources|plan   the other tabs
 //   ?read=<id>[&q=…]      the resource reader, over any tab
 //   ?open=<kind>:<id>     a search result: a note opens on Notes, a task or
@@ -42,6 +44,7 @@ export function SubjectView() {
   const noteParam = searchParams.get("note");
   const readId = searchParams.get("read");
   const passage = searchParams.get("q");
+  const zen = searchParams.get("zen") === "1";
 
   const href = useCallback(
     (params: Record<string, string | null>) => {
@@ -165,6 +168,19 @@ export function SubjectView() {
       <m.div key={tab} variants={fade} initial="hidden" animate="shown" exit="exit">
       {tab === "notes" && (
         <div className="lk-notes-frame">
+          <AnimatePresence>
+            {zen && shown && (
+              <NoteZen
+                key="zen"
+                notes={notes}
+                noteId={shown.id}
+                sectionTitle={subject.title}
+                color={subject.color ?? FALLBACK}
+                onNavigate={(noteId) => router.replace(href({ note: noteId, zen: "1" }), { scroll: false })}
+                onClose={() => router.replace(href({ note: shown.id }), { scroll: false })}
+              />
+            )}
+          </AnimatePresence>
           <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
             <NoteList
               subjectId={subject.id}
@@ -183,6 +199,7 @@ export function SubjectView() {
                 sectionTitle={subject.title}
                 planHref={href({ tab: "plan" })}
                 backHref={href({})}
+                zenHref={href({ note: shown.id, zen: "1" })}
                 startEditing={justCreated === shown.id}
                 onDeleted={() => router.replace(href({}), { scroll: false })}
                 onMoved={() => router.replace(href({}), { scroll: false })}

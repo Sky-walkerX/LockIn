@@ -7,6 +7,7 @@ import { useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { format } from "date-fns";
 import {
   ArrowRight,
+  BookOpen,
   BookmarkPlus,
   CornerDownLeft,
   MessageSquare,
@@ -226,6 +227,24 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
     { key: "go-focus", label: "Go to Focus", tag: "go", icon: Timer, run: go("/focus") },
     { key: "go-analytics", label: "Go to Progress", tag: "go", icon: ArrowRight, run: go("/analytics") },
     { key: "go-settings", label: "Go to Settings", tag: "go", icon: ArrowRight, run: go("/settings") },
+    // On a section's notes or the Inbox, the note open there (or the newest)
+    // opens in Zen.
+    ...((pathname === "/inbox" || routeSubjectId) && !new URLSearchParams(window.location.search).get("tab")
+      ? [
+          {
+            key: "zen",
+            label: "Read in Zen",
+            tag: "read",
+            icon: BookOpen,
+            run: () => {
+              const q = new URLSearchParams(window.location.search);
+              q.set("zen", "1");
+              onClose();
+              router.push(`${pathname}?${q}`, { scroll: false });
+            },
+          },
+        ]
+      : []),
     {
       key: "theme",
       label: isDark ? "Switch to light paper" : "Switch to dark paper",

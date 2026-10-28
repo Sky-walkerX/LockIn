@@ -10,6 +10,8 @@ import { useClock } from "@/app/components/clock";
 import { RuledBoxes } from "@/app/components/notebook/ruled-boxes";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
+import { NoteZen } from "@/app/components/note/note-zen";
+import { AnimatePresence } from "motion/react";
 import { Skeleton } from "@/app/components/ui/skeleton";
 
 // Notes that aren't filed under a section yet: quick captures from "New note",
@@ -34,6 +36,7 @@ function Inbox() {
   const clock = useClock();
 
   const noteParam = searchParams.get("note");
+  const zen = searchParams.get("zen") === "1";
 
   // "New note" (spine or phone bar) lands here with ?new=1: focus the field,
   // then drop the flag so the next click focuses it again.
@@ -45,6 +48,7 @@ function Inbox() {
     router.replace(noteParam ? `/inbox?note=${noteParam}` : "/inbox", { scroll: false });
   }, [wantsNew, ready, noteParam, router]);
   const href = useCallback((note: string | null) => (note ? `/inbox?note=${note}` : "/inbox"), []);
+  const zenHref = useCallback((note: string) => `/inbox?note=${note}&zen=1`, []);
 
   if (inboxError) {
     return (
@@ -91,6 +95,20 @@ function Inbox() {
         </p>
       </header>
 
+      <AnimatePresence>
+        {zen && shown && (
+          <NoteZen
+            key="zen"
+            notes={notes}
+            noteId={shown.id}
+            sectionTitle="Inbox"
+            color={null}
+            onNavigate={(id) => router.replace(zenHref(id), { scroll: false })}
+            onClose={() => router.replace(href(shown.id), { scroll: false })}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="lk-notes-frame">
         <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
           <NoteList
@@ -111,6 +129,7 @@ function Inbox() {
               sectionTitle="Inbox"
               planHref={null}
               backHref={href(null)}
+              zenHref={zenHref(shown.id)}
               startEditing={justCreated === shown.id}
               onDeleted={() => router.replace(href(null), { scroll: false })}
               onMoved={() => router.replace(href(null), { scroll: false })}

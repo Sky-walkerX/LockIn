@@ -134,6 +134,14 @@ Restrained: neutrals plus ink, with colour reserved for meaning.
 
 Code colours come from `--syntax-*` tokens shared by rendered notes (`.hljs-*`) and the CodeMirror editor.
 
+### Zen
+
+Zen (`note/note-zen.tsx`) is the one surface that's dark whatever the theme: a section's notes read one after another on "soft ink", near-black rather than black, with warm off-white ink that blooms less over a long read.
+
+- **Paper** `#0e1113`, **ink** `#dcd8cf`, **muted** `#8b918d`, **code and figures** `#161a1d`, **rules** `#23292c`, **pen blue** `#8fb3e6`.
+- The subject's colour mixes 70% toward the ink (rather than 86%) and appears only as the short rule under the title, the section name and the reading-progress line.
+- No grid, no margin rule, no stamp. Body at 21px / 1.75 (19px on phones) in a 720px column. The controls fade after 2.5s without the pointer moving.
+
 ## Typography
 
 Four families, each with one job.
@@ -181,6 +189,7 @@ Corners are 2–4px everywhere; the only round shape is the avatar. Rules carry 
 - **Ruled boxes** (`notebook/ruled-boxes.tsx`): a printed label over a value in the reading serif. 4 cells on desktop, 2×2 on phones.
 - **Contents table** (`home/contents.tsx`): entry title and excerpt, section tab, plan count, relative time. Rows link to the note.
 - **Note list** (`note/note-list.tsx`): a dashed "New note…" field on top, then rows of title, excerpt and age. The selected row becomes a paper sheet with its title in the subject's ink.
+- **Zen** (`note/note-zen.tsx`): opened by the note toolbar's book button, `Z`, or "Read in Zen" in the palette; `?zen=1` in the URL. ←/→ (or `[`/`]`) turn the page, Esc leaves on the note last read.
 - **Note page** (`note/note-view.tsx`): running head (section · Note, updated time), title (click to rename), provenance line for agent notes, toolbar (Plan link, Edit, Ask this note, Move, Share, Delete), then the body on clean paper.
 - **Stamp** (`.lk-stamp`): red condensed caps in a 1.5px red border, rotated −2°.
 - **Buttons**: `.lk-btn` is solid ink with printed caps; `.lk-note-bar-btn` is the secondary outline; `.lk-iconbtn` is the 26px ghost for row actions.

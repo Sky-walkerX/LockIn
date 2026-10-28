@@ -196,6 +196,28 @@
   --syntax-selection: #2b3c3e;
 }
 
+/* Zen's paper (note-zen.tsx): dark paper softened, whatever the theme. Set
+   here, beside .dark and outside the layers, so it wins over both. */
+.dark.lk-zen {
+    --background: #0e1113;
+    --card: #0e1113;
+    --card-foreground: #dcd8cf;
+    --popover: #13171a;
+    --foreground: #dcd8cf;
+    --muted: #161a1d;
+    --secondary: #161a1d;
+    --muted-foreground: #8b918d;
+    --border: #23292c;
+    --input: #2e3539;
+    --lk-ink-strong: #a9aca5;
+    --lk-live: #8fb3e6;
+    --syntax-heading: #dcd8cf;
+    --syntax-link: #8fb3e6;
+    --syntax-keyword: #8fb3e6;
+    --syntax-selection: #262c30;
+    --c-eff: color-mix(in oklab, var(--c) 70%, var(--foreground));
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -626,6 +648,102 @@
   /* Subject colour, set with `style="--c: #hex"` on the element or an ancestor
      with .lk-subject. Mixed a step toward the ink so it reads on both papers. */
   .lk-subject { --c-eff: color-mix(in oklab, var(--c) 86%, var(--foreground)); }
+
+  /* Zen: a section's notes read one after another (note-zen.tsx). Dark
+     whatever the theme, since the sheet carries .dark, and softer than dark
+     paper: near-black rather than black, with warm off-white ink, which
+     blooms less over a long read (its paper is set beside .dark's). No grid,
+     no margin rule, and the controls fade while you read. */
+  .lk-zen {
+    position: fixed; inset: 0; z-index: 80;
+    overflow-y: auto; outline: none;
+    background: var(--background); color: var(--foreground);
+    padding: 0 20px 120px;
+    scrollbar-color: #2a3034 transparent;
+  }
+  .lk-zen ::selection { background: color-mix(in oklab, var(--c) 32%, transparent); }
+  .lk-zen[data-idle] { cursor: none; }
+  .lk-zen-bar {
+    position: sticky; top: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    max-width: 720px; margin: 0 auto; padding: 14px 0 18px;
+    background: linear-gradient(var(--background) 65%, transparent);
+    transition: opacity 600ms var(--lk-ease-settle);
+  }
+  .lk-zen[data-idle] .lk-zen-bar:not(:focus-within) { opacity: 0; }
+  .lk-zen-where {
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted-foreground); font-variant-numeric: tabular-nums;
+  }
+  .lk-zen-where b { color: var(--c-eff); font-weight: 700; }
+  .lk-zen-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 9px; border-radius: 2px; font-size: 14px;
+    color: var(--muted-foreground);
+    transition: color var(--lk-dur-1) var(--lk-ease-settle), background var(--lk-dur-1) var(--lk-ease-settle);
+  }
+  .lk-zen-btn:hover:not(:disabled) { color: var(--foreground); background: var(--muted); }
+  .lk-zen-btn:disabled { opacity: 0.35; }
+  .lk-zen-btn kbd { font-size: 12px; opacity: 0.7; }
+
+  .lk-zen-page { max-width: 720px; margin: 0 auto; padding-top: clamp(24px, 8vh, 88px); }
+  .lk-zen-runhead {
+    margin: 0 0 18px;
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .lk-zen-title {
+    margin: 0;
+    font-family: var(--lk-font-prose); font-weight: 600;
+    font-size: clamp(32px, 4.4vw, 46px); line-height: 1.12; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .lk-zen-rule { width: 48px; height: 2px; background: var(--c-eff); margin: 22px 0 30px; }
+  .lk-zen-provenance {
+    margin: -12px 0 26px;
+    font-family: var(--lk-font-prose); font-style: italic; font-size: 16px;
+    color: var(--muted-foreground);
+  }
+  .lk-zen-body .lk-prose { font-size: 21px; line-height: 1.75; }
+  .lk-zen-body .lk-prose pre { font-size: 14.5px; }
+  .lk-zen .lk-prose .lk-fig { background: var(--muted); }
+  .lk-zen-empty { font-family: var(--lk-font-prose); font-style: italic; font-size: 18px; color: var(--muted-foreground); }
+
+  .lk-zen-end { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .lk-zen-next {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 16px;
+    width: 100%; padding: 12px 0; text-align: left;
+    color: var(--muted-foreground);
+  }
+  .lk-zen-next-label {
+    font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .lk-zen-next-title {
+    grid-column: 1;
+    font-family: var(--lk-font-prose); font-weight: 600; font-size: 22px; line-height: 1.25;
+    color: var(--foreground);
+    transition: color var(--lk-dur-1) var(--lk-ease-settle);
+  }
+  .lk-zen-next svg { grid-column: 2; grid-row: 1 / span 2; transition: transform var(--lk-dur-1) var(--lk-ease-settle); }
+  .lk-zen-next:hover .lk-zen-next-title { color: var(--c-eff); }
+  .lk-zen-next:hover svg { transform: translateX(4px); }
+  .lk-zen-fin { font-family: var(--lk-font-prose); font-style: italic; font-size: 17px; color: var(--muted-foreground); }
+  .lk-zen-fin button { font-style: normal; text-decoration: underline; text-underline-offset: 3px; }
+  .lk-zen-fin button:hover { color: var(--foreground); }
+
+  /* How far through the note you are. */
+  .lk-zen-progress {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 2px;
+    background: var(--c-eff); opacity: 0.8; transform-origin: 0 50%;
+  }
+
+  @media (max-width: 640px) {
+    .lk-zen-body .lk-prose { font-size: 19px; line-height: 1.7; }
+    .lk-zen-btn kbd { display: none; }
+  }
 
   .lk-card {
     background: var(--card);
