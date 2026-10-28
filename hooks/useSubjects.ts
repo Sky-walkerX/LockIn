@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Subject, Milestone, Task, Subtask } from "@/app/generated/prisma/browser";
+import type { Chapter, Subject, Milestone, Task, Subtask } from "@/app/generated/prisma/browser";
 import type { ResourceRow } from "./useResources";
 import { api } from "@/lib/fetcher";
 import { queryKeys } from "@/lib/query-keys";
@@ -34,6 +34,7 @@ export type MilestoneWithTasks = Milestone & {
 
 export type SubjectDetail = Subject & {
   milestones: MilestoneWithTasks[];
+  chapters: Chapter[]; // named groups of the notes (lib/notes/chapters.ts)
   tasks: TaskWithSubtasks[]; // loose tasks (no milestone)
   resources: ResourceRow[];
 };

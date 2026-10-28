@@ -87,6 +87,8 @@ export async function insertNote(
     anchor?: AnchorInput;
     supersedesId?: string;
     captureKey?: string;
+    /** A chapter of the same subject; the caller has checked it is one. */
+    chapterId?: string | null;
   },
 ): Promise<Milestone> {
   const source = input.source ?? WEB_SOURCE;
@@ -103,6 +105,7 @@ export async function insertNote(
       ...anchorData(input.anchor),
       supersedesId: input.supersedesId,
       captureKey: input.captureKey,
+      chapterId: input.chapterId ?? null,
     },
   });
 }
@@ -296,34 +299,45 @@ export async function saveNoteBody(userId: string, noteId: string, notes: string
 }
 
 /**
- * File a note under another subject (or the Inbox). Its tasks go with it, it
- * lands at the end of the target's notes, and its indexed chunks are dropped so
- * they rebuild under the new subject.
+ * Files a note under a subject, and within it a chapter. To another subject
+ * its tasks go with it, it lands at the end of the target's notes, and its
+ * indexed chunks are dropped so they rebuild under the new subject; it leaves
+ * its chapter unless `chapterId` names one in the target. Within its subject
+ * only the chapter changes (`null` takes it out of one), and it goes to the
+ * end of where it lands.
  */
 export async function moveNote(
   userId: string,
   id: string,
   subjectId: string,
-): Promise<Milestone | "note-missing" | "subject-missing"> {
-  const [note, target, last] = await Promise.all([
+  chapterId?: string | null,
+): Promise<Milestone | "note-missing" | "subject-missing" | "chapter-missing"> {
+  const [note, target, chapter, order] = await Promise.all([
     prisma.milestone.findFirst({
       where: { id, subject: { userId } },
       select: {
         id: true,
         subjectId: true,
+        chapterId: true,
         tasks: { select: { id: true, subtasks: { select: { id: true, children: { select: { id: true } } } } } },
       },
     }),
     prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } }),
-    prisma.milestone.findFirst({ where: { subjectId }, orderBy: { order: "desc" }, select: { order: true } }),
+    chapterId ? prisma.chapter.findFirst({ where: { id: chapterId, subjectId }, select: { id: true } }) : null,
+    nextOrder(subjectId),
   ]);
   if (!note) return "note-missing";
   if (!target) return "subject-missing";
-  if (note.subjectId === subjectId) return (await prisma.milestone.findUnique({ where: { id } }))!;
+  if (chapterId && !chapter) return "chapter-missing";
+
+  if (note.subjectId === subjectId) {
+    if (chapterId === undefined || chapterId === note.chapterId) return (await prisma.milestone.findUnique({ where: { id } }))!;
+    return prisma.milestone.update({ where: { id }, data: { chapterId, order } });
+  }
 
   const chunks = chunkSourcesOf(note);
   const [moved] = await prisma.$transaction([
-    prisma.milestone.update({ where: { id }, data: { subjectId, order: last ? last.order + 1 : 0 } }),
+    prisma.milestone.update({ where: { id }, data: { subjectId, chapterId: chapterId ?? null, order } }),
     prisma.task.updateMany({ where: { milestoneId: id }, data: { subjectId } }),
     prisma.noteChunk.deleteMany({
       where: { userId, OR: chunks.map((c) => ({ source: c.source, sourceId: { in: c.ids } })) },

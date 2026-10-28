@@ -12,6 +12,7 @@ export type SearchRow = {
   subjectId: string;
   subjectTitle: string;
   color: string | null;
+  // The level above: a task's note, or a note's chapter.
   milestoneTitle: string | null;
   taskTitle: string | null;
   // Set only for a nested item: the subtask it sits under.

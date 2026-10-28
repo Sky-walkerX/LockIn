@@ -2,6 +2,8 @@
 // copy of the plan to take elsewhere. Pure and structurally typed so it runs
 // the same on the server and in tests.
 
+import { readingOrder } from "@/lib/notes/chapters";
+
 type DateLike = Date | string;
 
 interface ExportSubtask {
@@ -32,8 +34,10 @@ export interface ExportSubject {
     confidence: "WEAK" | "OK" | "STRONG" | null;
     reviewDueAt: DateLike | null;
     weight: number;
+    chapterId?: string | null;
     tasks: ExportTask[];
   }[];
+  chapters?: { id: string; title: string }[];
   tasks: ExportTask[]; // loose tasks, no milestone
   resources: { title: string; url: string; type: "LINK" | "AI_CHAT" | "PDF" | "BOOK"; note: string | null }[];
 }
@@ -121,8 +125,13 @@ export function subjectToMarkdown(
       .join("\n"),
   );
 
-  for (const m of subject.milestones) {
-    blocks.push(`## ${m.isCompleted ? "✓ " : ""}${m.title}`);
+  // In reading order; a note in a chapter is headed with it, so the headings
+  // under it keep their depth.
+  const chapters = subject.chapters ?? [];
+  const chapterOf = new Map(chapters.map((c) => [c.id, c.title]));
+  for (const m of readingOrder(subject.milestones, chapters)) {
+    const chapter = m.chapterId ? chapterOf.get(m.chapterId) : undefined;
+    blocks.push(`## ${m.isCompleted ? "✓ " : ""}${chapter ? `${chapter} › ` : ""}${m.title}`);
     const meta = [
       m.confidence && `Confidence: ${m.confidence.toLowerCase()}`,
       m.isCompleted && m.reviewDueAt && `next review ${fmtDate(m.reviewDueAt, timeZone)}`,

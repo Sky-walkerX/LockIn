@@ -69,7 +69,24 @@ async function findSubject(userId: string, name: string) {
   });
   return matchSubject(subjects, name) ?? (/^inbox$/i.test(name.trim()) ? subjects.find((s) => s.isInbox) : null) ?? null;
 }
+const PLACE_SELECT = { select: { id: true, title: true, isInbox: true } } as const;
 const subjectName = (s: { title: string; isInbox: boolean }) => (s.isInbox ? "the Inbox" : s.title);
+
+/**
+ * A chapter of a subject by name or id. Agents file into chapters the user
+ * made and never make them, so a name that matches none comes back with the
+ * subject's chapters to say instead.
+ */
+async function findChapter(subjectId: string, name: string) {
+  const chapters = await prisma.chapter.findMany({
+    where: { subjectId },
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    select: { id: true, title: true },
+  });
+  return { hit: matchSubject(chapters, name), chapters };
+}
+const chapterList = (chapters: { title: string }[]) =>
+  chapters.length ? `Its chapters: ${chapters.map((c) => `"${c.title}"`).join(", ")}.` : "It has no chapters.";
 const noteUrl = (origin: string | null, subjectId: string, isInbox: boolean, noteId: string) =>
   origin ? (isInbox ? `${origin}/inbox?note=${noteId}` : `${origin}/subjects/${subjectId}?note=${noteId}`) : null;
 // The subject page opens the Plan tab and expands the rows down to this one.
@@ -130,7 +147,7 @@ const handler = createMcpHandler(
       {
         title: "List subjects",
         description:
-          "List the subjects (sections) in the user's notebook with how many notes each has, plus the Inbox where unfiled notes wait. Call this before save_note to pick the right subject.",
+          "List the subjects (sections) in the user's notebook with how many notes each has and the chapters they're grouped into, plus the Inbox where unfiled notes wait. Call this before save_note to pick the right subject and chapter.",
         inputSchema: z.object({}),
         annotations: { readOnlyHint: true },
       },
@@ -139,10 +156,24 @@ const handler = createMcpHandler(
         const subjects = await prisma.subject.findMany({
           where: { userId, isArchived: false },
           orderBy: [{ isInbox: "asc" }, { updatedAt: "desc" }],
-          select: { id: true, title: true, isInbox: true, _count: { select: { milestones: true } } },
+          select: {
+            id: true,
+            title: true,
+            isInbox: true,
+            _count: { select: { milestones: true } },
+            chapters: { orderBy: [{ order: "asc" }, { createdAt: "asc" }], select: { title: true, _count: { select: { notes: true } } } },
+          },
         });
         return text(
-          formatSubjects(subjects.map((s) => ({ id: s.id, title: s.title, isInbox: s.isInbox, noteCount: s._count.milestones }))),
+          formatSubjects(
+            subjects.map((s) => ({
+              id: s.id,
+              title: s.title,
+              isInbox: s.isInbox,
+              noteCount: s._count.milestones,
+              chapters: s.chapters.map((c) => ({ title: c.title, noteCount: c._count.notes })),
+            })),
+          ),
         );
       },
     );
@@ -237,19 +268,28 @@ const handler = createMcpHandler(
           title: z.string().trim().min(1).max(200).describe("A short title that says what the note is about"),
           body: z.string().max(100_000).describe("The note, in markdown. Maths in LaTeX: $…$ inline, $$…$$ on lines of their own"),
           subject: z.string().trim().max(200).optional().describe("An existing subject's name or id, e.g. \"Rust\""),
+          chapter: z
+            .string()
+            .trim()
+            .max(200)
+            .optional()
+            .describe("An existing chapter of that subject, by name or id (list_subjects shows them)"),
           ...ANCHOR,
         }),
         annotations: { readOnlyHint: false, destructiveHint: false },
       },
-      async ({ title, body, subject, repo, commit, commit_date, files }, ctx) => {
+      async ({ title, body, subject, chapter, repo, commit, commit_date, files }, ctx) => {
         const { userId, source, origin } = caller(ctx.http?.authInfo);
         const place = await placeNote(userId, subject);
+        // A chapter only means something in the subject the note landed in.
+        const filed = chapter && !place.isInbox ? await findChapter(place.subjectId, chapter) : null;
         const date = commitDate(commit_date);
         const note = await insertNote(userId, place.subjectId, {
           title,
           notes: body,
           source,
           anchor: { repo, commit, commitAt: date.at, files },
+          chapterId: filed?.hit?.id ?? null,
         });
         // Looked up before the note is indexed, so it can't find itself.
         const related = await relatedNotes(userId, note).catch((e) => {
@@ -261,10 +301,17 @@ const handler = createMcpHandler(
           ? place.requested
             ? `the Inbox (there's no subject called "${place.requested}"; call list_subjects to see them)`
             : "the Inbox"
-          : place.subjectTitle;
+          : `${place.subjectTitle}${filed?.hit ? ` › ${filed.hit.title}` : ""}`;
+        const missed = !chapter
+          ? ""
+          : place.isInbox
+            ? `\nIt isn't in a chapter: the Inbox has none.`
+            : !filed?.hit
+              ? `\nThere's no chapter called "${chapter}" in ${place.subjectTitle}, so it isn't in one. ${chapterList(filed?.chapters ?? [])} Move it with move_note.`
+              : "";
         const url = noteUrl(origin, place.subjectId, place.isInbox, note.id);
         return text(
-          `Saved "${note.title}" to ${where}, on page ${note.page}. Note id ${note.id}.\nIt shows as recorded by ${sourceLabel(source)} and waits for the user to witness it.${url ? `\n${url}` : ""}${date.warning}${formatRelated(note.id, related)}`,
+          `Saved "${note.title}" to ${where}, on page ${note.page}. Note id ${note.id}.\nIt shows as recorded by ${sourceLabel(source)} and waits for the user to witness it.${missed}${url ? `\n${url}` : ""}${date.warning}${formatRelated(note.id, related)}`,
         );
       },
     );
@@ -600,23 +647,47 @@ const handler = createMcpHandler(
       "move_note",
       {
         title: "Move a note",
-        description: "File a note under another subject, e.g. out of the Inbox. Its tasks go with it. The subject must already exist.",
+        description:
+          "File a note under another subject (e.g. out of the Inbox), into a chapter of a subject, or both. Its tasks go with it. With only chapter, it moves within its own subject; chapter \"\" takes it out of its chapter. Subjects and chapters must already exist.",
         inputSchema: z.object({
           id: z.string().min(1).max(64).describe("The note's id"),
-          subject: z.string().trim().min(1).max(200).describe("The subject's name or id, or \"Inbox\""),
+          subject: z.string().trim().min(1).max(200).optional().describe("The subject's name or id, or \"Inbox\""),
+          chapter: z.string().trim().max(200).optional().describe("A chapter of that subject by name or id, or \"\" for none"),
         }),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
       },
-      async ({ id, subject }, ctx) => {
+      async ({ id, subject, chapter }, ctx) => {
         const { userId, origin } = caller(ctx.http?.authInfo);
-        const target = await findSubject(userId, subject);
-        if (!target) return noSubject(subject);
-        const moved = await moveNote(userId, id, target.id);
+        if (subject === undefined && chapter === undefined) return failed("Give a subject, a chapter, or both.");
+        let target: { id: string; title: string; isInbox: boolean } | null;
+        if (subject !== undefined) {
+          target = await findSubject(userId, subject);
+          if (!target) return noSubject(subject);
+        } else {
+          const note = await prisma.milestone.findFirst({ where: { id, subject: { userId } }, select: { subject: PLACE_SELECT } });
+          if (!note) return failed(`No note with id ${id} in this notebook.`);
+          target = note.subject;
+        }
+        let chapterId: string | null | undefined;
+        let chapterTitle: string | null = null;
+        if (chapter !== undefined) {
+          if (!chapter) chapterId = null;
+          else if (target.isInbox) return failed("The Inbox has no chapters.");
+          else {
+            const { hit, chapters } = await findChapter(target.id, chapter);
+            if (!hit) return failed(`There's no chapter called "${chapter}" in ${target.title}. ${chapterList(chapters)}`);
+            chapterId = hit.id;
+            chapterTitle = hit.title;
+          }
+        }
+        const moved = await moveNote(userId, id, target.id, chapterId);
         if (moved === "note-missing") return failed(`No note with id ${id} in this notebook.`);
-        if (moved === "subject-missing") return noSubject(subject);
+        if (moved === "subject-missing") return noSubject(subject ?? target.title);
+        if (moved === "chapter-missing") return failed(`That chapter isn't in ${target.title} any more.`);
         indexAfterReply(userId, moved.id);
         const url = noteUrl(origin, target.id, target.isInbox, moved.id);
-        return text(`"${moved.title}" is now in ${subjectName(target)}, with its tasks.${url ? `\n${url}` : ""}`);
+        const where = `${subjectName(target)}${chapterTitle ? ` › ${chapterTitle}` : chapterId === null ? ", in no chapter" : ""}`;
+        return text(`"${moved.title}" is now in ${where}, with its tasks.${url ? `\n${url}` : ""}`);
       },
     );
 

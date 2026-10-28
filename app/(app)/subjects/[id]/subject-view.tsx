@@ -16,6 +16,7 @@ import { RevealProvider } from "@/app/components/subject/reveal";
 import { NoteList } from "@/app/components/note/note-list";
 import { NoteView } from "@/app/components/note/note-view";
 import { NoteZen } from "@/app/components/note/note-zen";
+import { readingOrder } from "@/lib/notes/chapters";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { parseOpen, revealPath, type RevealTarget } from "@/lib/search/path";
 import { ResourceReader } from "@/app/components/reader/resource-reader";
@@ -127,7 +128,9 @@ export function SubjectView() {
     );
   }
 
-  const notes = subject.milestones;
+  // Loose notes, then each chapter's: the order the list, Zen and "newest
+  // first" all read from.
+  const notes = readingOrder(subject.milestones, subject.chapters);
   const selected = notes.find((n) => n.id === noteParam) ?? null;
   // Wide screens always show a page: the requested note, else the most recently
   // written one. Phones show the list until a note is picked.
@@ -175,6 +178,7 @@ export function SubjectView() {
                 notes={notes}
                 noteId={shown.id}
                 sectionTitle={subject.title}
+                chapters={subject.chapters}
                 color={subject.color ?? FALLBACK}
                 onNavigate={(noteId) => router.replace(href({ note: noteId, zen: "1" }), { scroll: false })}
                 onClose={() => router.replace(href({ note: shown.id }), { scroll: false })}
@@ -184,7 +188,9 @@ export function SubjectView() {
           <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
             <NoteList
               subjectId={subject.id}
+              sectionTitle={subject.title}
               notes={notes}
+              chapters={subject.chapters}
               selectedId={shown?.id ?? null}
               hrefFor={(noteId) => href({ note: noteId })}
               onCreated={(noteId) => {
@@ -197,6 +203,7 @@ export function SubjectView() {
                 key={shown.id}
                 note={shown}
                 sectionTitle={subject.title}
+                chapterTitle={subject.chapters.find((c) => c.id === shown.chapterId)?.title}
                 planHref={href({ tab: "plan" })}
                 backHref={href({})}
                 zenHref={href({ note: shown.id, zen: "1" })}

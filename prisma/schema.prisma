@@ -272,6 +272,7 @@ model Subject {
   userId String
 
   milestones    Milestone[]
+  chapters      Chapter[]
   resources     Resource[]
   tasks         Task[]
   conversations Conversation[]
@@ -347,6 +348,11 @@ model Milestone {
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId String
 
+  // The chapter it sits in within its subject, if any. A chapter that's
+  // deleted leaves its notes loose in the subject.
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  chapterId String?
+
   tasks    Task[]
   handoffs Handoff[]
 
@@ -354,6 +360,24 @@ model Milestone {
   @@index([subjectId, updatedAt(sort: Desc)])
   @@index([reviewDueAt])
   @@index([supersedesId])
+  @@index([chapterId])
+}
+
+// A named group of notes inside a subject: one level, no nesting. A subject's
+// notes read loose ones first, then each chapter's in turn (lib/notes/chapters.ts).
+model Chapter {
+  id        String   @id @default(uuid())
+  title     String
+  order     Int      @default(0) // manual ordering within a subject
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId String
+
+  notes Milestone[]
+
+  @@index([subjectId, order])
 }
 
 model Task {

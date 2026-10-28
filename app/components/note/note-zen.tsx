@@ -26,10 +26,12 @@ const editable = (t: EventTarget | null) =>
 // note last read. Reading only: editing and
 // witnessing happen on the note's page.
 type Props = {
-  /** The section's notes, in their order. */
+  /** The section's notes, in reading order (lib/notes/chapters.ts). */
   notes: MilestoneWithTasks[];
   noteId: string;
   sectionTitle: string;
+  /** The section's chapters, to say which one a note is in. */
+  chapters?: { id: string; title: string }[];
   /** The subject's colour. The sheet is portalled out of the page that sets it. */
   color: string | null;
   onNavigate: (noteId: string) => void;
@@ -46,7 +48,7 @@ export function NoteZen(props: Props) {
   return inBrowser ? <ZenSheet {...props} /> : null;
 }
 
-function ZenSheet({ notes, noteId, sectionTitle, color, onNavigate, onClose }: Props) {
+function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, onClose }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const jump = useJump();
   // In browser full screen the browser takes Esc to leave it, so the Esc that
@@ -61,6 +63,7 @@ function ZenSheet({ notes, noteId, sectionTitle, color, onNavigate, onClose }: P
 
   const at = Math.max(0, notes.findIndex((n) => n.id === noteId));
   const note = notes[at];
+  const chapterTitle = note?.chapterId ? chapters?.find((c) => c.id === note.chapterId)?.title : undefined;
   const prev = notes[at - 1] ?? null;
   const next = notes[at + 1] ?? null;
 
@@ -154,6 +157,7 @@ function ZenSheet({ notes, noteId, sectionTitle, color, onNavigate, onClose }: P
         <m.article key={note.id} className="lk-zen-page" variants={fade} initial="hidden" animate="shown" exit="exit">
           <p className="lk-zen-runhead">
             {sectionTitle}
+            {chapterTitle && <> · {chapterTitle}</>}
             {note.page != null && <> · {pageLabel(note.page)}</>}
           </p>
           <h1 id="zen-note-title" className="lk-zen-title">

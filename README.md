@@ -229,11 +229,11 @@ Tools:
 
 | Tool | |
 |---|---|
-| `list_subjects` | Subjects and how many notes each has, plus the Inbox. |
+| `list_subjects` | Subjects, how many notes each has and the chapters they're grouped into, plus the Inbox. |
 | `search_notes` | By meaning when the ingest service runs, and always by keyword. Notes and resources come with their page. |
 | `get_note` | One note, task or subtask in full by its id. A note comes with its plan: tasks, their notes and nested subtasks. |
 | `get_plan` | A subject's whole plan: each note's tasks and subtasks with what's done, plus tasks under no note. |
-| `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. A note about code can say which repo, commit (and its date) and files it describes. The reply lists notes that look related, so the agent can say if its note replaces one. |
+| `save_note` | A new note under a named subject, and optionally one of its chapters. With no subject, or one that doesn't exist, it goes to the Inbox. A note about code can say which repo, commit (and its date) and files it describes. The reply lists notes that look related, so the agent can say if its note replaces one. |
 | `upload_image` | A one-time link the agent uploads a PNG, JPEG, GIF or WebP to with `curl` (up to 10 MB), and the markdown that shows it in a note. The file never passes through the model. |
 | `append_to_note` | Adds to the end of a note. Never replaces anything. On a note the same agent recorded it just continues it; on anyone else's it goes under a dated "From Codex" line. |
 | `edit_note` | Retitles a note, or replaces one exact passage in it. Only notes that agent recorded; yours stay append-only. The note goes back to "To witness". |
@@ -244,7 +244,7 @@ Tools:
 | `save_handoff` | Leaves a baton for the next agent: the goal, where the work stands, what was ruled out, the next step and the pages to read first. |
 | `pickup_handoff` | Takes the open baton for a subject or repo, with the text of the pages it pins. Also an MCP prompt, `pickup`. |
 | `capture_session` | Files a session's summary as one note per session. The Claude Code plugin calls it when a session compacts and when it ends. |
-| `move_note` | Files a note under another subject, or the Inbox. Its tasks go with it. |
+| `move_note` | Files a note under another subject, or the Inbox, or into a chapter. Its tasks go with it. Agents file into chapters you made; they don't make them. |
 | `add_task` | A task under a note, or in a subject's tasks that aren't under a note. |
 | `add_subtask` | A subtask under a task, or under one of its top-level subtasks. |
 | `update_plan_item` | Ticks a task or subtask done or not done, renames it, or adds to its notes. Completing a recurring task schedules the next one. |

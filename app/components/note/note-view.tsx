@@ -33,6 +33,7 @@ const retires = (old: { page: number | null; title: string }) => (old.page != nu
 export function NoteView({
   note,
   sectionTitle,
+  chapterTitle,
   planHref,
   backHref,
   zenHref,
@@ -42,6 +43,8 @@ export function NoteView({
 }: {
   note: MilestoneWithTasks;
   sectionTitle: string;
+  /** The chapter of the section it's in, if any. */
+  chapterTitle?: string | null;
   /** Null where the note has no Plan to show (the Inbox). */
   planHref: string | null;
   /** Phones show the list or the page, never both: this leads back to the list. */
@@ -107,7 +110,8 @@ export function NoteView({
           <ArrowLeft size={13} /> All notes
         </Link>
         <span className="lk-note-where">
-          <b>{sectionTitle}</b> · Note{note.page != null && <> · {pageLabel(note.page)}</>}
+          <b>{sectionTitle}</b>
+          {chapterTitle && <> · {chapterTitle}</>} · Note{note.page != null && <> · {pageLabel(note.page)}</>}
         </span>
         <span>Updated {ago(note.updatedAt)}</span>
       </div>

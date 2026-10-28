@@ -11,6 +11,7 @@ import { useSubject, useSubjects } from "@/hooks/useSubjects";
 import { useInbox } from "@/hooks/useInbox";
 import { useSearch } from "@/hooks/useSearch";
 import { excerpt } from "@/lib/notes/excerpt";
+import { readingOrder } from "@/lib/notes/chapters";
 import { card, fade } from "@/lib/motion";
 
 const FALLBACK = "#8b8f9e";
@@ -152,18 +153,23 @@ function JumpPanel({ zen, onClose }: { zen: boolean; onClose: () => void }) {
 
   let rows: Row[];
   if (scope) {
-    // Notes whose titles match come first, then those that only mention it.
-    const all = scoped?.milestones ?? [];
-    const byTitle = all.filter((n) => matches(n.title));
-    const inBody = words.length ? all.filter((n) => !matches(n.title) && matches(n.notes)) : [];
+    // In reading order, each labelled with its chapter. Notes whose title (or
+    // chapter) matches come first, then those that only mention it.
+    const chapters = scoped?.chapters ?? [];
+    const chapterOf = (n: { chapterId: string | null }) => chapters.find((c) => c.id === n.chapterId)?.title ?? null;
+    const all = readingOrder(scoped?.milestones ?? [], chapters);
+    const named = (n: (typeof all)[number]) => matches(`${chapterOf(n) ?? ""} ${n.title}`);
+    const byTitle = all.filter(named);
+    const inBody = words.length ? all.filter((n) => !named(n) && matches(n.notes)) : [];
     rows = [...byTitle, ...inBody].map((n) => ({
-        key: `n-${n.id}`,
-        kind: "note",
-        label: n.title,
-        hint: excerpt(n.notes),
-        color: scoped?.color,
-        run: go(noteHref(scope, n.id)),
-      }));
+      key: `n-${n.id}`,
+      kind: "note",
+      label: n.title,
+      hint: excerpt(n.notes),
+      tag: chapterOf(n),
+      color: scoped?.color,
+      run: go(noteHref(scope, n.id)),
+    }));
   } else if (words.length) {
     const notes: Row[] = hits
       .filter((h) => h.kind === "milestone")
@@ -176,7 +182,7 @@ function JumpPanel({ zen, onClose }: { zen: boolean; onClose: () => void }) {
             kind: "note" as const,
             label: h.title,
             hint: h.snippet,
-            tag: isInbox(subjectId) ? "Inbox" : h.path[0],
+            tag: isInbox(subjectId) ? "Inbox" : h.path.join(" › "),
             color: h.color,
             run: go(noteHref(subjectId, h.id)),
           },

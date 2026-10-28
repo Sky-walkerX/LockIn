@@ -38,6 +38,8 @@ export const subjectTreeInclude = {
       },
     },
   },
+  // Named groups of its notes; each note says which it's in (chapterId).
+  chapters: { orderBy: [{ order: "asc" as const }, { createdAt: "asc" as const }] },
   tasks: { where: { milestoneId: null }, ...taskInclude },
   // The extracted document text can run to megabytes; nothing here needs it.
   resources: { orderBy: { createdAt: "desc" as const }, omit: { extracted: true } },

@@ -6,14 +6,23 @@ import { sourceLabel, awaitingWitness, isOwnNote } from "@/lib/notes/source";
 import { anchorForAgent, commitLabel, type Anchor } from "@/lib/notes/anchor";
 import { noteStatus, type Replacement, type StatusInput } from "@/lib/notes/status";
 
-export type SubjectLine = { id: string; title: string; isInbox: boolean; noteCount: number };
+export type SubjectLine = {
+  id: string;
+  title: string;
+  isInbox: boolean;
+  noteCount: number;
+  /** Its chapters in order, with how many notes each holds. */
+  chapters?: { title: string; noteCount: number }[];
+};
 
 export function formatSubjects(subjects: SubjectLine[]): string {
   if (subjects.length === 0) return "The notebook has no subjects yet. save_note without a subject files into the Inbox.";
   const lines = subjects.map((s) =>
     s.isInbox
       ? `- Inbox: ${s.noteCount} unfiled note${s.noteCount === 1 ? "" : "s"} (id ${s.id})`
-      : `- ${s.title}: ${s.noteCount} note${s.noteCount === 1 ? "" : "s"} (id ${s.id})`,
+      : `- ${s.title}: ${s.noteCount} note${s.noteCount === 1 ? "" : "s"} (id ${s.id})${
+          s.chapters?.length ? `; chapters: ${s.chapters.map((c) => `${c.title} (${c.noteCount})`).join(", ")}` : ""
+        }`,
   );
   return `Subjects in the user's notebook:\n${lines.join("\n")}`;
 }
@@ -129,6 +138,7 @@ export type NoteForAgent = Anchor &
     witnessedAt: Date | string | null;
     updatedAt: Date | string;
     subject: { title: string; isInbox: boolean };
+    chapter?: { title: string } | null;
     tasks: PlanTask[];
     supersedes: ({ id: string; page: number | null; title: string } & CommitRef) | null;
   };
@@ -160,7 +170,9 @@ function standing(note: NoteForAgent): string | null {
 export function formatNote(note: NoteForAgent, url: string | null): string {
   const meta = [
     note.page != null ? `Page ${note.page}` : null,
-    note.subject.isInbox ? "In the Inbox (not filed yet)" : `Subject: ${note.subject.title}`,
+    note.subject.isInbox
+      ? "In the Inbox (not filed yet)"
+      : `Subject: ${note.subject.title}${note.chapter ? ` › ${note.chapter.title}` : ""}`,
     isOwnNote(note.source) ? "Written by the user" : `Recorded by ${sourceLabel(note.source)}`,
     awaitingWitness(note) ? "Not yet witnessed by the user" : null,
     `Updated ${new Date(note.updatedAt).toISOString().slice(0, 10)}`,

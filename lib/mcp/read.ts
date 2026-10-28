@@ -74,6 +74,7 @@ export async function readById(userId: string, id: string): Promise<Found | null
       where: { id, subject: { userId } },
       include: {
         subject: PLACE,
+        chapter: { select: { title: true } },
         tasks: TASKS,
         supersedes: { select: { id: true, page: true, title: true, anchorCommit: true, anchorCommitAt: true } },
         supersededBy: REPLACEMENTS,

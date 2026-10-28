@@ -113,6 +113,7 @@ function Inbox() {
         <div className="lk-notes-pane" data-has-note={selected ? "" : undefined}>
           <NoteList
             subjectId={subject.id}
+            sectionTitle="Inbox"
             notes={notes}
             selectedId={shown?.id ?? null}
             hrefFor={(id) => href(id)}

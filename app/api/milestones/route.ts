@@ -12,6 +12,8 @@ const MilestoneSchema = z.object({
   title: f.title,
   notes: f.body.optional(),
   order: z.number().int().optional(),
+  // A chapter of the same subject to file it in.
+  chapterId: f.id.nullable().optional(),
   // Who's writing: "web" from the app, an agent's id over MCP.
   source: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9_-]{0,39}$/).optional(),
 });
@@ -39,17 +41,19 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid data", issues: parsed.error.issues }, { status: 400 });
   }
-  const { title, notes, order, source } = parsed.data;
+  const { title, notes, order, source, chapterId } = parsed.data;
   const subjectId = parsed.data.subjectId ?? (await getOrCreateInbox(userId));
 
   // Ownership check and order lookup run in parallel to keep create latency
   // low (a failed check just wastes one lookup).
-  const [subject, resolvedOrder] = await Promise.all([
+  const [subject, chapter, resolvedOrder] = await Promise.all([
     prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { id: true } }),
+    chapterId ? prisma.chapter.findFirst({ where: { id: chapterId, subjectId }, select: { id: true } }) : null,
     order ?? nextOrder(subjectId),
   ]);
   if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
+  if (chapterId && !chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
-  const milestone = await insertNote(userId, subjectId, { title, notes, order: resolvedOrder, source });
+  const milestone = await insertNote(userId, subjectId, { title, notes, order: resolvedOrder, source, chapterId });
   return NextResponse.json(milestone, { status: 201 });
 }

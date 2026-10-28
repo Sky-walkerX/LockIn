@@ -5,7 +5,7 @@ import type {
   TaskWithSubtasks,
   MilestoneWithTasks,
 } from "@/hooks/useSubjects";
-import type { Milestone, Subtask, Task } from "@/app/generated/prisma/client";
+import type { Chapter, Milestone, Subtask, Task } from "@/app/generated/prisma/client";
 
 // Helpers for optimistically patching the ["subject", id] detail caches so
 // completion toggles, creates, and reorders feel instant instead of waiting on
@@ -187,4 +187,49 @@ export function reorderMilestones(s: SubjectDetail, ids: string[]): SubjectDetai
   if (arr.length !== ids.length || !arr.every((m) => idSet.has(m.id))) return s;
   const byId = new Map(arr.map((m) => [m.id, m]));
   return { ...s, milestones: ids.map((id, index) => ({ ...byId.get(id)!, order: index })) };
+}
+
+// ── Chapters ───────────────────────────────────────────────────────────────
+
+export function addChapter(s: SubjectDetail, c: Chapter): SubjectDetail {
+  return s.id === c.subjectId ? { ...s, chapters: [...s.chapters, c] } : s;
+}
+
+/** Swaps a chapter's row for the server's, and with it the notes that pointed at the temp id. */
+export function replaceChapter(s: SubjectDetail, oldId: string, real: Chapter): SubjectDetail {
+  const chapters = mapList(s.chapters, (c) => (c.id === oldId ? { ...c, ...real } : c));
+  if (chapters === s.chapters) return s;
+  const milestones = mapList(s.milestones, (m) => (m.chapterId === oldId ? { ...m, chapterId: real.id } : m));
+  return { ...s, chapters, milestones };
+}
+
+export function renameChapter(s: SubjectDetail, id: string, title: string): SubjectDetail {
+  const chapters = mapList(s.chapters, (c) => (c.id === id ? { ...c, title } : c));
+  return chapters === s.chapters ? s : { ...s, chapters };
+}
+
+/** A deleted chapter's notes stay in the subject, in no chapter. */
+export function removeChapter(s: SubjectDetail, id: string): SubjectDetail {
+  if (!s.chapters.some((c) => c.id === id)) return s;
+  return {
+    ...s,
+    chapters: s.chapters.filter((c) => c.id !== id),
+    milestones: mapList(s.milestones, (m) => (m.chapterId === id ? { ...m, chapterId: null } : m)),
+  };
+}
+
+export function reorderChapters(s: SubjectDetail, ids: string[]): SubjectDetail {
+  const idSet = new Set(ids);
+  if (s.chapters.length !== ids.length || !s.chapters.every((c) => idSet.has(c.id))) return s;
+  const byId = new Map(s.chapters.map((c) => [c.id, c]));
+  return { ...s, chapters: ids.map((id, order) => ({ ...byId.get(id)!, order })) };
+}
+
+/** Files a note in a chapter of its own subject (null for none), at the end of it. */
+export function setNoteChapter(s: SubjectDetail, noteId: string, chapterId: string | null): SubjectDetail {
+  const note = s.milestones.find((m) => m.id === noteId);
+  if (!note || note.chapterId === chapterId) return s;
+  const moved = { ...note, chapterId, order: Number.MAX_SAFE_INTEGER };
+  // Moved to the end, as the server does, so it reads last in its new place.
+  return { ...s, milestones: [...s.milestones.filter((m) => m.id !== noteId), moved] };
 }

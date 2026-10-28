@@ -13,6 +13,12 @@ describe("formatSubjects", () => {
   it("says what to do in an empty notebook", () => {
     expect(formatSubjects([])).toMatch(/Inbox/);
   });
+  it("names a subject's chapters with their note counts", () => {
+    const text = formatSubjects([
+      { id: "s1", title: "Oppia", isInbox: false, noteCount: 4, chapters: [{ title: "Setup", noteCount: 3 }, { title: "Meetings", noteCount: 0 }] },
+    ]);
+    expect(text).toContain("- Oppia: 4 notes (id s1); chapters: Setup (3), Meetings (0)");
+  });
 });
 
 describe("formatSearch", () => {
@@ -76,6 +82,11 @@ describe("formatNote", () => {
     supersededBy: [],
     supersedes: null,
   };
+  it("says which chapter a note is in", () => {
+    expect(formatNote({ ...base, source: "web", witnessedAt: null, chapter: { title: "Locks" } }, null)).toContain(
+      "Subject: Distributed Systems › Locks",
+    );
+  });
   it("marks an agent's unwitnessed note and lists its plan", () => {
     const text = formatNote({ ...base, source: "claude-code", witnessedAt: null }, null);
     expect(text).toContain("# Advisory locks");

@@ -8,6 +8,7 @@ import {
   addMilestoneToSubject,
   replaceMilestone,
   reorderMilestones,
+  setNoteChapter,
   tempId,
 } from "@/lib/subject-cache";
 
@@ -30,7 +31,7 @@ export function useCreateMilestone() {
   const qc = useQueryClient();
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: (input: { subjectId: string; title: string; notes?: string; order?: number }) =>
+    mutationFn: (input: { subjectId: string; title: string; notes?: string; order?: number; chapterId?: string | null }) =>
       api.post<Milestone>("/api/milestones", input),
     onMutate: async (input) => {
       const optimistic: MilestoneWithTasks = {
@@ -63,6 +64,7 @@ export function useCreateMilestone() {
         createdAt: new Date(),
         updatedAt: new Date(),
         subjectId: input.subjectId,
+        chapterId: input.chapterId ?? null,
         tasks: [],
       };
       const prev = await patchSubjectCaches(qc, (s) => addMilestoneToSubject(s, optimistic));
@@ -170,15 +172,23 @@ export function useDeleteMilestone() {
   });
 }
 
-// File a note under another subject. Not optimistic: the note leaves one cached
-// subject and joins another, with its tasks, so both are refetched instead.
+// File a note under a subject and a chapter in it. Within its subject only
+// the chapter changes, so that's applied at once; to another subject the note
+// leaves one cached subject and joins another, with its tasks, so both are
+// refetched instead.
 export function useMoveMilestone() {
   const invalidate = useInvalidate();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, subjectId }: { id: string; subjectId: string }) =>
-      api.post<Milestone>(`/api/milestones/${id}/move`, { subjectId }),
-    onSuccess: () => {
+    mutationFn: ({ id, subjectId, chapterId }: { id: string; subjectId: string; chapterId?: string | null }) =>
+      api.post<Milestone>(`/api/milestones/${id}/move`, { subjectId, chapterId }),
+    onMutate: async ({ id, subjectId, chapterId }) => {
+      if (chapterId === undefined) return { prev: undefined };
+      const prev = await patchSubjectCaches(qc, (s) => (s.id === subjectId ? setNoteChapter(s, id, chapterId) : s));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
+    onSettled: () => {
       invalidate();
       qc.invalidateQueries({ queryKey: ["tasks"] });
       qc.invalidateQueries({ queryKey: ["reviews"] });

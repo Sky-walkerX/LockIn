@@ -31,6 +31,28 @@ describe("subjectToMarkdown", () => {
     expect(md).toContain("- Exported: 23 Sep 2026");
   });
 
+  it("writes notes in reading order, headed with their chapter", () => {
+    const note = (title: string, chapterId: string | null) => ({
+      title,
+      notes: "",
+      isCompleted: false,
+      confidence: null,
+      reviewDueAt: null,
+      weight: 1,
+      chapterId,
+      tasks: [],
+    });
+    const md = subjectToMarkdown(
+      {
+        ...base,
+        chapters: [{ id: "c1", title: "Paging" }],
+        milestones: [note("TLB", "c1"), note("Intro", null)],
+      },
+      opts,
+    );
+    expect(md.indexOf("## Intro")).toBeLessThan(md.indexOf("## Paging › TLB"));
+  });
+
   it("writes milestones as sections with their notes and a checklist", () => {
     const md = subjectToMarkdown(
       {

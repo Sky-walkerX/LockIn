@@ -21,10 +21,13 @@ SELECT * FROM (
     AND (s.title || ' ' || coalesce(s.description, '')) ILIKE ALL ($2::text[])
 
   UNION ALL
+  -- A note's own path is its subject, then its chapter (in the slot a task
+  -- uses for its note).
   SELECT 'milestone', m.id, m.title, m.notes, m."isCompleted", s.id, s.title, s.color,
-         NULL, NULL, NULL, NULL
+         c.title, NULL, NULL, NULL
   FROM "Milestone" m
   JOIN "Subject" s ON s.id = m."subjectId"
+  LEFT JOIN "Chapter" c ON c.id = m."chapterId"
   WHERE s."userId" = $1
     AND (m.title || ' ' || m.notes) ILIKE ALL ($2::text[])
     AND ${notReplacedSql("m.id")}
