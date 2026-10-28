@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
 import { publicOrigin } from "@/lib/http/origin";
-import { BUCKETS, putObject } from "@/lib/storage";
+import { BUCKETS, IMAGE_EXT, putObject } from "@/lib/storage";
 import { fitsQuota, quotaMessage, recordFile, removeFile, withinQuota } from "@/lib/storage/quota";
 import { countAgainst, tooMany } from "@/lib/limits/rate";
 
@@ -12,12 +12,6 @@ import { countAgainst, tooMany } from "@/lib/limits/rate";
 
 // 4MB keeps uploads under Vercel's 4.5MB serverless request-body cap.
 const MAX_BYTES = 4 * 1024 * 1024;
-const EXT: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/gif": "gif",
-  "image/webp": "webp",
-};
 
 export async function POST(request: NextRequest) {
   const userId = await getUserId(request);
@@ -30,7 +24,7 @@ export async function POST(request: NextRequest) {
   const file = form?.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "No file" }, { status: 400 });
 
-  const ext = EXT[file.type];
+  const ext = IMAGE_EXT[file.type];
   if (!ext) return NextResponse.json({ error: "Unsupported image type" }, { status: 415 });
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: "Image too large (max 4MB)" }, { status: 413 });

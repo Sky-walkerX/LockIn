@@ -21,6 +21,38 @@ export const CONTENT_TYPES: Record<string, string> = {
   pdf: "application/pdf",
 };
 
+/** The image types a note may hold, by MIME type, with the extension each is stored under. */
+export const IMAGE_EXT: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/gif": "gif",
+  "image/webp": "webp",
+};
+
+/** The largest image an agent may upload into a note: room for a Retina screenshot. */
+export const MAX_NOTE_IMAGE_BYTES = 10 * 1024 * 1024;
+
+/**
+ * Whether a file's first bytes are what its extension claims. Stored files
+ * are served under their extension's type, so a `.png` has to be a PNG.
+ * Only images are checked; anything else passes.
+ */
+export function looksLike(ext: string, head: Uint8Array): boolean {
+  const starts = (...bytes: number[]) => bytes.every((b, i) => head[i] === b);
+  switch (ext) {
+    case "png":
+      return starts(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
+    case "jpg":
+      return starts(0xff, 0xd8, 0xff);
+    case "gif":
+      return starts(0x47, 0x49, 0x46, 0x38);
+    case "webp":
+      return starts(0x52, 0x49, 0x46, 0x46) && [0x57, 0x45, 0x42, 0x50].every((b, i) => head[8 + i] === b);
+    default:
+      return true;
+  }
+}
+
 export function storageDriver(): "supabase" | "local" {
   const forced = process.env.STORAGE_DRIVER;
   if (forced === "local" || forced === "supabase") return forced;
@@ -129,6 +161,24 @@ export async function putObject(bucket: Bucket, objectPath: string, body: Blob, 
   return `${base}/storage/v1/object/public/${name}/${objectPath}`;
 }
 
+/** Where a stored file can be read, by its key: the public URL each backend gives it. */
+export function publicUrl(key: string, origin: string): string {
+  return storageDriver() === "local"
+    ? `${origin}/api/files/${key}`
+    : `${supabase().base}/storage/v1/object/public/${key}`;
+}
+
+/**
+ * A link to PUT one file to /api/files/upload, signed for its key and for at
+ * most `size` bytes, and the public URL the file will have. The route stores
+ * it on whichever backend is in use and counts it as it arrives.
+ */
+export function createSignedUpload(key: string, size: number, origin: string): { uploadUrl: string; publicUrl: string } {
+  const { exp, max, sig } = signUpload(key, size);
+  const q = new URLSearchParams({ key, exp: String(exp), max: String(max), sig });
+  return { uploadUrl: `${origin}/api/files/upload?${q}`, publicUrl: publicUrl(key, origin) };
+}
+
 /**
  * Let the browser upload a large file (a PDF) directly, without passing the
  * body through a serverless function's request-size cap. Returns where to PUT
@@ -145,11 +195,7 @@ export async function createUpload(
 ): Promise<{ uploadUrl: string; publicUrl: string }> {
   const name = BUCKETS[bucket];
   const key = `${name}/${objectPath}`;
-  if (storageDriver() === "local") {
-    const { exp, max, sig } = signUpload(key, Math.min(maxBytes, size));
-    const q = new URLSearchParams({ key, exp: String(exp), max: String(max), sig });
-    return { uploadUrl: `${origin}/api/files/upload?${q}`, publicUrl: `${origin}/api/files/${key}` };
-  }
+  if (storageDriver() === "local") return createSignedUpload(key, Math.min(maxBytes, size), origin);
 
   const { base, key: token } = supabase();
   const signRequest = () =>

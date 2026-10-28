@@ -10,7 +10,7 @@
   <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/Sky-walkerX/LockIn?style=flat-square&labelColor=1b2a2f&color=24453b"></a>
 </p>
 <p>
-  <img alt="MCP: 18 tools" src="https://img.shields.io/badge/MCP-18_tools-24453b?style=flat-square&labelColor=1b2a2f">
+  <img alt="MCP: 19 tools" src="https://img.shields.io/badge/MCP-19_tools-24453b?style=flat-square&labelColor=1b2a2f">
   <img alt="Self-hosted with Docker Compose" src="https://img.shields.io/badge/self--hosted-docker_compose-24453b?style=flat-square&labelColor=1b2a2f&logo=docker&logoColor=white">
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-24453b?style=flat-square&labelColor=1b2a2f&logo=nextdotjs&logoColor=white">
   <img alt="Postgres 17" src="https://img.shields.io/badge/Postgres-17-24453b?style=flat-square&labelColor=1b2a2f&logo=postgresql&logoColor=white">
@@ -234,6 +234,7 @@ Tools:
 | `get_note` | One note, task or subtask in full by its id. A note comes with its plan: tasks, their notes and nested subtasks. |
 | `get_plan` | A subject's whole plan: each note's tasks and subtasks with what's done, plus tasks under no note. |
 | `save_note` | A new note under a named subject. With no subject, or one that doesn't exist, it goes to the Inbox. A note about code can say which repo, commit (and its date) and files it describes. The reply lists notes that look related, so the agent can say if its note replaces one. |
+| `upload_image` | A one-time link the agent uploads a PNG, JPEG, GIF or WebP to with `curl` (up to 10 MB), and the markdown that shows it in a note. The file never passes through the model. |
 | `append_to_note` | Adds to the end of a note. Never replaces anything. On a note the same agent recorded it just continues it; on anyone else's it goes under a dated "From Codex" line. |
 | `edit_note` | Retitles a note, or replaces one exact passage in it. Only notes that agent recorded; yours stay append-only. The note goes back to "To witness". |
 | `confirm_note` | Says a note still matches the code: its anchor moves to the agent's commit and any stale flag clears. |

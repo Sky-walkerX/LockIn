@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isValidKey, localPath, signUpload, storageDriver, verifyUpload } from "./index";
+import { createSignedUpload, isValidKey, localPath, looksLike, signUpload, storageDriver, verifyUpload } from "./index";
 
 beforeEach(() => {
   vi.stubEnv("AUTH_SECRET", "test-secret");
@@ -54,5 +54,43 @@ describe("storageDriver", () => {
     expect(storageDriver()).toBe("supabase");
     vi.stubEnv("STORAGE_DRIVER", "local");
     expect(storageDriver()).toBe("local");
+  });
+});
+
+describe("looksLike", () => {
+  const bytes = (...b: number[]) => new Uint8Array(b);
+  const ascii = (t: string) => new TextEncoder().encode(t);
+
+  it("knows each image type by its first bytes", () => {
+    expect(looksLike("png", bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0))).toBe(true);
+    expect(looksLike("jpg", bytes(0xff, 0xd8, 0xff, 0xe0))).toBe(true);
+    expect(looksLike("gif", ascii("GIF89a"))).toBe(true);
+    expect(looksLike("webp", ascii("RIFF\x00\x00\x00\x00WEBPVP8 "))).toBe(true);
+  });
+
+  it("turns away a file named for a type it isn't", () => {
+    expect(looksLike("png", ascii("<svg onload=alert(1)>"))).toBe(false);
+    expect(looksLike("png", bytes(0xff, 0xd8, 0xff, 0xe0))).toBe(false);
+    expect(looksLike("webp", ascii("RIFF\x00\x00\x00\x00WAVEfmt "))).toBe(false);
+    expect(looksLike("jpg", bytes())).toBe(false);
+  });
+
+  it("leaves PDFs alone", () => {
+    expect(looksLike("pdf", ascii("anything"))).toBe(true);
+  });
+});
+
+describe("createSignedUpload", () => {
+  it("signs a link for the key and exactly the size asked for", () => {
+    vi.stubEnv("STORAGE_DRIVER", "local");
+    const key = "lockin-notes/u/a.png";
+    const { uploadUrl, publicUrl } = createSignedUpload(key, 1234, "https://notes.test");
+    expect(publicUrl).toBe(`https://notes.test/api/files/${key}`);
+    const q = new URL(uploadUrl).searchParams;
+    expect(new URL(uploadUrl).pathname).toBe("/api/files/upload");
+    expect(q.get("key")).toBe(key);
+    expect(q.get("max")).toBe("1234");
+    expect(verifyUpload(key, Number(q.get("exp")), 1234, q.get("sig")!)).toBe(true);
+    expect(verifyUpload(key, Number(q.get("exp")), 1235, q.get("sig")!)).toBe(false);
   });
 });
