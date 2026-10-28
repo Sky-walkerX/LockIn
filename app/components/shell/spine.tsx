@@ -7,7 +7,9 @@ import { clickPoint, useThemeSwitch } from "@/app/components/theme/use-theme-swi
 import { useMounted } from "@/hooks/useMounted";
 import {
   Activity,
+  BookOpen,
   CalendarCheck,
+  CornerDownRight,
   Home,
   Inbox,
   MessageSquareQuote,
@@ -23,6 +25,7 @@ import { Wordmark } from "@/app/components/brand/wordmark";
 import { BRAND } from "@/lib/brand";
 import { NewSubject } from "@/app/components/home/new-subject";
 import { useCommandPalette } from "@/app/components/command/command-palette";
+import { useJump } from "@/app/components/command/jump";
 import { useChatPanel } from "@/app/components/chat/chat-provider";
 import { fmtClock, useFocus } from "@/app/components/focus/focus-provider";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -49,6 +52,7 @@ export function Spine({
   const signedIn = !!session?.user;
 
   const { open: openPalette } = useCommandPalette();
+  const jump = useJump();
   const router = useRouter();
   const { open: openChat } = useChatPanel();
   const { running, clock } = useFocus();
@@ -136,6 +140,8 @@ export function Spine({
               ) : undefined,
             )}
             {action(openPalette, <Search size={16} strokeWidth={1.75} />, "Search", "⌘K")}
+            {action(() => jump.open(), <CornerDownRight size={16} strokeWidth={1.75} />, "Go to", "/")}
+            {action(jump.readInZen, <BookOpen size={16} strokeWidth={1.75} />, "Zen", "Z")}
             {action(() => router.push("/inbox?new=1"), <SquarePen size={16} strokeWidth={1.75} />, "New note")}
           </nav>
 

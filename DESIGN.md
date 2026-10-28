@@ -189,7 +189,8 @@ Corners are 2–4px everywhere; the only round shape is the avatar. Rules carry 
 - **Ruled boxes** (`notebook/ruled-boxes.tsx`): a printed label over a value in the reading serif. 4 cells on desktop, 2×2 on phones.
 - **Contents table** (`home/contents.tsx`): entry title and excerpt, section tab, plan count, relative time. Rows link to the note.
 - **Note list** (`note/note-list.tsx`): a dashed "New note…" field on top, then rows of title, excerpt and age. The selected row becomes a paper sheet with its title in the subject's ink.
-- **Zen** (`note/note-zen.tsx`): opened by the note toolbar's book button, `Z`, or "Read in Zen" in the palette; `?zen=1` in the URL. ←/→ (or `[`/`]`) turn the page, Esc leaves on the note last read.
+- **Zen** (`note/note-zen.tsx`): opened by the note toolbar's Zen button, Zen in the spine, `Z` anywhere, or "Read in Zen" in the palette; `?zen=1` in the URL. ←/→ (or `[`/`]`) turn the page, `/` goes elsewhere without leaving, Esc leaves on the note last read.
+- **Go to** (`command/jump.tsx`): `/` anywhere, or Go to in the spine. Sections, then a section's notes; typing searches notes everywhere. Opened in Zen it sits on Zen's paper and keeps you reading.
 - **Note page** (`note/note-view.tsx`): running head (section · Note, updated time), title (click to rename), provenance line for agent notes, toolbar (Plan link, Edit, Ask this note, Move, Share, Delete), then the body on clean paper.
 - **Stamp** (`.lk-stamp`): red condensed caps in a 1.5px red border, rotated −2°.
 - **Buttons**: `.lk-btn` is solid ink with printed caps; `.lk-note-bar-btn` is the secondary outline; `.lk-iconbtn` is the 26px ghost for row actions.

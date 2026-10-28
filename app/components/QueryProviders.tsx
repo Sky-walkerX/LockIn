@@ -5,6 +5,7 @@ import type { Session } from "next-auth";
 import React from "react";
 import { QuickAddProvider } from "./quick-add";
 import { CommandPaletteProvider } from "./command/command-palette";
+import { JumpProvider } from "./command/jump";
 import { ChatProvider } from "./chat/chat-provider";
 import { FocusProvider } from "./focus/focus-provider";
 import { QueryProvider } from "./query-provider";
@@ -17,7 +18,9 @@ export function Providers({ children, session }: { children: React.ReactNode; se
         <QuickAddProvider>
           <FocusProvider>
             <ChatProvider>
-              <CommandPaletteProvider>{children}</CommandPaletteProvider>
+              <CommandPaletteProvider>
+                <JumpProvider>{children}</JumpProvider>
+              </CommandPaletteProvider>
             </ChatProvider>
           </FocusProvider>
         </QuickAddProvider>

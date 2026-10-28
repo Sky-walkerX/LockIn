@@ -2,6 +2,29 @@
 
 import { useEffect, useEffectEvent, useState, type RefObject } from "react";
 
+// When a sheet in browser full screen last closed. One that opens in its
+// place (Zen moving to another section) waits for the browser to finish
+// leaving the old full screen before asking for its own, or that exit, which
+// lands a moment later, would end the new one too.
+let fullClosedAt = -Infinity;
+
+function fullScreenSettled(): Promise<void> {
+  if (performance.now() - fullClosedAt > 1000) return Promise.resolve();
+  return new Promise((resolve) => {
+    const done = () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      window.clearTimeout(timer);
+      resolve();
+    };
+    const onChange = () => {
+      if (!document.fullscreenElement) done();
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    // Already over, then: the event came before this sheet did.
+    const timer = window.setTimeout(done, 400);
+  });
+}
+
 /**
  * A sheet that takes the whole window: Full screen and Zen. It takes focus,
  * stops the page behind it scrolling, and asks the browser for real full
@@ -33,14 +56,32 @@ export function useImmersiveSheet(
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
 
-    sheet?.requestFullscreen?.().catch(() => {});
+    const enter = () => fullScreenSettled().then(() => (sheet?.isConnected ? sheet.requestFullscreen?.() : undefined));
+    enter().catch(() => {});
+    // Taking over from a sheet that just closed, the old exit can still land
+    // after this one is in; for a moment, losing full screen means asking
+    // again, once, rather than that the reader left.
+    const handoffUntil = performance.now() - fullClosedAt < 1000 ? performance.now() + 2000 : 0;
+    let retried = false;
 
     // In browser full screen the browser takes Esc itself to leave it, and the
-    // keydown never arrives: follow it out instead.
+    // keydown never arrives: follow it out instead. Only out of this sheet's
+    // own full screen, while it's still on the page: a sheet being taken away
+    // ends its full screen before this listener is removed.
     // Entering it moves focus to <body>, so take it back.
+    let full = false;
     const onFullscreenChange = () => {
-      if (document.fullscreenElement) sheet?.focus();
-      else browserExit();
+      if (document.fullscreenElement === sheet) {
+        full = true;
+        sheet?.focus();
+      } else if (full) {
+        full = false;
+        if (!sheet?.isConnected) return;
+        if (!retried && performance.now() < handoffUntil) {
+          retried = true;
+          sheet.requestFullscreen?.().catch(() => {});
+        } else browserExit();
+      }
     };
     // Outside browser full screen Esc comes to us. An editor that used the key
     // (cancelling an edit) has already claimed it.
@@ -61,6 +102,7 @@ export function useImmersiveSheet(
         requestAnimationFrame(() => {
           if (!sheet?.isConnected) opener?.focus({ preventScroll: true });
         });
+      if (full) fullClosedAt = performance.now();
       if (document.fullscreenElement) document.exitFullscreen().then(refocus, refocus);
       else refocus();
     };

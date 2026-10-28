@@ -2,11 +2,12 @@
 
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, ArrowRight, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
 import { AnimatePresence, useScroll } from "motion/react";
 import * as m from "motion/react-m";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useImmersiveSheet } from "@/hooks/useImmersiveSheet";
+import { useJump } from "@/app/components/command/jump";
 import { Markdown } from "@/app/components/subject/markdown";
 import { isOwnNote, sourceLabel } from "@/lib/notes/source";
 import { pageLabel } from "@/lib/notes/page-label";
@@ -20,8 +21,9 @@ const editable = (t: EventTarget | null) =>
 
 // Zen: a section's notes read one after another on dark paper, whatever the
 // notebook's theme, with nothing else on screen. ← and → (or [ and ]) turn
-// the page, the controls fade while you read and come back when the pointer
-// moves, and Esc leaves on the note last read. Reading only: editing and
+// the page, / goes to any section or note without leaving, the controls fade
+// while you read and come back when the pointer moves, and Esc leaves on the
+// note last read. Reading only: editing and
 // witnessing happen on the note's page.
 type Props = {
   /** The section's notes, in their order. */
@@ -46,7 +48,16 @@ export function NoteZen(props: Props) {
 
 function ZenSheet({ notes, noteId, sectionTitle, color, onNavigate, onClose }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
-  useImmersiveSheet(sheetRef, { onClose });
+  const jump = useJump();
+  // In browser full screen the browser takes Esc to leave it, so the Esc that
+  // was meant to close Go to arrives here instead: close that, stay in Zen.
+  useImmersiveSheet(sheetRef, {
+    onClose,
+    onBrowserExit: () => {
+      if (jump.isOpen()) jump.close();
+      else onClose();
+    },
+  });
 
   const at = Math.max(0, notes.findIndex((n) => n.id === noteId));
   const note = notes[at];
@@ -124,6 +135,9 @@ function ZenSheet({ notes, noteId, sectionTitle, color, onNavigate, onClose }: P
           <b>{sectionTitle}</b> · {at + 1} of {notes.length}
         </span>
         <div className="flex items-center gap-1">
+          <button type="button" onClick={() => jump.open({ zen: true })} className="lk-zen-btn" title="Go to a section or note (/)">
+            <Search size={15} /> Go to <kbd>/</kbd>
+          </button>
           <button type="button" onClick={() => go(-1)} disabled={!prev} className="lk-zen-btn" title="Previous note (←)" aria-label="Previous note">
             <ArrowLeft size={16} />
           </button>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, BookOpen, ListChecks, Maximize2, MessageSquareQuote, PenLine, Pencil, Trash2 } from "lucide-react";
 import { useAgo } from "@/app/components/clock";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
@@ -53,7 +53,6 @@ export function NoteView({
   onMoved: (subjectId: string) => void;
 }) {
   const ago = useAgo();
-  const router = useRouter();
   const update = useUpdateMilestone();
   const del = useDeleteMilestone();
   const draft = useNoteDraft(note);
@@ -82,22 +81,6 @@ export function NoteView({
       draft.open();
     }
   }, [startEditing, note.id, draft]);
-
-  // Z opens the note in Zen, from anywhere on the page that isn't taking text
-  // and while nothing is laid over it.
-  const zenBlocked = pending || draft.editing || renaming;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "z" || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || zenBlocked) return;
-      const t = e.target;
-      if (t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-      if (document.querySelector('[aria-modal="true"]')) return;
-      e.preventDefault();
-      router.push(zenHref, { scroll: false });
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [zenBlocked, zenHref, router]);
 
   const saveTitle = () => {
     const t = titleVal.trim();
@@ -229,11 +212,10 @@ export function NoteView({
           scroll={false}
           aria-disabled={pending || draft.editing}
           tabIndex={pending || draft.editing ? -1 : undefined}
-          className="lk-iconbtn aria-disabled:pointer-events-none aria-disabled:opacity-50"
-          title="Read in Zen (Z)"
-          aria-label="Read in Zen"
+          className="lk-note-bar-btn aria-disabled:pointer-events-none aria-disabled:opacity-50"
+          title="Read this section's notes in Zen (Z)"
         >
-          <BookOpen size={14} />
+          <BookOpen size={14} /> Zen
         </Link>
         <button
           type="button"

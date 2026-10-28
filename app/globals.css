@@ -734,6 +734,52 @@
   .lk-zen-fin button { font-style: normal; text-decoration: underline; text-underline-offset: 3px; }
   .lk-zen-fin button:hover { color: var(--foreground); }
 
+  /* Go to (command/jump.tsx): "/" for a section or note. Opened from Zen it
+     sits inside the sheet and so takes its paper. */
+  .lk-jump-backdrop {
+    position: fixed; inset: 0; z-index: 60;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 0 16px; background: rgb(0 0 0 / 0.4); backdrop-filter: blur(4px);
+    cursor: auto;
+  }
+  .lk-zen .lk-jump-backdrop { background: rgb(0 0 0 / 0.55); }
+  .lk-jump {
+    margin-top: 12vh; width: 100%; max-width: 560px; padding: 0; overflow: hidden;
+    box-shadow: var(--lk-shadow);
+  }
+  .lk-jump-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .lk-jump-slash { font-family: var(--lk-font-mono); font-size: 15px; color: var(--muted-foreground); }
+  .lk-jump-crumb {
+    display: inline-flex; align-items: center; gap: 2px; flex: none;
+    max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    padding: 2px 8px 2px 4px; border-radius: 2px; background: var(--muted);
+    font-family: var(--lk-font-display); font-weight: 600; font-size: 12px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--foreground);
+  }
+  .lk-jump-crumb:hover { background: var(--accent); }
+  .lk-zen .lk-jump-crumb:hover { background: var(--border); }
+  .lk-jump-list { max-height: min(56vh, 460px); overflow-y: auto; padding: 6px; }
+  .lk-jump-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 8px 10px; border-radius: 3px; text-align: left; font-size: 15px;
+  }
+  .lk-jump-row[aria-selected="true"] { background: var(--muted); }
+  .lk-zen .lk-jump-row[aria-selected="true"] { background: #1b2023; }
+  .lk-jump-hint { display: block; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--muted-foreground); }
+  .lk-jump-tag { flex: none; font-size: 12.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .lk-jump-empty { padding: 14px 10px; font-family: var(--lk-font-prose); font-style: italic; font-size: 15px; color: var(--muted-foreground); }
+  .lk-jump-foot {
+    display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--muted-foreground);
+  }
+  .lk-jump-foot kbd {
+    display: inline-block; min-width: 18px; margin-right: 3px; padding: 0 4px;
+    border: 1px solid var(--input); border-radius: 2px;
+    font-family: var(--lk-font-body); font-size: 11px; text-align: center;
+  }
+  @media (max-width: 640px) { .lk-jump { margin-top: 8vh; } .lk-jump-foot { display: none; } }
+
   /* How far through the note you are. */
   .lk-zen-progress {
     position: fixed; left: 0; right: 0; bottom: 0; height: 2px;
