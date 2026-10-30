@@ -10,6 +10,7 @@ import {
   confirmNote,
   editAgentNote,
   flagStale,
+  insertChapter,
   insertNote,
   linkReplacement,
   matchSubject,
@@ -73,9 +74,9 @@ const PLACE_SELECT = { select: { id: true, title: true, isInbox: true } } as con
 const subjectName = (s: { title: string; isInbox: boolean }) => (s.isInbox ? "the Inbox" : s.title);
 
 /**
- * A chapter of a subject by name or id. Agents file into chapters the user
- * made and never make them, so a name that matches none comes back with the
- * subject's chapters to say instead.
+ * A chapter of a subject by name or id. Filing never makes a chapter, so an
+ * agent's typo can't sprawl the subject: a name that matches none comes back
+ * with the subject's chapters to say instead. add_chapter makes them.
  */
 async function findChapter(subjectId: string, name: string) {
   const chapters = await prisma.chapter.findMany({
@@ -307,7 +308,7 @@ const handler = createMcpHandler(
           : place.isInbox
             ? `\nIt isn't in a chapter: the Inbox has none.`
             : !filed?.hit
-              ? `\nThere's no chapter called "${chapter}" in ${place.subjectTitle}, so it isn't in one. ${chapterList(filed?.chapters ?? [])} Move it with move_note.`
+              ? `\nThere's no chapter called "${chapter}" in ${place.subjectTitle}, so it isn't in one. ${chapterList(filed?.chapters ?? [])} Move it with move_note, after add_chapter if it needs a new one.`
               : "";
         const url = noteUrl(origin, place.subjectId, place.isInbox, note.id);
         return text(
@@ -644,11 +645,35 @@ const handler = createMcpHandler(
     );
 
     server.registerTool(
+      "add_chapter",
+      {
+        title: "Add a chapter",
+        description:
+          "Add a chapter to a subject, after its other chapters, to group its notes. File notes into it with save_note or move_note. If the subject already has a chapter by that name, you get that one and nothing new is made. The Inbox has no chapters.",
+        inputSchema: z.object({
+          subject: z.string().trim().min(1).max(200).describe("An existing subject's name or id, e.g. \"Rust\""),
+          title: z.string().trim().min(1).max(120).describe("The chapter's name"),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+      },
+      async ({ subject, title }, ctx) => {
+        const { userId } = caller(ctx.http?.authInfo);
+        const target = await findSubject(userId, subject);
+        if (!target) return noSubject(subject);
+        if (target.isInbox) return failed("The Inbox has no chapters.");
+        const { hit, chapters } = await findChapter(target.id, title);
+        if (hit) return text(`${target.title} already has a chapter called "${hit.title}". ${chapterList(chapters)}`);
+        const chapter = await insertChapter(target.id, title);
+        return text(`Added the chapter "${chapter.title}" to ${target.title}. ${chapterList([...chapters, chapter])}`);
+      },
+    );
+
+    server.registerTool(
       "move_note",
       {
         title: "Move a note",
         description:
-          "File a note under another subject (e.g. out of the Inbox), into a chapter of a subject, or both. Its tasks go with it. With only chapter, it moves within its own subject; chapter \"\" takes it out of its chapter. Subjects and chapters must already exist.",
+          "File a note under another subject (e.g. out of the Inbox), into a chapter of a subject, or both. Its tasks go with it. With only chapter, it moves within its own subject; chapter \"\" takes it out of its chapter. Subjects and chapters must already exist; add_chapter makes a chapter.",
         inputSchema: z.object({
           id: z.string().min(1).max(64).describe("The note's id"),
           subject: z.string().trim().min(1).max(200).optional().describe("The subject's name or id, or \"Inbox\""),

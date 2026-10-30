@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
+import { insertChapter } from "@/lib/notes/write";
 import { z } from "zod";
 import * as f from "@/lib/http/fields";
 
@@ -21,13 +22,9 @@ export async function POST(request: NextRequest) {
   }
   const { subjectId, title } = parsed.data;
 
-  const [subject, last] = await Promise.all([
-    prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { isInbox: true } }),
-    prisma.chapter.findFirst({ where: { subjectId }, orderBy: { order: "desc" }, select: { order: true } }),
-  ]);
+  const subject = await prisma.subject.findFirst({ where: { id: subjectId, userId }, select: { isInbox: true } });
   if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 404 });
   if (subject.isInbox) return NextResponse.json({ error: "The Inbox doesn't have chapters" }, { status: 400 });
 
-  const chapter = await prisma.chapter.create({ data: { subjectId, title, order: last ? last.order + 1 : 0 } });
-  return NextResponse.json(chapter, { status: 201 });
+  return NextResponse.json(await insertChapter(subjectId, title), { status: 201 });
 }

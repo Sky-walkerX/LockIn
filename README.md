@@ -244,7 +244,8 @@ Tools:
 | `save_handoff` | Leaves a baton for the next agent: the goal, where the work stands, what was ruled out, the next step and the pages to read first. |
 | `pickup_handoff` | Takes the open baton for a subject or repo, with the text of the pages it pins. Also an MCP prompt, `pickup`. |
 | `capture_session` | Files a session's summary as one note per session. The Claude Code plugin calls it when a session compacts and when it ends. |
-| `move_note` | Files a note under another subject, or the Inbox, or into a chapter. Its tasks go with it. Agents file into chapters you made; they don't make them. |
+| `add_chapter` | A new chapter at the end of a subject's. A name the subject already has gets that chapter back rather than a second one. |
+| `move_note` | Files a note under another subject, or the Inbox, or into a chapter. Its tasks go with it. Filing never makes a chapter; `add_chapter` does. |
 | `add_task` | A task under a note, or in a subject's tasks that aren't under a note. |
 | `add_subtask` | A subtask under a task, or under one of its top-level subtasks. |
 | `update_plan_item` | Ticks a task or subtask done or not done, renames it, or adds to its notes. Completing a recurring task schedules the next one. |

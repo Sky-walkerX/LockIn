@@ -57,6 +57,12 @@ export async function nextOrder(subjectId: string): Promise<number> {
   return last ? last.order + 1 : 0;
 }
 
+/** A new chapter at the end of a subject's. The caller has checked the subject is the user's and isn't the Inbox. */
+export async function insertChapter(subjectId: string, title: string) {
+  const last = await prisma.chapter.findFirst({ where: { subjectId }, orderBy: { order: "desc" }, select: { order: true } });
+  return prisma.chapter.create({ data: { subjectId, title, order: last ? last.order + 1 : 0 } });
+}
+
 /**
  * Insert a note at the end of its subject (unless `order` is given), on the
  * notebook's next page. Notes typed in the app are witnessed as they're
