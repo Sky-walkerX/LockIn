@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, FolderPlus, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
@@ -47,7 +47,13 @@ export function NoteList({
   const [naming, setNaming] = useState(false);
   const folded = useFolded();
   const { loose, groups } = groupByChapter(notes, chapters ?? []);
-  const openChapter = notes.find((n) => n.id === selectedId)?.chapterId ?? null;
+  const selectedChapter = notes.find((n) => n.id === selectedId)?.chapterId ?? null;
+
+  // Arriving at a note (from Go to, Zen, a link) opens its chapter so it can be
+  // seen. Only on arriving: after that the arrow folds the chapter like any other.
+  useEffect(() => {
+    if (selectedChapter) unfold(selectedChapter);
+  }, [selectedId, selectedChapter]);
 
   return (
     <nav aria-label="Notes in this section" className="lk-note-list">
@@ -88,7 +94,7 @@ export function NoteList({
                 chapter={chapter}
                 notes={inside}
                 sectionTitle={sectionTitle}
-                open={chapter.id === openChapter || !folded.has(chapter.id)}
+                open={!folded.has(chapter.id)}
                 onToggle={() => folded.toggle(chapter.id)}
                 selectedId={selectedId}
                 hrefFor={hrefFor}
@@ -395,23 +401,30 @@ const subscribeFolds = (listener: () => void) => {
     foldListeners.delete(listener);
   };
 };
+const parseFolds = (raw: string) => new Set(raw.split(",").filter(Boolean));
+const writeFolds = (ids: Set<string>) => {
+  foldsHere = [...ids].join(",");
+  try {
+    localStorage.setItem(FOLD_KEY, foldsHere);
+  } catch {
+    // Blocked storage: foldsHere keeps it for this visit.
+  }
+  foldListeners.forEach((l) => l());
+};
+const unfold = (id: string) => {
+  const ids = parseFolds(readFolds());
+  if (ids.delete(id)) writeFolds(ids);
+};
 
 function useFolded() {
-  const raw = useSyncExternalStore(subscribeFolds, readFolds, () => "");
-  const ids = new Set(raw.split(",").filter(Boolean));
+  const ids = parseFolds(useSyncExternalStore(subscribeFolds, readFolds, () => ""));
   return {
     has: (id: string) => ids.has(id),
     toggle: (id: string) => {
       const next = new Set(ids);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      foldsHere = [...next].join(",");
-      try {
-        localStorage.setItem(FOLD_KEY, foldsHere);
-      } catch {
-        // Blocked storage: foldsHere keeps it for this visit.
-      }
-      foldListeners.forEach((l) => l());
+      writeFolds(next);
     },
   };
 }
