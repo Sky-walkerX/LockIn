@@ -145,7 +145,9 @@ export function useUpdateMilestone() {
 }
 
 // Optimistic + atomic: re-sorts the cached list immediately and persists all
-// orders in one transaction.
+// orders in one statement. The patch is the whole change (no other list reads
+// the order), so success refetches nothing: refetching would download every
+// note's body again to learn what the cache already says.
 export function useReorderMilestones() {
   const qc = useQueryClient();
   const invalidate = useInvalidate();
@@ -155,8 +157,10 @@ export function useReorderMilestones() {
       const prev = await patchSubjectCaches(qc, (s) => reorderMilestones(s, ids));
       return { prev };
     },
-    onError: (_e, _v, ctx) => restoreSubjectCaches(qc, ctx?.prev),
-    onSettled: invalidate,
+    onError: (_e, _v, ctx) => {
+      restoreSubjectCaches(qc, ctx?.prev);
+      invalidate();
+    },
   });
 }
 
