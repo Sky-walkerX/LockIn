@@ -363,6 +363,9 @@
   }
   @media (min-width: 640px) { .lk-page { padding: 28px 28px 80px; } }
   @media (min-width: 1024px) { .lk-page { padding: 32px 48px 88px 64px; } }
+  /* A section's page is where notes are read and written, so on a wide screen
+     it takes the room rather than leaving it as margin. */
+  .lk-page.lk-subject { max-width: 1760px; }
 
   .lk-page-title {
     font-family: var(--lk-font-display); font-weight: 700;
@@ -447,7 +450,7 @@
   .lk-notes-frame { container: notes / inline-size; }
   .lk-notes-pane { display: grid; gap: 24px; align-items: start; }
   @container notes (min-width: 760px) {
-    .lk-notes-pane { grid-template-columns: 272px minmax(0, 1fr); gap: 28px; }
+    .lk-notes-pane { grid-template-columns: clamp(272px, 22cqi, 340px) minmax(0, 1fr); gap: 28px; }
   }
   @container notes (max-width: 759.98px) {
     .lk-notes-pane[data-has-note] > .lk-note-list { display: none; }
@@ -638,9 +641,13 @@
   .lk-fullscreen-page .lk-note-title { font-size: clamp(34px, 4.6vw, 52px); margin-top: 0; }
   .lk-fullscreen-rule { height: 2px; background: var(--c-eff, var(--foreground)); margin: 6px 0 32px; }
   .lk-reading.lk-reading-full .lk-prose { font-size: 20.5px; line-height: 1.7; max-width: none; }
+  .lk-reading.lk-reading-full .lk-prose > * { max-width: none; }
 
-  /* Reading size for a note's body; .lk-prose carries the rest. */
-  .lk-reading .lk-prose { font-size: 18.5px; line-height: 1.65; max-width: 68ch; }
+  /* Reading size for a note's body; .lk-prose carries the rest. Running text
+     keeps a measure an eye can follow; diagrams, images, code and tables take
+     the page's full width. */
+  .lk-reading .lk-prose { font-size: 18.5px; line-height: 1.65; }
+  .lk-reading .lk-prose > :is(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6, dl):not(:has(> img)) { max-width: 84ch; }
   .lk-reading .lk-prose pre { font-size: 14px; }
   .lk-note-empty { display: grid; justify-items: start; gap: 12px; padding: 8px 0; font-family: var(--lk-font-prose); font-style: italic; color: var(--muted-foreground); font-size: 17px; }
 
@@ -714,10 +721,14 @@
   }
   .lk-zen ::selection { background: color-mix(in oklab, var(--c) 32%, transparent); }
   .lk-zen[data-idle] { cursor: none; }
+  /* Two measures, both growing with the screen: comfortable for prose, wide
+     for diagrams, tables and code. W switches; the choice is remembered. */
+  .lk-zen { --zen-measure: clamp(720px, 50vw, 960px); }
+  .lk-zen[data-width="wide"] { --zen-measure: clamp(720px, 80vw, 1440px); }
   .lk-zen-bar {
     position: sticky; top: 0; z-index: 1;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    max-width: 720px; margin: 0 auto; padding: 14px 0 18px;
+    max-width: var(--zen-measure); margin: 0 auto; padding: 14px 0 18px;
     background: linear-gradient(var(--background) 65%, transparent);
     transition: opacity 600ms var(--lk-ease-settle);
   }
@@ -736,9 +747,10 @@
   }
   .lk-zen-btn:hover:not(:disabled) { color: var(--foreground); background: var(--muted); }
   .lk-zen-btn:disabled { opacity: 0.35; }
+  .lk-zen-btn[aria-pressed="true"] { color: var(--foreground); background: var(--muted); }
   .lk-zen-btn kbd { font-size: 12px; opacity: 0.7; }
 
-  .lk-zen-page { max-width: 720px; margin: 0 auto; padding-top: clamp(24px, 8vh, 88px); }
+  .lk-zen-page { max-width: var(--zen-measure); margin: 0 auto; padding-top: clamp(24px, 8vh, 88px); }
   .lk-zen-runhead {
     margin: 0 0 18px;
     font-family: var(--lk-font-display); font-weight: 600;

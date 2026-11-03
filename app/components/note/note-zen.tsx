@@ -2,11 +2,12 @@
 
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronsLeftRight, Search, X } from "lucide-react";
 import { AnimatePresence, useScroll } from "motion/react";
 import * as m from "motion/react-m";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useImmersiveSheet } from "@/hooks/useImmersiveSheet";
+import { useStoredValue } from "@/hooks/useStoredValue";
 import { useJump } from "@/app/components/command/jump";
 import { Markdown } from "@/app/components/subject/markdown";
 import { isOwnNote, sourceLabel } from "@/lib/notes/source";
@@ -15,13 +16,15 @@ import { fade } from "@/lib/motion";
 
 // How long the controls stay after the pointer stops.
 const IDLE_MS = 2500;
+const WIDTH_KEY = "lockin.zen.width";
 
 const editable = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 
 // Zen: a section's notes read one after another on dark paper, whatever the
 // notebook's theme, with nothing else on screen. ← and → (or [ and ]) turn
-// the page, / goes to any section or note without leaving, the controls fade
+// the page, / goes to any section or note without leaving, W widens the page
+// for diagrams and code (and back), the controls fade
 // while you read and come back when the pointer moves, and Esc leaves on the
 // note last read. Reading only: editing and
 // witnessing happen on the note's page.
@@ -67,16 +70,22 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
   const prev = notes[at - 1] ?? null;
   const next = notes[at + 1] ?? null;
 
+  const [width, setWidth] = useStoredValue(WIDTH_KEY, "comfortable");
+  const wide = width === "wide";
+  const toggleWidth = () => setWidth(wide ? "comfortable" : "wide");
+
   const go = (step: -1 | 1) => {
     const to = notes[at + step];
     if (to) onNavigate(to.id);
   };
   const turn = useEffectEvent(go);
+  const widen = useEffectEvent(toggleWidth);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || editable(e.target)) return;
       if (e.key === "ArrowLeft" || e.key === "[") turn(-1);
       else if (e.key === "ArrowRight" || e.key === "]") turn(1);
+      else if (e.key === "w" || e.key === "W") widen();
       else return;
       e.preventDefault();
     };
@@ -131,6 +140,7 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
       aria-labelledby="zen-note-title"
       className="dark lk-subject lk-zen"
       data-idle={idle ? "" : undefined}
+      data-width={wide ? "wide" : undefined}
       style={{ "--c": color ?? "#8b918d" } as React.CSSProperties}
     >
       <div className="lk-zen-bar">
@@ -140,6 +150,16 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
         <div className="flex items-center gap-1">
           <button type="button" onClick={() => jump.open({ zen: true })} className="lk-zen-btn" title="Go to a section or note (/)">
             <Search size={15} /> Go to <kbd>/</kbd>
+          </button>
+          <button
+            type="button"
+            onClick={toggleWidth}
+            aria-pressed={wide}
+            className="lk-zen-btn"
+            title={wide ? "Narrower page (W)" : "Wider page, for diagrams and code (W)"}
+            aria-label="Wide page"
+          >
+            <ChevronsLeftRight size={16} />
           </button>
           <button type="button" onClick={() => go(-1)} disabled={!prev} className="lk-zen-btn" title="Previous note (←)" aria-label="Previous note">
             <ArrowLeft size={16} />
