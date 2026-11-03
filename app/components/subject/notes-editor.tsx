@@ -11,6 +11,8 @@ import { Prec } from "@codemirror/state";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import { useNoteCompletion } from "@/hooks/useNoteCompletion";
+import { useZenWorkspace } from "@/hooks/useZenWorkspace";
+import { useStoredValue } from "@/hooks/useStoredValue";
 import { ghostCompletion } from "./ghost-completion";
 import { Markdown } from "./markdown";
 
@@ -60,6 +62,24 @@ const editorKeys = Prec.high(
     },
   ]),
 );
+
+// Typewriter scrolling (the Zen workspace): the line being written stays at
+// the middle of the editor, so the eye stays put and the text moves. It
+// follows typing and the keyboard's moves, not a click, which would shift
+// the text out from under the pointer. Whether it's on is read off the
+// editor's wrapper (data-typewriter), so turning it on and off doesn't
+// rebuild the extensions (and lose the undo history).
+const TYPEWRITER_KEY = "lockin.typewriter";
+const typewriterScroll = EditorView.updateListener.of((u) => {
+  if (!u.view.hasFocus || !u.view.dom.closest("[data-typewriter]")) return;
+  const keyed = u.transactions.some(
+    (tr) => tr.isUserEvent("input") || tr.isUserEvent("delete") || (tr.isUserEvent("select") && !tr.isUserEvent("select.pointer")),
+  );
+  if (!keyed) return;
+  const head = u.state.selection.main.head;
+  // Not from inside the update that's still being applied.
+  requestAnimationFrame(() => u.view.dispatch({ effects: EditorView.scrollIntoView(head, { y: "center" }) }));
+});
 
 function lockinTheme(dark: boolean) {
   const c = SYNTAX;
@@ -232,7 +252,11 @@ export function NotesEditor({
   const [draft, setDraft] = useState(value);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const { resolvedTheme } = useTheme();
-  const dark = resolvedTheme === "dark";
+  const { active: inWorkspace } = useZenWorkspace();
+  const dark = resolvedTheme === "dark" || inWorkspace;
+  // Only in the workspace, where the editor is a tall pane to write in.
+  const [typewriterSetting, setTypewriter] = useStoredValue(TYPEWRITER_KEY, "on");
+  const typewriter = inWorkspace && typewriterSetting === "on";
 
   const pathname = usePathname();
   const { vocabulary, requestModel, modelPending, setModelPending } = useNoteCompletion(
@@ -269,6 +293,7 @@ export function NotesEditor({
       // rebuilding the extensions — which would reset the undo history.
       ghostCompletion({ vocabulary, requestModel, onModelPending }),
       editorKeys,
+      typewriterScroll,
       ...lockinTheme(dark),
     ],
     [dark, vocabulary, requestModel, onModelPending],
@@ -291,6 +316,19 @@ export function NotesEditor({
       <div className="flex items-center gap-1">
         {tabBtn("edit", "Edit")}
         {tabBtn("preview", "Preview")}
+        {inWorkspace && (
+          <button
+            type="button"
+            onClick={() => setTypewriter(typewriter ? "off" : "on")}
+            aria-pressed={typewriter}
+            title="Keep the line you're writing in the middle"
+            className={`lk-print rounded px-2 py-0.5 text-2xs uppercase tracking-wide transition-colors ${
+              typewriter ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Typewriter
+          </button>
+        )}
         <span className="lk-print ml-auto hidden text-2xs text-muted-foreground sm:inline">
           {modelPending ? (
             <span className="lk-ghost-pending">⌃␣ thinking…</span>
@@ -301,7 +339,7 @@ export function NotesEditor({
       </div>
 
       {tab === "edit" ? (
-        <div ref={wrapRef} className="overflow-hidden rounded-md border border-input">
+        <div ref={wrapRef} data-typewriter={typewriter || undefined} className="lk-editor overflow-hidden rounded-md border border-input">
           <CodeMirror
             value={draft}
             onChange={setDraft}

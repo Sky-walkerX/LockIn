@@ -229,6 +229,13 @@ html.lk-zen-ws { color-scheme: dark !important; }
 html.lk-zen-ws .lk-spine-aside { display: none; }
 @media (min-width: 768px) { html.lk-zen-ws .lk-zs-aside { display: block; } }
 html.lk-zen-ws .lk-mobilebar { background: #08090a; border-bottom: 1px solid #191e20; }
+/* The editor in the workspace is a pane to write in: as tall as the window
+   leaves, in a size to write at. Typewriter scrolling needs half a pane of
+   room under the last line, so that line can come up to the middle too.
+   Outside the layers, against the editor's own injected theme. */
+html.lk-zen-ws .lk-note-page .lk-editor .cm-editor { font-size: calc(15px * var(--lk-text-scale, 1)); height: max(320px, calc(100dvh - 300px)); }
+html.lk-zen-ws .lk-note-page .lk-editor .cm-scroller { max-height: none; }
+html.lk-zen-ws .lk-note-page .lk-editor[data-typewriter] .cm-content { padding-bottom: max(160px, calc((100dvh - 300px) / 2)); }
 
 @layer base {
   * {
