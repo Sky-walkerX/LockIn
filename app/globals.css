@@ -863,6 +863,27 @@ html.lk-zen-ws .lk-note-page .lk-editor[data-typewriter] .cm-content { padding-b
   }
   @media (max-width: 640px) { .lk-jump { margin-top: 8vh; } .lk-jump-foot { display: none; } }
 
+  /* "?": the notebook's keys (command/shortcuts.tsx), on Go to's backdrop. */
+  .lk-keys {
+    margin-top: 8vh; width: 100%; max-width: 760px; max-height: 80vh; overflow-y: auto;
+    padding: 0; box-shadow: var(--lk-shadow);
+  }
+  .lk-keys-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .lk-keys-head h2 { font-family: var(--lk-font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .lk-keys-groups { display: grid; gap: 22px 32px; padding: 18px 20px 22px; }
+  @media (min-width: 700px) { .lk-keys-groups { grid-template-columns: 1fr 1fr; } }
+  .lk-keys h3 {
+    margin-bottom: 8px; font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-foreground);
+  }
+  .lk-keys dl { display: grid; gap: 6px; }
+  .lk-keys dl > div { display: grid; grid-template-columns: 96px 1fr; align-items: baseline; gap: 12px; font-size: 14px; }
+  .lk-keys dt { display: flex; flex-wrap: wrap; gap: 3px; }
+  .lk-keys kbd {
+    min-width: 22px; padding: 1px 6px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 3px;
+    background: var(--muted); font-family: var(--lk-font-mono); font-size: 12px; text-align: center;
+  }
+
   /* The note's headings, in the margin left of the page, where there's room
      for them beside it (more room when the page is wide). Dimmed rather than
      gone while you read, since it's where you are. */

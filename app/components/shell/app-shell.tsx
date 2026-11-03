@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/app/components/ui/sheet";
 import { useCommandPalette } from "@/app/components/command/command-palette";
 import { Spine } from "./spine";
 import { ZenSidebar } from "./zen-sidebar";
+import { KeyboardShortcuts } from "@/app/components/command/shortcuts";
 import { useZenWorkspace } from "@/hooks/useZenWorkspace";
 import { useTextScale } from "@/hooks/useTextScale";
 import { WORKSPACE_CLASS } from "@/lib/zen-workspace";
@@ -130,6 +131,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Sheet>
 
         <div className="lk-paper flex min-w-0 flex-1 flex-col">{children}</div>
+        <KeyboardShortcuts />
       </div>
     </div>
   );

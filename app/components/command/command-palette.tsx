@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { usePathname } from "next/navigation";
 import { useQueryRouter } from "@/hooks/useQueryRouter";
 import { useZenWorkspace } from "@/hooks/useZenWorkspace";
+import { OPEN_SHORTCUTS } from "./shortcuts";
 import { useSession } from "next-auth/react";
 import { useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { format } from "date-fns";
@@ -15,6 +16,7 @@ import {
   MessageSquare,
   Moon,
   MoonStar,
+  Keyboard,
   Plus,
   Search as SearchIcon,
   Sparkles,
@@ -237,6 +239,13 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
       tag: "⇧Z",
       icon: MoonStar,
       run: () => (onClose(), void workspace.toggle()),
+    },
+    {
+      key: "keys",
+      label: "Keyboard shortcuts",
+      tag: "?",
+      icon: Keyboard,
+      run: () => (onClose(), window.dispatchEvent(new Event(OPEN_SHORTCUTS))),
     },
     // On a section's notes or the Inbox, the note open there (or the newest)
     // opens in Zen.
