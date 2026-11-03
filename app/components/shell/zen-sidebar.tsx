@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CornerDownRight, Home, Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
+import { AArrowDown, AArrowUp, BookOpen, CornerDownRight, Home, Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { useCommandPalette } from "@/app/components/command/command-palette";
 import { useJump } from "@/app/components/command/jump";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useInbox } from "@/hooks/useInbox";
 import { useZenWorkspace } from "@/hooks/useZenWorkspace";
+import { useTextScale } from "@/hooks/useTextScale";
 
 // The Zen workspace's sidebar: black, and only what moving between notes
 // needs. The sections, to switch between; the Inbox; Go to and Search; Zen
@@ -29,6 +30,7 @@ export function ZenSidebar({
   const { open: openPalette } = useCommandPalette();
   const jump = useJump();
   const workspace = useZenWorkspace();
+  const text = useTextScale();
   const { data: subjects = [] } = useSubjects();
   const { data: inbox } = useInbox(true);
 
@@ -107,6 +109,20 @@ export function ZenSidebar({
       </nav>
 
       <div className="mt-auto grid gap-px">
+        <div className="lk-zs-size" role="group" aria-label="Text size">
+          {!collapsed && <span>Text</span>}
+          <button type="button" onClick={text.smaller} disabled={text.smallest} title="Smaller text (−)" aria-label="Smaller text">
+            <AArrowDown size={15} />
+          </button>
+          {!collapsed && (
+            <button type="button" onClick={text.reset} className="lk-zs-size-now" title="Back to normal (0)" aria-label="Text size: back to normal">
+              {Math.round(text.scale * 100)}%
+            </button>
+          )}
+          <button type="button" onClick={text.larger} disabled={text.largest} title="Larger text (=)" aria-label="Larger text">
+            <AArrowUp size={15} />
+          </button>
+        </div>
         {item("read", { icon: <BookOpen size={15} />, label: "Read in Zen", trailing: kbd("Z") }, { onClick: jump.readInZen })}
         {item("home", { icon: <Home size={15} />, label: "Contents" }, { href: "/" })}
         {onToggleCollapsed &&

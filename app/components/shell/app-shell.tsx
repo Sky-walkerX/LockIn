@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useStoredValue } from "@/hooks/useStoredValue";
 import { Menu, Search, SquarePen } from "lucide-react";
 import { useChromeless } from "@/hooks/useChromeless";
@@ -14,6 +14,7 @@ import { useCommandPalette } from "@/app/components/command/command-palette";
 import { Spine } from "./spine";
 import { ZenSidebar } from "./zen-sidebar";
 import { useZenWorkspace } from "@/hooks/useZenWorkspace";
+import { useTextScale } from "@/hooks/useTextScale";
 import { WORKSPACE_CLASS } from "@/lib/zen-workspace";
 
 const typing = (t: EventTarget | null) =>
@@ -45,18 +46,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.toggle(WORKSPACE_CLASS, zen);
   }, [zen]);
-  // ⇧Z: into the workspace and out, unless typing or a dialog has the floor.
+  const text = useTextScale();
+  useEffect(() => {
+    document.documentElement.style.setProperty("--lk-text-scale", String(text.scale));
+  }, [text.scale]);
+  const sizeText = useEffectEvent((key: string) => {
+    const size = { "-": text.smaller, "=": text.larger, "+": text.larger, "0": text.reset }[key];
+    size?.();
+    return !!size;
+  });
+  // ⇧Z: into the workspace and out. − = and 0 size the text where it reads
+  // large: in the workspace and in Zen. Neither while typing, or while a
+  // dialog other than Zen has the floor.
   useEffect(() => {
     if (chromeless) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Z" || !e.shiftKey || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented || typing(e.target)) return;
-      if (document.querySelector('[aria-modal="true"]')) return;
-      e.preventDefault();
-      void toggleWorkspace();
+      if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented || typing(e.target)) return;
+      const modal = document.querySelector('[aria-modal="true"]');
+      const reading = !!modal?.classList.contains("lk-zen");
+      if (modal && !reading) return;
+      if (e.key === "Z" && e.shiftKey && !reading) {
+        e.preventDefault();
+        void toggleWorkspace();
+        return;
+      }
+      if ((reading || zen) && sizeText(e.key)) e.preventDefault();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [chromeless, toggleWorkspace]);
+  }, [chromeless, toggleWorkspace, zen]);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetPath, setSheetPath] = useState(pathname);

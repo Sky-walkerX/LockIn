@@ -2,12 +2,13 @@
 
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, ArrowRight, ChevronsLeftRight, Search, X } from "lucide-react";
+import { AArrowDown, AArrowUp, ArrowLeft, ArrowRight, ChevronsLeftRight, Search, X } from "lucide-react";
 import { AnimatePresence, useScroll } from "motion/react";
 import * as m from "motion/react-m";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import { useImmersiveSheet } from "@/hooks/useImmersiveSheet";
 import { useStoredValue } from "@/hooks/useStoredValue";
+import { useTextScale } from "@/hooks/useTextScale";
 import { useJump } from "@/app/components/command/jump";
 import { Markdown } from "@/app/components/subject/markdown";
 import { isOwnNote, sourceLabel } from "@/lib/notes/source";
@@ -76,6 +77,8 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
   const prev = notes[at - 1] ?? null;
   const next = notes[at + 1] ?? null;
 
+  // − and = are the shell's (app-shell.tsx), as they size the workspace too.
+  const text = useTextScale();
   const [width, setWidth] = useStoredValue(WIDTH_KEY, "comfortable");
   const wide = width === "wide";
   const toggleWidth = () => setWidth(wide ? "comfortable" : "wide");
@@ -193,6 +196,12 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
         <div className="flex items-center gap-1">
           <button type="button" onClick={() => jump.open({ zen: true })} className="lk-zen-btn" title="Go to a section or note (/)">
             <Search size={15} /> Go to <kbd>/</kbd>
+          </button>
+          <button type="button" onClick={text.smaller} disabled={text.smallest} className="lk-zen-btn" title="Smaller text (−)" aria-label="Smaller text">
+            <AArrowDown size={16} />
+          </button>
+          <button type="button" onClick={text.larger} disabled={text.largest} className="lk-zen-btn" title="Larger text (=)" aria-label="Larger text">
+            <AArrowUp size={16} />
           </button>
           <button
             type="button"
