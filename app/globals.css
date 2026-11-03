@@ -485,9 +485,16 @@ html.lk-zen-ws .lk-note-page .lk-editor[data-typewriter] .cm-content { padding-b
     .lk-note-where { display: inline; }
   }
 
-  .lk-note-list { display: grid; align-content: start; gap: 6px; }
+  /* Never wider than its column: a grid track grows to fit its content, and a
+     long title kept to one line would widen the list (and make it scroll
+     sideways) rather than end in "…". So every track here is minmax(0, 1fr),
+     and the list sizes its own new-note row by its width (notelist). */
+  .lk-note-list {
+    display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 6px;
+    container: notelist / inline-size; overflow-x: hidden;
+  }
   @container notes (min-width: 760px) { .lk-note-list { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; } }
-  .lk-note-list ul { display: grid; }
+  .lk-note-list ul { display: grid; grid-template-columns: minmax(0, 1fr); }
   .lk-note-new {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 10px; border: 1px dashed var(--input); border-radius: 2px;
@@ -498,7 +505,7 @@ html.lk-zen-ws .lk-note-page .lk-editor[data-typewriter] .cm-content { padding-b
   .lk-note-new input { flex: 1; min-width: 0; background: transparent; outline: none; font-family: var(--lk-font-prose); font-size: 16px; color: var(--foreground); }
   .lk-note-new input::placeholder { color: var(--muted-foreground); font-style: italic; }
   .lk-note-item {
-    display: grid; gap: 1px;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px;
     padding: 9px 10px; border-bottom: 1px solid var(--border);
     background: color-mix(in oklab, var(--card) 70%, transparent);
     transition: background var(--lk-dur-1) var(--lk-ease-settle);
@@ -528,6 +535,8 @@ html.lk-zen-ws .lk-note-page .lk-editor[data-typewriter] .cm-content { padding-b
     font-size: 13.5px; color: var(--muted-foreground);
     transition: color var(--lk-dur-1) var(--lk-ease-settle), border-color var(--lk-dur-1) var(--lk-ease-settle);
   }
+  /* In a narrow list the button is its icon (its title still names it). */
+  @container notelist (max-width: 340px) { .lk-chapter-add { padding: 0 9px; } .lk-chapter-add span { display: none; } }
   .lk-chapter-add:hover { color: var(--foreground); border-style: solid; border-color: var(--lk-ink-strong); }
   .lk-chapter { margin-top: 6px; border-radius: 2px; }
   .lk-chapter-head {
@@ -551,8 +560,8 @@ html.lk-zen-ws .lk-note-page .lk-editor[data-typewriter] .cm-content { padding-b
   .lk-chapter-actions { display: flex; flex: none; opacity: 0; transition: opacity var(--lk-dur-1) var(--lk-ease-settle); }
   .lk-chapter-head:hover .lk-chapter-actions, .lk-chapter-actions:focus-within { opacity: 1; }
   @media (hover: none) { .lk-chapter-actions, .lk-chapter-head .lk-grip { opacity: 1; } }
-  .lk-chapter-body { display: grid; gap: 6px; margin-left: 9px; padding: 6px 0 2px 10px; border-left: 1px solid var(--border); }
-  .lk-chapter-body ul { display: grid; }
+  .lk-chapter-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-left: 9px; padding: 6px 0 2px 10px; border-left: 1px solid var(--border); }
+  .lk-chapter-body ul { display: grid; grid-template-columns: minmax(0, 1fr); }
   .lk-chapter-empty { padding: 4px 2px; font-family: var(--lk-font-prose); font-style: italic; font-size: 14.5px; color: var(--muted-foreground); }
   .lk-chapter-rename { flex: 1; min-width: 0; }
   .lk-chapter-rename input {

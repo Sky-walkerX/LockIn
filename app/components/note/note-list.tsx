@@ -66,8 +66,8 @@ export function NoteList({
       <div className="flex items-stretch gap-1.5">
         <NewNote subjectId={subjectId} chapterId={null} placeholder={placeholder} onCreated={onCreated} id="new-note" />
         {canChapter && !naming && (
-          <button type="button" onClick={() => setNaming(true)} className="lk-chapter-add" title="New chapter: a group of notes">
-            <FolderPlus size={15} /> <span>Chapter</span>
+          <button type="button" onClick={() => setNaming(true)} className="lk-chapter-add" title="New chapter: a group of notes" aria-label="New chapter">
+            <FolderPlus size={15} aria-hidden /> <span>Chapter</span>
           </button>
         )}
       </div>
