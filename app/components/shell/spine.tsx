@@ -13,6 +13,7 @@ import {
   Home,
   Inbox,
   MessageSquareQuote,
+  MoonStar,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -30,6 +31,7 @@ import { ASK_PATH, useChatPanel } from "@/app/components/chat/chat-provider";
 import { fmtClock, useFocus } from "@/app/components/focus/focus-provider";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useInbox } from "@/hooks/useInbox";
+import { useZenWorkspace } from "@/hooks/useZenWorkspace";
 import { useTodayTasks } from "@/hooks/useTasks";
 import { useDueReviews } from "@/hooks/useReviews";
 import { AccountMenu } from "./account-menu";
@@ -55,6 +57,7 @@ export function Spine({
   const jump = useJump();
   const router = useRouter();
   const chat = useChatPanel();
+  const workspace = useZenWorkspace();
   const { running, clock } = useFocus();
   const { resolvedTheme, switchTheme } = useThemeSwitch();
   const mounted = useMounted();
@@ -142,6 +145,7 @@ export function Spine({
             {action(openPalette, <Search size={16} strokeWidth={1.75} />, "Search", "⌘K")}
             {action(() => jump.open(), <CornerDownRight size={16} strokeWidth={1.75} />, "Go to", "/")}
             {action(jump.readInZen, <BookOpen size={16} strokeWidth={1.75} />, "Zen", "Z")}
+            {action(() => void workspace.toggle(), <MoonStar size={16} strokeWidth={1.75} />, "Zen workspace", "⇧Z")}
             {action(() => router.push("/inbox?new=1"), <SquarePen size={16} strokeWidth={1.75} />, "New note")}
           </nav>
 

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useQueryRouter } from "@/hooks/useQueryRouter";
+import { useZenWorkspace } from "@/hooks/useZenWorkspace";
 import { useSession } from "next-auth/react";
 import { useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { format } from "date-fns";
@@ -13,6 +14,7 @@ import {
   CornerDownLeft,
   MessageSquare,
   Moon,
+  MoonStar,
   Plus,
   Search as SearchIcon,
   Sparkles,
@@ -208,6 +210,7 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
 
   // ── Actions ──
   const { data: tasks = [] } = useTasks();
+  const workspace = useZenWorkspace();
   const words = input.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const isDark = resolvedTheme === "dark";
   const go = (href: string) => () => {
@@ -228,6 +231,13 @@ function CommandPanel({ onClose }: { onClose: () => void }) {
     { key: "go-focus", label: "Go to Focus", tag: "go", icon: Timer, run: go("/focus") },
     { key: "go-analytics", label: "Go to Progress", tag: "go", icon: ArrowRight, run: go("/analytics") },
     { key: "go-settings", label: "Go to Settings", tag: "go", icon: ArrowRight, run: go("/settings") },
+    {
+      key: "workspace",
+      label: workspace.on ? "Leave the Zen workspace" : "Zen workspace: write on dark paper",
+      tag: "⇧Z",
+      icon: MoonStar,
+      run: () => (onClose(), void workspace.toggle()),
+    },
     // On a section's notes or the Inbox, the note open there (or the newest)
     // opens in Zen.
     ...((pathname === "/inbox" || routeSubjectId) && !new URLSearchParams(window.location.search).get("tab")

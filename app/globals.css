@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* The Zen workspace (hooks/useZenWorkspace.ts) is dark paper too. */
+@custom-variant dark (&:is(.dark *, .lk-zen-ws *));
 
 /*
   LockIn — Lab Book. One design language, light and dark from one token set.
@@ -138,7 +139,8 @@
 }
 
 /* ================================= Dark ================================= */
-.dark {
+.dark,
+html.lk-zen-ws {
   --background: #111a1b;        /* slate page */
   --foreground: #e2ebe8;
   --card: #141f20;
@@ -197,8 +199,11 @@
 }
 
 /* Zen's paper (note-zen.tsx): dark paper softened, whatever the theme. Set
-   here, beside .dark and outside the layers, so it wins over both. */
-.dark.lk-zen {
+   here, beside .dark and outside the layers, so it wins over both. The Zen
+   workspace takes the same paper for the whole page, its menus and dialogs
+   included, which is why it's on <html>. */
+.dark.lk-zen,
+html.lk-zen-ws {
     --background: #0e1113;
     --card: #0e1113;
     --card-foreground: #dcd8cf;
@@ -217,6 +222,13 @@
     --syntax-selection: #262c30;
     --c-eff: color-mix(in oklab, var(--c) 70%, var(--foreground));
 }
+
+/* The Zen workspace swaps the spine for its black sidebar, outside the layers
+   so it wins over the utilities that show and hide them by screen size. */
+html.lk-zen-ws { color-scheme: dark !important; }
+html.lk-zen-ws .lk-spine-aside { display: none; }
+@media (min-width: 768px) { html.lk-zen-ws .lk-zs-aside { display: block; } }
+html.lk-zen-ws .lk-mobilebar { background: #08090a; border-bottom: 1px solid #191e20; }
 
 @layer base {
   * {
@@ -1189,6 +1201,56 @@
   .lk-prose .hljs-deletion { color: var(--destructive); }
   .lk-prose .hljs-emphasis { font-style: italic; }
   .lk-prose .hljs-strong { font-weight: 700; }
+
+  /* ── Zen workspace ─────────────────────────────────────────────────────
+     A section's notes written and read on Zen's paper (hooks/useZenWorkspace.ts).
+     The palette comes from html.lk-zen-ws above; here the page loses what's
+     there for planning (the ruled boxes, the grid, the margin rule, the card
+     the note sits on), and a black sidebar of sections stands in for the spine. */
+  html.lk-zen-ws .lk-paper { background-image: none; }
+  html.lk-zen-ws .lk-paper::before { display: none; }
+  html.lk-zen-ws .lk-subject .lk-ruled { display: none; }
+  html.lk-zen-ws .lk-page-title { font-size: clamp(22px, 2.2vw, 28px); letter-spacing: 0.06em; }
+  html.lk-zen-ws .lk-page.lk-subject { max-width: 1800px; gap: 22px; }
+  html.lk-zen-ws .lk-note-page { background: transparent; border-color: transparent; box-shadow: none; }
+  html.lk-zen-ws .lk-note-item[aria-current="page"] { box-shadow: inset 2px 0 0 var(--c-eff, var(--foreground)); }
+  /* Nothing on the page shouts: the one filled button goes quiet like the rest. */
+  html.lk-zen-ws .lk-note-bar-primary { background: var(--muted); border-color: var(--border); color: var(--foreground); }
+
+  .lk-zs-aside, .lk-zs-sheet { background: #08090a; border-right: 1px solid #191e20; color: #8b918d; }
+  .lk-zs {
+    display: flex; flex-direction: column; gap: 22px;
+    height: 100%; overflow-y: auto; overflow-x: hidden;
+    padding: 18px 12px; scrollbar-color: #22282b transparent;
+  }
+  .lk-zs-collapsed { padding: 18px 8px; }
+  .lk-zs-brand {
+    display: flex; align-items: baseline; gap: 8px; padding: 2px 8px;
+    font-family: var(--lk-font-display); font-weight: 700; font-size: 15px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: #dcd8cf;
+  }
+  .lk-zs-collapsed .lk-zs-brand { justify-content: center; padding: 2px 0; }
+  .lk-zs-brand-tag { font-size: 11px; letter-spacing: 0.22em; color: #5d6462; }
+  .lk-zs-label {
+    padding: 0 8px 6px;
+    font-family: var(--lk-font-display); font-weight: 600; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #5d6462;
+  }
+  .lk-zs-item {
+    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px;
+    padding: 6px 8px; border-radius: 2px; text-align: left;
+    font-size: 14px; color: #8b918d;
+    transition: color var(--lk-dur-1) var(--lk-ease-settle), background var(--lk-dur-1) var(--lk-ease-settle);
+  }
+  .lk-zs-collapsed .lk-zs-item { justify-content: center; padding: 6px 0; }
+  .lk-zs-item:hover { color: #dcd8cf; background: #121517; }
+  .lk-zs-item:focus-visible { outline: 1px solid #5d6462; outline-offset: -1px; }
+  .lk-zs-item[aria-current="page"] { color: #eeeae2; background: #14181a; box-shadow: inset 2px 0 0 #dcd8cf; }
+  .lk-zs-item svg { flex: none; }
+  .lk-zs-chip { flex: none; width: 9px; height: 9px; border-radius: 2px; }
+  .lk-zs-collapsed .lk-zs-chip { width: 12px; height: 12px; }
+  .lk-zs-count, .lk-zs-kbd { margin-left: auto; font-size: 12px; color: #5d6462; font-variant-numeric: tabular-nums; }
+  .lk-zs-kbd { font-family: var(--lk-font-mono); font-size: 11px; }
 
   /* ── Ask ─────────────────────────────────────────────────────────────── */
   .lk-chat-panel { display: flex; flex-direction: column; min-height: 0; background: var(--background); }

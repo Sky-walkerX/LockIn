@@ -15,9 +15,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { excerpt } from "@/lib/notes/excerpt";
 import { readingOrder } from "@/lib/notes/chapters";
 import { card, fade } from "@/lib/motion";
-import { api } from "@/lib/fetcher";
-import { queryKeys } from "@/lib/query-keys";
-import type { RecentNote } from "@/lib/notes/recent";
+import { latestNotePage } from "@/hooks/useNotes";
 
 const FALLBACK = "#8b8f9e";
 
@@ -76,16 +74,9 @@ export function JumpProvider({ children }: { children: React.ReactNode }) {
     }
     // Anywhere else, the note written last, wherever it is. With no notes
     // yet there's nothing to read, so Go to offers the sections instead.
-    const [latest] = await qc
-      .fetchQuery({
-        queryKey: queryKeys.recentNotes(1),
-        queryFn: () => api.get<RecentNote[]>("/api/notes/recent?limit=1"),
-        staleTime: 0,
-      })
-      .catch(() => []);
-    if (!latest) return setState({ zen: true });
-    const page = latest.subject.isInbox ? "/inbox" : `/subjects/${latest.subject.id}`;
-    router.push(`${page}?note=${latest.id}&zen=1`, { scroll: false });
+    const page = await latestNotePage(qc);
+    if (!page) return setState({ zen: true });
+    router.push(`${page}&zen=1`, { scroll: false });
   }, [hidden, pathname, router, qc]);
 
   useEffect(() => {

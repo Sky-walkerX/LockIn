@@ -5,6 +5,7 @@ import { prefetch, spinePrefetches, viewerClock } from "@/lib/prefetch";
 import { Providers } from "@/app/components/QueryProviders";
 import { ClockProvider } from "@/app/components/clock";
 import { AppShell } from "@/app/components/shell/app-shell";
+import { WORKSPACE_BOOT } from "@/lib/zen-workspace";
 
 // The notebook: the spine, Ask, the palette and quick add around every page.
 export default async function NotebookLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,8 @@ export default async function NotebookLayout({ children }: { children: React.Rea
   const state = userId ? await prefetch(spinePrefetches(userId, clock.zone, clock.now)) : undefined;
   return (
     <ClockProvider zone={clock.zone} now={clock.now}>
+      {/* The Zen workspace's class, set before the page first paints. */}
+      <script dangerouslySetInnerHTML={{ __html: WORKSPACE_BOOT }} />
       <Providers session={session}>
         <HydrationBoundary state={state}>
           <AppShell>{children}</AppShell>

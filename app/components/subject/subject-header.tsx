@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { Pencil, Trash2, Archive, ArchiveRestore, MoonStar, Sun } from "lucide-react";
+import { useZenWorkspace } from "@/hooks/useZenWorkspace";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -30,6 +31,7 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
   const router = useRouter();
   const update = useUpdateSubject();
   const del = useDeleteSubject();
+  const workspace = useZenWorkspace();
 
   const clock = useClock();
   const [editOpen, setEditOpen] = useState(false);
@@ -105,6 +107,15 @@ export function SubjectHeader({ subject }: { subject: SubjectDetail }) {
           {subject.description && <p className="lk-page-sub max-w-2xl">{subject.description}</p>}
         </div>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => void workspace.toggle()}
+            aria-pressed={workspace.active}
+            className="lk-iconbtn"
+            title={workspace.active ? "Leave the Zen workspace (⇧Z)" : "Zen workspace: write on dark paper (⇧Z)"}
+          >
+            {workspace.active ? <Sun size={15} /> : <MoonStar size={15} />}
+          </button>
           <Popover open={editOpen} onOpenChange={openEdit}>
             <PopoverTrigger asChild>
               <button type="button" className="lk-iconbtn" title="Edit subject">
