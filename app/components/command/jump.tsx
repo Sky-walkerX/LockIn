@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { useQueryRouter } from "@/hooks/useQueryRouter";
 import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, ChevronLeft, ChevronRight, CornerDownLeft, FileText, Inbox } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
@@ -14,20 +15,24 @@ import { useSearch } from "@/hooks/useSearch";
 import { excerpt } from "@/lib/notes/excerpt";
 import { readingOrder } from "@/lib/notes/chapters";
 import { card, fade } from "@/lib/motion";
+import { api } from "@/lib/fetcher";
+import { queryKeys } from "@/lib/query-keys";
+import type { RecentNote } from "@/lib/notes/recent";
 
 const FALLBACK = "#8b8f9e";
 
 // Go to: "/" from anywhere opens a list of sections; a section opens onto its
 // notes, and typing finds a note in any of them. In Zen it opens over the
 // page being read and keeps you in Zen; elsewhere it opens the note's page.
-// The search palette (⌘K) is for everything else. "z" opens Zen from anywhere.
+// The search palette (⌘K) is for everything else. "z" opens Zen from anywhere,
+// straight onto a note: Go to is "/" only, so Z never asks.
 
 type Opts = { zen?: boolean };
 type Jump = {
   open: (opts?: Opts) => void;
   close: () => void;
   isOpen: () => boolean;
-  /** Zen on the notes open on this page, or, anywhere else, Go to asking which. */
+  /** Zen on the notes open on this page, or, anywhere else, on the note written last. */
   readInZen: () => void;
 };
 const JumpContext = createContext<Jump>({ open: () => {}, close: () => {}, isOpen: () => false, readInZen: () => {} });
@@ -39,6 +44,7 @@ const inZen = () => new URLSearchParams(window.location.search).get("zen") === "
 
 export function JumpProvider({ children }: { children: React.ReactNode }) {
   const router = useQueryRouter();
+  const qc = useQueryClient();
   const pathname = usePathname() ?? "/";
   const { status } = useSession();
   const hidden = status !== "authenticated";
@@ -58,14 +64,29 @@ export function JumpProvider({ children }: { children: React.ReactNode }) {
   );
   const close = useCallback(() => setState(null), []);
   const isOpen = useCallback(() => openRef.current, []);
-  const readInZen = useCallback(() => {
+  const readInZen = useCallback(async () => {
     if (hidden) return;
     const q = new URLSearchParams(window.location.search);
-    const onNotes = (pathname === "/inbox" || pathname.startsWith("/subjects/")) && !q.get("tab");
-    if (!onNotes) return setState({ zen: true });
-    q.set("zen", "1");
-    router.push(`${pathname}?${q}`, { scroll: false });
-  }, [hidden, pathname, router]);
+    const notesPage = pathname === "/inbox" || pathname.startsWith("/subjects/");
+    // On a section's notes, the note open; on its Plan or Resources, its notes.
+    if (notesPage) {
+      const zen = q.get("tab") ? new URLSearchParams() : q;
+      zen.set("zen", "1");
+      return router.push(`${pathname}?${zen}`, { scroll: false });
+    }
+    // Anywhere else, the note written last, wherever it is. With no notes
+    // yet there's nothing to read, so Go to offers the sections instead.
+    const [latest] = await qc
+      .fetchQuery({
+        queryKey: queryKeys.recentNotes(1),
+        queryFn: () => api.get<RecentNote[]>("/api/notes/recent?limit=1"),
+        staleTime: 0,
+      })
+      .catch(() => []);
+    if (!latest) return setState({ zen: true });
+    const page = latest.subject.isInbox ? "/inbox" : `/subjects/${latest.subject.id}`;
+    router.push(`${page}?note=${latest.id}&zen=1`, { scroll: false });
+  }, [hidden, pathname, router, qc]);
 
   useEffect(() => {
     // "/" goes to a section or note, from the page or from Zen. "z" reads in
