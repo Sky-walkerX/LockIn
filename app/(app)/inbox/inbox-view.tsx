@@ -1,7 +1,8 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useQueryRouter } from "@/hooks/useQueryRouter";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { useInbox } from "@/hooks/useInbox";
@@ -27,7 +28,7 @@ export function InboxView() {
 }
 
 function Inbox() {
-  const router = useRouter();
+  const router = useQueryRouter();
   const searchParams = useSearchParams();
   const { status } = useSession({ required: true });
   const { data: inbox, isError: inboxError } = useInbox(status === "authenticated");

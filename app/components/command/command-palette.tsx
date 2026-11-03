@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useQueryRouter } from "@/hooks/useQueryRouter";
 import { useSession } from "next-auth/react";
 import { useThemeSwitch } from "@/app/components/theme/use-theme-switch";
 import { format } from "date-fns";
@@ -121,7 +122,7 @@ const matchesAll = (label: string, words: string[]) => {
 
 // ── Panel ──────────────────────────────────────────────────────────────────
 function CommandPanel({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
+  const router = useQueryRouter();
   const pathname = usePathname();
   const { resolvedTheme, switchTheme } = useThemeSwitch();
   const quickAdd = useQuickAdd();

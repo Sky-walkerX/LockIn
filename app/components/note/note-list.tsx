@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { QueryLink } from "@/app/components/query-link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -136,7 +136,7 @@ function NoteRow({ note, selected, href }: { note: MilestoneWithTasks; selected:
       className={`lk-note-row ${isDragging ? "z-10 bg-background shadow-md" : ""}`}
       {...pointer}
     >
-      <Link
+      <QueryLink
         href={pending ? "#" : href}
         scroll={false}
         draggable={false}
@@ -150,7 +150,7 @@ function NoteRow({ note, selected, href }: { note: MilestoneWithTasks; selected:
           {ago(note.updatedAt)}
           {note.tasks.length > 0 && ` · ${note.tasks.length} task${note.tasks.length === 1 ? "" : "s"}`}
         </span>
-      </Link>
+      </QueryLink>
       <button
         ref={setActivatorNodeRef}
         type="button"

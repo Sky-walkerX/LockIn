@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useQueryRouter } from "@/hooks/useQueryRouter";
+import { QueryLink } from "@/app/components/query-link";
 import { useSession } from "next-auth/react";
 import { useSubject, type SubjectDetail } from "@/hooks/useSubjects";
 import { useReorderTasks } from "@/hooks/useTasks";
@@ -36,7 +38,7 @@ type Tab = "notes" | "resources" | "plan";
 //                         subtask opens Plan and is revealed in the tree
 export function SubjectView() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
+  const router = useQueryRouter();
   const searchParams = useSearchParams();
   const { status } = useSession({ required: true });
   const { data: subject, isLoading, isError } = useSubject(id);
@@ -154,7 +156,7 @@ export function SubjectView() {
 
       <nav className="lk-tabs" aria-label="Section views">
         {tabs.map((t) => (
-          <Link
+          <QueryLink
             key={t.key}
             href={href({ tab: t.key === "notes" ? null : t.key })}
             scroll={false}
@@ -163,7 +165,7 @@ export function SubjectView() {
           >
             {t.label}
             {t.count && <span className="lk-tab-count">{t.count}</span>}
-          </Link>
+          </QueryLink>
         ))}
       </nav>
 

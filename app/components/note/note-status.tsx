@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import Link from "next/link";
+import { QueryLink } from "@/app/components/query-link";
 import { format } from "date-fns";
 import { useAgo, useClock } from "@/app/components/clock";
 import type { MilestoneWithTasks, NoteLink } from "@/hooks/useSubjects";
@@ -22,9 +22,9 @@ const href = (n: NoteLink) => `/subjects/${n.subjectId}?note=${n.id}`;
 
 function PageLink({ note }: { note: NoteLink }) {
   return (
-    <Link href={href(note)} className="lk-status-link">
+    <QueryLink href={href(note)} className="lk-status-link">
       {note.page != null ? pageLabel(note.page) : `"${note.title}"`}
-    </Link>
+    </QueryLink>
   );
 }
 

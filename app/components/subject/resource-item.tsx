@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useQueryRouter } from "@/hooks/useQueryRouter";
 import { Link2, MessageSquare, FileText, BookOpen, Trash2, ExternalLink, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { useDeleteResource, useIngestResource, type ResourceRow } from "@/hooks/useResources";
 import type { ResourceType } from "@/app/generated/prisma/browser";
@@ -37,7 +38,7 @@ export function ResourceItem({ resource }: { resource: ResourceRow }) {
   const del = useDeleteResource();
   const ingest = useIngestResource();
   const Icon = ICON[resource.type];
-  const router = useRouter();
+  const router = useQueryRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // Keep the tab (and anything else) in the URL, so closing the reader lands

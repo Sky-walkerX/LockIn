@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { QueryLink } from "@/app/components/query-link";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, BookOpen, ListChecks, Maximize2, MessageSquareQuote, PenLine, Pencil, Trash2 } from "lucide-react";
@@ -106,9 +106,9 @@ export function NoteView({
         )}
       </AnimatePresence>
       <div className="lk-runhead">
-        <Link href={backHref} scroll={false} className="lk-note-back">
+        <QueryLink href={backHref} scroll={false} className="lk-note-back">
           <ArrowLeft size={13} /> All notes
-        </Link>
+        </QueryLink>
         <span className="lk-note-where">
           <b>{sectionTitle}</b>
           {chapterTitle && <> · {chapterTitle}</>} · Note{note.page != null && <> · {pageLabel(note.page)}</>}
@@ -191,12 +191,12 @@ export function NoteView({
 
       <div className="lk-note-bar">
         {planHref && (
-          <Link href={planHref} className="lk-note-bar-link">
+          <QueryLink href={planHref} className="lk-note-bar-link">
             <ListChecks size={14} />
             {note.tasks.length > 0
               ? `${note.tasks.filter((t) => t.isCompleted).length}/${note.tasks.length} tasks in Plan`
               : "Plan tasks for this note"}
-          </Link>
+          </QueryLink>
         )}
         <span className="flex-1" />
         {!draft.editing && (
@@ -211,7 +211,7 @@ export function NoteView({
         >
           <MessageSquareQuote size={14} /> Ask this note
         </button>
-        <Link
+        <QueryLink
           href={zenHref}
           scroll={false}
           aria-disabled={pending || draft.editing}
@@ -220,7 +220,7 @@ export function NoteView({
           title="Read this section's notes in Zen (Z)"
         >
           <BookOpen size={14} /> Zen
-        </Link>
+        </QueryLink>
         <button
           type="button"
           onClick={() => {

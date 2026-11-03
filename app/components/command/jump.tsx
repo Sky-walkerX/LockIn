@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useQueryRouter } from "@/hooks/useQueryRouter";
 import { useSession } from "next-auth/react";
 import { BookOpen, ChevronLeft, ChevronRight, CornerDownLeft, FileText, Inbox } from "lucide-react";
 import { AnimatePresence } from "motion/react";
@@ -37,7 +38,7 @@ const editable = (t: EventTarget | null) =>
 const inZen = () => new URLSearchParams(window.location.search).get("zen") === "1";
 
 export function JumpProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router = useQueryRouter();
   const pathname = usePathname() ?? "/";
   const { status } = useSession();
   const hidden = status !== "authenticated";
@@ -105,7 +106,7 @@ type Row = {
 };
 
 function JumpPanel({ zen, onClose }: { zen: boolean; onClose: () => void }) {
-  const router = useRouter();
+  const router = useQueryRouter();
   const pathname = usePathname();
   const { data: subjects = [] } = useSubjects();
   const { data: inbox } = useInbox();

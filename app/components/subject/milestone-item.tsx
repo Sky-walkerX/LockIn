@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import Link from "next/link";
+import { QueryLink } from "@/app/components/query-link";
 import { ChevronDown, ChevronUp, ChevronRight, Pencil, Trash2, FileText, Scale } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Checkbox } from "@/app/components/ui/checkbox";
@@ -213,12 +213,12 @@ export const MilestoneItem = memo(function MilestoneItem({
       {/* Body */}
       {open && (
         <div className="border-t border-border px-3 pb-3 pt-3">
-          <Link
+          <QueryLink
             href={`/subjects/${milestone.subjectId}?note=${milestone.id}`}
             className="lk-print mb-2 inline-flex items-center gap-1.5 text-xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
           >
             <FileText size={13} /> {milestone.notes.trim() ? "Read the note" : "Write the note"}
-          </Link>
+          </QueryLink>
 
           {/* Tasks — one plan tree: rows number themselves off this counter and
               sit flush so the depth rails run unbroken down the milestone. */}
