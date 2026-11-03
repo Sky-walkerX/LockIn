@@ -29,7 +29,10 @@ function Verify() {
     mutationFn: async () => {
       const { email } = await api.post<{ email: string }>("/api/account/verify", { token, password });
       // The same two things sign in, so the notebook opens without asking again.
-      const signedIn = await signIn("credentials", { redirect: false, email, password });
+      // Where to go said outright, as on the sign-in page: NextAuth reads the
+      // result's error from the callback URL, which is otherwise this address.
+      const callbackUrl = new URL("/", window.location.origin).href;
+      const signedIn = await signIn("credentials", { redirect: false, callbackUrl, email, password });
       return { signedIn: !!signedIn?.ok && !signedIn.error };
     },
     // A full load, not a client navigation: `/` is a different page once

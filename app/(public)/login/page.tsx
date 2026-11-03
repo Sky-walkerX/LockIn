@@ -34,7 +34,13 @@ function LoginForm({ nextParam, errorParam }: { nextParam: string | null; errorP
       // full-page redirect. Without it, a successful login still resolves to
       // undefined and trips the error path, flashing "Login failed" before the
       // redirect lands. We navigate manually in onSuccess.
-      const result = await signIn("credentials", { redirect: false, email, password });
+      // The callback URL is where we're going, said outright. Left out it's
+      // this page's address, and NextAuth reads the result's error from that
+      // URL's ?error=: arriving with one (a session that ended, a Google
+      // attempt turned away) made a right password read as "Login failed"
+      // while the session was in fact set.
+      const callbackUrl = new URL(next, window.location.origin).href;
+      const result = await signIn("credentials", { redirect: false, callbackUrl, email, password });
       if (result?.error === EMAIL_NOT_VERIFIED) throw new Error(EMAIL_NOT_VERIFIED);
       if (result?.error === TOO_MANY_ATTEMPTS) throw new Error("Too many sign-in tries. Wait ten minutes and try again.");
       if (!result?.ok || result.error) {
