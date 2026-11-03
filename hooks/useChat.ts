@@ -35,7 +35,7 @@ export function useConversation(id: string | undefined) {
   return useQuery({
     queryKey: ["conversation", id],
     enabled: !!id,
-    queryFn: () => api.get<ConversationDetail>(`/api/chat/conversations/${id}`),
+    queryFn: () => api.get<ConversationDetail>(`/api/chat/conversations/${encodeURIComponent(id ?? "")}`),
   });
 }
 
@@ -52,7 +52,7 @@ export function useUpdateConversation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: { title?: string; contextSubjectIds?: string[] } }) =>
-      api.put<ConversationSummary>(`/api/chat/conversations/${id}`, data),
+      api.put<ConversationSummary>(`/api/chat/conversations/${encodeURIComponent(id)}`, data),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["conversations"] });
       qc.invalidateQueries({ queryKey: ["conversation", vars.id] });
@@ -63,7 +63,7 @@ export function useUpdateConversation() {
 export function useDeleteConversation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/chat/conversations/${id}`),
+    mutationFn: (id: string) => api.del<{ success: boolean }>(`/api/chat/conversations/${encodeURIComponent(id)}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["conversations"] }),
   });
 }
@@ -175,7 +175,7 @@ export function useSendMessage() {
       try {
         setPhase("preparing");
         const prepared = await api.post<PrepareResponse>(
-          `/api/chat/conversations/${conversationId}/prepare`,
+          `/api/chat/conversations/${encodeURIComponent(conversationId)}/prepare`,
           {
             content,
             contextTokens: effectiveContextTokens(settings),
@@ -234,7 +234,7 @@ export function useSendMessage() {
 
       if (streamed.trim()) {
         try {
-          await api.post<ChatMessage>(`/api/chat/conversations/${conversationId}/messages`, {
+          await api.post<ChatMessage>(`/api/chat/conversations/${encodeURIComponent(conversationId)}/messages`, {
             content: streamed,
             model: modelName(settings),
             sources,

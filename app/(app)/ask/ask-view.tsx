@@ -10,6 +10,8 @@ import { useChatPanel } from "@/app/components/chat/chat-provider";
 // the browser, as the floating one does.
 const ChatPanel = dynamic(() => import("@/app/components/chat/chat-panel").then((m) => m.ChatPanel), { ssr: false });
 
+const CONVERSATION_ID = /^[0-9a-f-]{36}$/i;
+
 // The open conversation lives in the URL (?c=<id>), so the floating panel can
 // hand one over, and a reload or a link lands back in it.
 export function AskView() {
@@ -25,7 +27,10 @@ function Ask() {
   const searchParams = useSearchParams();
   const router = useQueryRouter();
   const { seed } = useChatPanel();
-  const conversationId = searchParams.get("c");
+  // Only an id: the address is anyone's to write, and the id goes into API
+  // paths, so "../" in it mustn't reach another endpoint with the session.
+  const asked = searchParams.get("c");
+  const conversationId = asked && CONVERSATION_ID.test(asked) ? asked : null;
   return (
     <ChatPanel
       variant="page"
