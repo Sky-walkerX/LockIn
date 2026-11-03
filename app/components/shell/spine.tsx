@@ -26,7 +26,7 @@ import { BRAND } from "@/lib/brand";
 import { NewSubject } from "@/app/components/home/new-subject";
 import { useCommandPalette } from "@/app/components/command/command-palette";
 import { useJump } from "@/app/components/command/jump";
-import { useChatPanel } from "@/app/components/chat/chat-provider";
+import { ASK_PATH, useChatPanel } from "@/app/components/chat/chat-provider";
 import { fmtClock, useFocus } from "@/app/components/focus/focus-provider";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useInbox } from "@/hooks/useInbox";
@@ -54,7 +54,7 @@ export function Spine({
   const { open: openPalette } = useCommandPalette();
   const jump = useJump();
   const router = useRouter();
-  const { open: openChat } = useChatPanel();
+  const chat = useChatPanel();
   const { running, clock } = useFocus();
   const { resolvedTheme, switchTheme } = useThemeSwitch();
   const mounted = useMounted();
@@ -203,7 +203,17 @@ export function Spine({
       )}
 
       <div className="mt-auto grid gap-px">
-        {signedIn && action(() => openChat(), <MessageSquareQuote size={16} strokeWidth={1.75} />, "Ask", "⌘J")}
+        {/* The page for conversations; ⌘J asks from wherever you are. */}
+        {signedIn &&
+          link(
+            ASK_PATH,
+            <span className="relative flex">
+              <MessageSquareQuote size={16} strokeWidth={1.75} />
+              {(chat.isStreaming || chat.unseen) && <span className={`lk-chat-dot${chat.isStreaming ? " streaming" : ""}`} aria-hidden />}
+            </span>,
+            "Ask",
+            <kbd className="lk-spine-kbd">⌘J</kbd>,
+          )}
         {mounted &&
           action(
             (e) => switchTheme(resolvedTheme === "dark" ? "light" : "dark", clickPoint(e)),

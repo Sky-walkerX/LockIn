@@ -64,7 +64,7 @@ export function MessageList({
   const empty = messages.length === 0 && !isStreaming && !error;
 
   return (
-    <div ref={scrollRef} onScroll={onScroll} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+    <div ref={scrollRef} onScroll={onScroll} className="lk-chat-thread flex-1 space-y-3 overflow-y-auto py-4">
       {empty && (
         <p className="mt-8 text-center text-xs leading-relaxed text-muted-foreground">
           Ask about your notes, or anything else.

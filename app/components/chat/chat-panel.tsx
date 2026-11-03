@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { History, Send, Settings, Square, X } from "lucide-react";
+import { History, Maximize2, Plus, Send, Settings, Square, X } from "lucide-react";
 import {
   useConversation,
   useCreateConversation,
@@ -34,22 +34,38 @@ function subjectIdFromPath(pathname: string | null): string | null {
   return match ? match[1] : null;
 }
 
+// Two places to ask: floating over a page (the provider's, opened with ⌘J),
+// and /ask, where the conversation has the page and its history beside it.
+// The floating one keeps its conversation itself; /ask keeps it in the URL.
 export function ChatPanel({
+  variant,
   isOpen,
   onClose,
+  onExpand,
   onStreamingChange,
   seed,
+  conversationId: chosenId,
+  onConversationChange,
 }: {
+  variant: "float" | "page";
   isOpen: boolean;
-  onClose: () => void;
-  onStreamingChange: (streaming: boolean) => void;
+  onClose?: () => void;
+  /** Float: continue this conversation on /ask. */
+  onExpand?: (conversationId: string | null) => void;
+  onStreamingChange?: (streaming: boolean) => void;
   /** A draft to start from; a new `n` replaces whatever is typed. */
   seed?: { text: string; n: number } | null;
+  /** Page: the open conversation, from the URL, and how to change it. */
+  conversationId?: string | null;
+  onConversationChange?: (id: string | null) => void;
 }) {
   const pathname = usePathname();
   const homeSubjectId = subjectIdFromPath(pathname);
+  const page = variant === "page";
 
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [ownId, setOwnId] = useState<string | null>(null);
+  const conversationId = chosenId !== undefined ? chosenId : ownId;
+  const setConversationId = (id: string | null) => (onConversationChange ? onConversationChange(id) : setOwnId(id));
   const [view, setView] = useState<View>("chat");
   const [draft, setDraft] = useState("");
   // Connections live in localStorage. The panel only mounts in the browser
@@ -66,7 +82,7 @@ export function ChatPanel({
   const indexing = useIndexing(settings);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // The panel stays mounted behind the rail, so focus follows the expand as
+  // The floating panel stays mounted while closed, so focus follows opening as
   // well as the view switch — a hidden textarea can't take it on its own.
   useEffect(() => {
     if (isOpen && view === "chat") textareaRef.current?.focus();
@@ -85,8 +101,16 @@ export function ChatPanel({
   }, [seed]);
 
   useEffect(() => {
-    onStreamingChange(isStreaming);
+    onStreamingChange?.(isStreaming);
   }, [isStreaming, onStreamingChange]);
+
+  // A conversation opened from the history or the URL brings back the
+  // subjects it was reading from. Applied while rendering, once per thread.
+  const [seenThread, setSeenThread] = useState<string | null>(null);
+  if (conversation && conversation.id !== seenThread) {
+    setSeenThread(conversation.id);
+    setSelected(conversation.contextSubjectIds);
+  }
 
   const ready = store.connections.length > 0 && isConfigured(settings);
 
@@ -154,13 +178,19 @@ export function ChatPanel({
     return { used, ceiling, scope, truncated: budget.truncated, degraded: budget.degraded };
   }, [budget]);
 
-  return (
-    // Docked at `sm` and up, where the rail reserves it a place in the shell;
-    // below that there is nothing to dock into, so it goes back to an overlay.
-    <aside
-      aria-label="Chat"
-      className="lk-chat-panel flex w-full flex-col max-sm:fixed max-sm:inset-0 max-sm:z-50 sm:w-[372px]"
-    >
+  const history = (
+    <HistoryList
+      activeId={conversationId}
+      onNew={startNew}
+      onPick={(picked) => {
+        setConversationId(picked.id);
+        setView("chat");
+      }}
+    />
+  );
+
+  const panel = (
+    <>
       <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="lk-display text-sm font-black tracking-tight">Ask</span>
@@ -190,7 +220,8 @@ export function ChatPanel({
             type="button"
             onClick={() => setView(view === "history" ? "chat" : "history")}
             aria-label="Conversation history"
-            className="lk-iconbtn"
+            // On a wide /ask the history is always beside the chat.
+            className={`lk-iconbtn ${page ? "md:hidden" : ""}`}
           >
             <History size={15} />
           </button>
@@ -202,15 +233,28 @@ export function ChatPanel({
           >
             <Settings size={15} />
           </button>
-          {/* The rail owns collapsing wherever it is on screen. */}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close chat"
-            className="lk-iconbtn sm:hidden"
-          >
-            <X size={15} />
-          </button>
+          {page ? (
+            <button type="button" onClick={startNew} aria-label="New chat" title="New chat" className="lk-iconbtn">
+              <Plus size={15} />
+            </button>
+          ) : (
+            <>
+              {/* Mid-reply the page couldn't show the rest of it yet, so it waits. */}
+              <button
+                type="button"
+                onClick={() => onExpand?.(conversationId)}
+                disabled={isStreaming}
+                aria-label="Continue on the Ask page"
+                title="Continue on the Ask page"
+                className="lk-iconbtn"
+              >
+                <Maximize2 size={14} />
+              </button>
+              <button type="button" onClick={onClose} aria-label="Close chat" title="Close (Esc)" className="lk-iconbtn">
+                <X size={15} />
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -220,19 +264,7 @@ export function ChatPanel({
         </div>
       )}
 
-      {view === "history" && (
-        <div className="flex-1 overflow-hidden">
-          <HistoryList
-            activeId={conversationId}
-            onNew={startNew}
-            onPick={(picked) => {
-              setConversationId(picked.id);
-              setSelected(picked.contextSubjectIds);
-              setView("chat");
-            }}
-          />
-        </div>
-      )}
+      {view === "history" && <div className="flex-1 overflow-hidden">{history}</div>}
 
       {view === "chat" && (
         <>
@@ -248,7 +280,7 @@ export function ChatPanel({
             streamRefs={budget?.refs}
           />
 
-          <div className="border-t border-border px-4 py-3">
+          <div className="lk-chat-foot border-t border-border py-3">
             <ContextPicker selected={selected} onChange={changeContext} />
 
             <div className="lk-chat-composer mt-2.5 flex items-end gap-2 px-2.5 py-2">
@@ -303,6 +335,22 @@ export function ChatPanel({
           </div>
         </>
       )}
+    </>
+  );
+
+  return page ? (
+    <div className="lk-ask">
+      <aside className="lk-ask-history" aria-label="Conversations">
+        {history}
+      </aside>
+      <section aria-label="Chat" className="lk-chat-panel lk-ask-main">
+        {panel}
+      </section>
+    </div>
+  ) : (
+    // Floats in the corner over the page; on a phone it takes the screen.
+    <aside aria-label="Chat" className="lk-chat-panel lk-chat-float">
+      {panel}
     </aside>
   );
 }
