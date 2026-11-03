@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupByChapter, readingOrder } from "./chapters";
+import { groupByChapter, readingOrder, withGroupOrder } from "./chapters";
 
 const note = (id: string, chapterId: string | null = null) => ({ id, chapterId });
 const ids = (ns: { id: string }[]) => ns.map((n) => n.id);
@@ -36,5 +36,20 @@ describe("groupByChapter", () => {
       ["setup", ["b"]],
       ["empty", []],
     ]);
+  });
+});
+
+describe("withGroupOrder", () => {
+  it("reorders one group and leaves the rest where they were", () => {
+    // Loose b, d; then chapter setup's c, e; then meetings' a.
+    expect(withGroupOrder(["b", "d", "c", "e", "a"], ["e", "c"])).toEqual(["b", "d", "e", "c", "a"]);
+  });
+
+  it("refills the group's places even when they aren't next to each other", () => {
+    expect(withGroupOrder(["a", "x", "b", "y", "c"], ["c", "a", "b"])).toEqual(["c", "x", "a", "y", "b"]);
+  });
+
+  it("is the group itself when the group is everything", () => {
+    expect(withGroupOrder(["a", "b", "c"], ["c", "b", "a"])).toEqual(["c", "b", "a"]);
   });
 });

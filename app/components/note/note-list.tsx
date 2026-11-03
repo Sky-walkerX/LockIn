@@ -8,19 +8,20 @@ import { ChevronRight, FolderPlus, GripVertical, Pencil, Plus, Trash2 } from "lu
 import { useAgo } from "@/app/components/clock";
 import type { MilestoneWithTasks } from "@/hooks/useSubjects";
 import type { Chapter } from "@/app/generated/prisma/browser";
-import { useCreateMilestone } from "@/hooks/useMilestones";
+import { useCreateMilestone, useReorderMilestones } from "@/hooks/useMilestones";
 import { useCreateChapter, useDeleteChapter, useRenameChapter, useReorderChapters } from "@/hooks/useChapters";
 import { SortableList } from "@/app/components/subject/sortable-list";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { isTempId } from "@/lib/subject-cache";
 import { excerpt } from "@/lib/notes/excerpt";
-import { groupByChapter } from "@/lib/notes/chapters";
+import { groupByChapter, withGroupOrder } from "@/lib/notes/chapters";
 
 // A section's notes in their order, with a line of each: the ones in no
 // chapter first, then each chapter under a heading that folds. The new-note
 // field sits on top: a title is enough to start, and the note opens ready to
 // write. A chapter can take a new note of its own, be renamed, dragged into
-// another place, or removed (its notes stay in the section).
+// another place, or removed (its notes stay in the section). Notes drag into
+// a new place within their own group; Move files one in another chapter.
 export function NoteList({
   subjectId,
   sectionTitle,
@@ -44,10 +45,15 @@ export function NoteList({
   const canChapter = chapters !== undefined;
   const createChapter = useCreateChapter();
   const reorder = useReorderChapters();
+  const reorderNotes = useReorderMilestones();
   const [naming, setNaming] = useState(false);
   const folded = useFolded();
   const { loose, groups } = groupByChapter(notes, chapters ?? []);
   const selectedChapter = notes.find((n) => n.id === selectedId)?.chapterId ?? null;
+  // A group's new order, written into the whole section's: every note's order
+  // becomes its place in reading order.
+  const inReadingOrder = [...loose, ...groups.flatMap((g) => g.notes)].map((n) => n.id);
+  const reorderGroup = (group: string[]) => reorderNotes.mutate({ ids: withGroupOrder(inReadingOrder, group) });
 
   // Arriving at a note (from Go to, Zen, a link) opens its chapter so it can be
   // seen. Only on arriving: after that the arrow folds the chapter like any other.
@@ -81,11 +87,13 @@ export function NoteList({
       ) : (
         <>
           {loose.length > 0 && (
-            <ul>
-              {loose.map((n) => (
-                <NoteRow key={n.id} note={n} selected={n.id === selectedId} href={hrefFor(n.id)} />
-              ))}
-            </ul>
+            <SortableList ids={loose.map((n) => n.id)} onReorder={reorderGroup}>
+              <ul>
+                {loose.map((n) => (
+                  <NoteRow key={n.id} note={n} selected={n.id === selectedId} href={hrefFor(n.id)} />
+                ))}
+              </ul>
+            </SortableList>
           )}
           <SortableList ids={groups.map((g) => g.chapter.id)} onReorder={(ids) => reorder.mutate({ ids })}>
             {groups.map(({ chapter, notes: inside }) => (
@@ -96,6 +104,7 @@ export function NoteList({
                 sectionTitle={sectionTitle}
                 open={!folded.has(chapter.id)}
                 onToggle={() => folded.toggle(chapter.id)}
+                onReorderNotes={reorderGroup}
                 selectedId={selectedId}
                 hrefFor={hrefFor}
                 onCreated={onCreated}
@@ -108,15 +117,29 @@ export function NoteList({
   );
 }
 
+// A mouse drags a row from anywhere on it (a click still opens the note). The
+// grip is for the keyboard, and for touch, where dragging the row scrolls.
 function NoteRow({ note, selected, href }: { note: MilestoneWithTasks; selected: boolean; href: string }) {
   const ago = useAgo();
   const line = excerpt(note.notes, 90);
   const pending = isTempId(note.id);
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: note.id,
+    disabled: pending,
+  });
+  // dnd-kit types its listeners loosely; these are the sensors' React handlers.
+  const { onKeyDown, ...pointer } = (listeners ?? {}) as Record<string, React.EventHandler<React.SyntheticEvent>>;
   return (
-    <li>
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`lk-note-row ${isDragging ? "z-10 bg-background shadow-md" : ""}`}
+      {...pointer}
+    >
       <Link
         href={pending ? "#" : href}
         scroll={false}
+        draggable={false}
         aria-current={selected ? "page" : undefined}
         aria-disabled={pending || undefined}
         className={`lk-note-item ${pending ? "pointer-events-none opacity-60" : ""}`}
@@ -128,6 +151,17 @@ function NoteRow({ note, selected, href }: { note: MilestoneWithTasks; selected:
           {note.tasks.length > 0 && ` · ${note.tasks.length} task${note.tasks.length === 1 ? "" : "s"}`}
         </span>
       </Link>
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        className="lk-grip"
+        aria-label={`Drag to reorder ${note.title}`}
+        disabled={pending}
+        {...attributes}
+        onKeyDown={onKeyDown}
+      >
+        <GripVertical size={13} />
+      </button>
     </li>
   );
 }
@@ -138,6 +172,7 @@ function ChapterGroup({
   sectionTitle,
   open,
   onToggle,
+  onReorderNotes,
   selectedId,
   hrefFor,
   onCreated,
@@ -147,6 +182,7 @@ function ChapterGroup({
   sectionTitle: string;
   open: boolean;
   onToggle: () => void;
+  onReorderNotes: (ids: string[]) => void;
   selectedId: string | null;
   hrefFor: (noteId: string) => string;
   onCreated: (noteId: string) => void;
@@ -250,11 +286,13 @@ function ChapterGroup({
             />
           )}
           {notes.length > 0 ? (
-            <ul>
-              {notes.map((n) => (
-                <NoteRow key={n.id} note={n} selected={n.id === selectedId} href={hrefFor(n.id)} />
-              ))}
-            </ul>
+            <SortableList ids={notes.map((n) => n.id)} onReorder={onReorderNotes}>
+              <ul>
+                {notes.map((n) => (
+                  <NoteRow key={n.id} note={n} selected={n.id === selectedId} href={hrefFor(n.id)} />
+                ))}
+              </ul>
+            </SortableList>
           ) : (
             !adding && <p className="lk-chapter-empty">Empty. Add a note with +, or move one here.</p>
           )}

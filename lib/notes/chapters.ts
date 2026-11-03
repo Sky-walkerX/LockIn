@@ -24,3 +24,14 @@ export function readingOrder<N extends NoteRef, C extends ChapterRef>(notes: N[]
   const { loose, groups } = groupByChapter(notes, chapters);
   return [...loose, ...groups.flatMap((g) => g.notes)];
 }
+
+/**
+ * The whole list of note ids with one group (the loose notes, or a chapter's)
+ * put in a new order: each place the group held takes its next note, so the
+ * other groups don't move. The reorder route wants every note in the subject.
+ */
+export function withGroupOrder(all: string[], group: string[]): string[] {
+  const inGroup = new Set(group);
+  let next = 0;
+  return all.map((id) => (inGroup.has(id) ? group[next++] : id));
+}

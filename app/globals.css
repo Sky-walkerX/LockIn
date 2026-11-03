@@ -487,6 +487,15 @@
   .lk-note-item[aria-current="page"] .lk-note-item-title { font-weight: 600; color: var(--c-eff, var(--foreground)); }
   .lk-note-item-line { font-size: 13.5px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lk-note-item-meta { font-size: 12px; color: var(--muted-foreground); opacity: 0.85; font-variant-numeric: tabular-nums; }
+  /* A row drags into a new place; its grip shows on hover, and always where
+     there's no hover (touch drags by the grip, since dragging the row scrolls). */
+  .lk-note-row { position: relative; }
+  .lk-note-row .lk-grip {
+    position: absolute; right: 6px; top: 50%; translate: 0 -50%;
+    opacity: 0; background: var(--muted);
+  }
+  .lk-note-row:hover .lk-grip, .lk-note-row .lk-grip:focus-visible { opacity: 1; }
+  @media (hover: none) { .lk-note-row .lk-grip { opacity: 1; } }
 
   /* Chapters: named groups in a section's note list, under a printed heading
      that folds. Their notes hang off a rule, a step in from the loose ones. */

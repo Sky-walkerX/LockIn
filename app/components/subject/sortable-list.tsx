@@ -39,6 +39,7 @@ export function SortableList({
   );
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
+    swallowNextClick();
     if (!over || active.id === over.id) return;
     const oldIndex = ids.indexOf(String(active.id));
     const newIndex = ids.indexOf(String(over.id));
@@ -47,10 +48,20 @@ export function SortableList({
   };
 
   return (
-    <DndContext id={id} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+    <DndContext id={id} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} onDragCancel={swallowNextClick}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         {children}
       </SortableContext>
     </DndContext>
   );
+}
+
+// Letting go of a dragged row clicks whatever is under the pointer, which is
+// usually the row itself. dnd-kit stops that click reaching React, but not the
+// browser: a row that's a link would load its page. The click arrives straight
+// after the drop or not at all, so the guard lasts as long as dnd-kit's own.
+function swallowNextClick() {
+  const block = (e: MouseEvent) => e.preventDefault();
+  window.addEventListener("click", block, { capture: true, once: true });
+  setTimeout(() => window.removeEventListener("click", block, { capture: true }), 50);
 }
