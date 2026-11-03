@@ -17,6 +17,11 @@ import { fade } from "@/lib/motion";
 // How long the controls stay after the pointer stops.
 const IDLE_MS = 2500;
 const WIDTH_KEY = "lockin.zen.width";
+const OUTLINE_KEY = "lockin.zen.outline";
+// How far below the top a heading counts as the one being read.
+const READING_LINE = 140;
+
+type Heading = { el: HTMLElement; text: string; level: number };
 
 const editable = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
@@ -24,7 +29,8 @@ const editable = (t: EventTarget | null) =>
 // Zen: a section's notes read one after another on dark paper, whatever the
 // notebook's theme, with nothing else on screen. ← and → (or [ and ]) turn
 // the page, / goes to any section or note without leaving, W widens the page
-// for diagrams and code (and back), the controls fade
+// for diagrams and code (and back), O shows the note's headings beside it on
+// a wide screen (the one being read marked), the controls fade
 // while you read and come back when the pointer moves, and Esc leaves on the
 // note last read. Reading only: editing and
 // witnessing happen on the note's page.
@@ -78,14 +84,20 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
     const to = notes[at + step];
     if (to) onNavigate(to.id);
   };
+  const [outlineSetting, setOutline] = useStoredValue(OUTLINE_KEY, "on");
+  const outlineOn = outlineSetting === "on";
+  const toggleOutline = () => setOutline(outlineOn ? "off" : "on");
+
   const turn = useEffectEvent(go);
   const widen = useEffectEvent(toggleWidth);
+  const outline = useEffectEvent(toggleOutline);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || editable(e.target)) return;
       if (e.key === "ArrowLeft" || e.key === "[") turn(-1);
       else if (e.key === "ArrowRight" || e.key === "]") turn(1);
       else if (e.key === "w" || e.key === "W") widen();
+      else if (e.key === "o" || e.key === "O") outline();
       else return;
       e.preventDefault();
     };
@@ -125,6 +137,37 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
   }, []);
 
   const { scrollYProgress } = useScroll({ container: sheetRef });
+
+  // The note's headings, read off the page once it has rendered (its body is
+  // markdown, so they're whatever the note says), and the one being read:
+  // the last to have passed the reading line.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [headings, setHeadings] = useState<Heading[]>([]);
+  const [current, setCurrent] = useState(-1);
+  useEffect(() => {
+    // After the page's fade in, so the body is the new note's.
+    const t = window.setTimeout(() => {
+      const els = [...(bodyRef.current?.querySelectorAll<HTMLElement>("h1, h2, h3") ?? [])];
+      setHeadings(els.map((el) => ({ el, text: el.textContent?.trim() ?? "", level: Number(el.tagName[1]) })).filter((h) => h.text));
+      setCurrent(-1);
+    }, 250);
+    return () => window.clearTimeout(t);
+  }, [noteKey]);
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet || headings.length === 0) return;
+    const onScroll = () => {
+      let at = -1;
+      headings.forEach((h, i) => {
+        if (h.el.getBoundingClientRect().top < READING_LINE) at = i;
+      });
+      setCurrent(at);
+    };
+    onScroll();
+    sheet.addEventListener("scroll", onScroll, { passive: true });
+    return () => sheet.removeEventListener("scroll", onScroll);
+  }, [headings]);
+  const top = Math.min(...headings.map((h) => h.level));
 
   if (!note) return null;
 
@@ -186,7 +229,7 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
           <div className="lk-zen-rule" />
           {!isOwnNote(note.source) && <p className="lk-zen-provenance">Recorded by {sourceLabel(note.source)}</p>}
           {note.notes.trim() ? (
-            <div className="lk-zen-body">
+            <div ref={bodyRef} className="lk-zen-body">
               <Markdown page={note.page}>{note.notes}</Markdown>
             </div>
           ) : (
@@ -211,6 +254,26 @@ function ZenSheet({ notes, noteId, sectionTitle, chapters, color, onNavigate, on
           </footer>
         </m.article>
       </AnimatePresence>
+
+      {/* Two headings make a note worth a map; one doesn't. */}
+      {outlineOn && headings.length > 1 && (
+        <nav className="lk-zen-outline" aria-label="In this note">
+          <p className="lk-zen-outline-label">In this note</p>
+          <ol>
+            {headings.map((h, i) => (
+              <li key={i} style={{ paddingLeft: `${(h.level - top) * 12}px` }}>
+                <button
+                  type="button"
+                  aria-current={i === current ? "location" : undefined}
+                  onClick={() => h.el.scrollIntoView({ behavior: "smooth", block: "start" })}
+                >
+                  {h.text}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
 
       <m.div className="lk-zen-progress" style={{ scaleX: scrollYProgress }} aria-hidden />
     </m.div>,

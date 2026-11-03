@@ -855,6 +855,34 @@ html.lk-zen-ws .lk-mobilebar { background: #08090a; border-bottom: 1px solid #19
   }
   @media (max-width: 640px) { .lk-jump { margin-top: 8vh; } .lk-jump-foot { display: none; } }
 
+  /* The note's headings, in the margin left of the page, where there's room
+     for them beside it (more room when the page is wide). Dimmed rather than
+     gone while you read, since it's where you are. */
+  .lk-zen-outline {
+    position: fixed; top: 120px; display: none;
+    left: max(24px, calc((100vw - var(--zen-measure)) / 2 - 284px)); width: 236px;
+    max-height: calc(100vh - 200px); overflow-y: auto; scrollbar-width: none;
+    transition: opacity 600ms var(--lk-ease-settle);
+  }
+  @media (min-width: 1440px) { .lk-zen:not([data-width="wide"]) .lk-zen-outline { display: block; } }
+  @media (min-width: 2000px) { .lk-zen[data-width="wide"] .lk-zen-outline { display: block; } }
+  .lk-zen[data-idle] .lk-zen-outline:not(:focus-within) { opacity: 0.45; }
+  .lk-zen-outline-label {
+    margin: 0 0 10px; font-family: var(--lk-font-display); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-foreground);
+  }
+  .lk-zen-outline ol { display: grid; gap: 2px; border-left: 1px solid var(--border); }
+  .lk-zen-outline button {
+    display: block; width: 100%; margin-left: -1px; padding: 4px 10px;
+    border-left: 1px solid transparent; text-align: left;
+    font-size: 13.5px; line-height: 1.35; color: var(--muted-foreground);
+    transition: color var(--lk-dur-1) var(--lk-ease-settle), border-color var(--lk-dur-1) var(--lk-ease-settle);
+  }
+  .lk-zen-outline button:hover { color: var(--foreground); }
+  .lk-zen-outline button[aria-current] { color: var(--foreground); border-left-color: var(--c-eff); }
+  /* A heading jumped to lands below the bar, not under it. */
+  .lk-zen-body :is(h1, h2, h3) { scroll-margin-top: 84px; }
+
   /* How far through the note you are. */
   .lk-zen-progress {
     position: fixed; left: 0; right: 0; bottom: 0; height: 2px;
