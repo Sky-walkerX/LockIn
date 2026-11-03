@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryLink } from "@/app/components/query-link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight, FolderPlus, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
@@ -22,12 +22,14 @@ import { groupByChapter, withGroupOrder } from "@/lib/notes/chapters";
 // write. A chapter can take a new note of its own, be renamed, dragged into
 // another place, or removed (its notes stay in the section). Notes drag into
 // a new place within their own group; Move files one in another chapter.
+// Chapters start closed, and the ones opened stay open across visits.
 export function NoteList({
   subjectId,
   sectionTitle,
   notes,
   chapters,
   selectedId,
+  revealId = null,
   hrefFor,
   onCreated,
   placeholder = "New note…",
@@ -38,6 +40,8 @@ export function NoteList({
   /** Left out where there are none to have (the Inbox). */
   chapters?: Chapter[];
   selectedId: string | null;
+  /** The note asked for by the address, as opposed to the one shown by default. */
+  revealId?: string | null;
   hrefFor: (noteId: string) => string;
   onCreated: (noteId: string) => void;
   placeholder?: string;
@@ -47,19 +51,25 @@ export function NoteList({
   const reorder = useReorderChapters();
   const reorderNotes = useReorderMilestones();
   const [naming, setNaming] = useState(false);
-  const folded = useFolded();
+  const opened = useOpenChapters();
   const { loose, groups } = groupByChapter(notes, chapters ?? []);
-  const selectedChapter = notes.find((n) => n.id === selectedId)?.chapterId ?? null;
+  const revealChapter = notes.find((n) => n.id === revealId)?.chapterId ?? null;
   // A group's new order, written into the whole section's: every note's order
   // becomes its place in reading order.
   const inReadingOrder = [...loose, ...groups.flatMap((g) => g.notes)].map((n) => n.id);
   const reorderGroup = (group: string[]) => reorderNotes.mutate({ ids: withGroupOrder(inReadingOrder, group) });
 
-  // Arriving at a note (from Go to, Zen, a link) opens its chapter so it can be
-  // seen. Only on arriving: after that the arrow folds the chapter like any other.
+  // Being taken to a note (by Go to, leaving Zen, a link from another page)
+  // opens its chapter so it can be seen, and it stays open. Not the note shown
+  // by default, and not a reload: that keeps the chapters as they were left.
+  const seenReveal = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    if (selectedChapter) unfold(selectedChapter);
-  }, [selectedId, selectedChapter]);
+    const first = seenReveal.current === undefined;
+    if (revealId === seenReveal.current) return;
+    seenReveal.current = revealId;
+    if (first && loadedHere()) return;
+    if (revealChapter) openChapter(revealChapter);
+  }, [revealId, revealChapter]);
 
   return (
     <nav aria-label="Notes in this section" className="lk-note-list">
@@ -102,8 +112,8 @@ export function NoteList({
                 chapter={chapter}
                 notes={inside}
                 sectionTitle={sectionTitle}
-                open={!folded.has(chapter.id)}
-                onToggle={() => folded.toggle(chapter.id)}
+                open={opened.has(chapter.id)}
+                onToggle={() => opened.toggle(chapter.id)}
                 onReorderNotes={reorderGroup}
                 selectedId={selectedId}
                 hrefFor={hrefFor}
@@ -419,50 +429,56 @@ function TitleField({
   );
 }
 
-// Which chapters are folded, kept in this browser across visits. Read after
-// hydration (the server can't know), so a folded chapter folds a frame late
-// rather than the page mismatching.
-const FOLD_KEY = "lockin.chapters.folded";
-const foldListeners = new Set<() => void>();
-// Where storage is blocked (private windows), folds last for this visit.
-let foldsHere = "";
-const readFolds = () => {
+// Which chapters are open, kept in this browser across visits; any other is
+// closed. Read after hydration (the server can't know), so an open chapter
+// opens a frame late rather than the page mismatching.
+const OPEN_KEY = "lockin.chapters.open";
+const openListeners = new Set<() => void>();
+// Where storage is blocked (private windows), what's open lasts for this visit.
+let openHere = "";
+const readOpen = () => {
   try {
-    return localStorage.getItem(FOLD_KEY) ?? foldsHere;
+    return localStorage.getItem(OPEN_KEY) ?? openHere;
   } catch {
-    return foldsHere;
+    return openHere;
   }
 };
-const subscribeFolds = (listener: () => void) => {
-  foldListeners.add(listener);
+const subscribeOpen = (listener: () => void) => {
+  openListeners.add(listener);
   return () => {
-    foldListeners.delete(listener);
+    openListeners.delete(listener);
   };
 };
-const parseFolds = (raw: string) => new Set(raw.split(",").filter(Boolean));
-const writeFolds = (ids: Set<string>) => {
-  foldsHere = [...ids].join(",");
+const parseOpen = (raw: string) => new Set(raw.split(",").filter(Boolean));
+const writeOpen = (ids: Set<string>) => {
+  openHere = [...ids].join(",");
   try {
-    localStorage.setItem(FOLD_KEY, foldsHere);
+    localStorage.setItem(OPEN_KEY, openHere);
   } catch {
-    // Blocked storage: foldsHere keeps it for this visit.
+    // Blocked storage: openHere keeps it for this visit.
   }
-  foldListeners.forEach((l) => l());
+  openListeners.forEach((l) => l());
 };
-const unfold = (id: string) => {
-  const ids = parseFolds(readFolds());
-  if (ids.delete(id)) writeFolds(ids);
+const openChapter = (id: string) => {
+  const ids = parseOpen(readOpen());
+  if (!ids.has(id)) writeOpen(ids.add(id));
 };
 
-function useFolded() {
-  const ids = parseFolds(useSyncExternalStore(subscribeFolds, readFolds, () => ""));
+/** Whether this page is the one the browser loaded (or reloaded), rather than one reached inside the app. */
+function loadedHere(): boolean {
+  const entry = performance.getEntriesByType("navigation")[0];
+  return !!entry && entry.name === window.location.href;
+}
+
+function useOpenChapters() {
+  const ids = parseOpen(useSyncExternalStore(subscribeOpen, readOpen, () => ""));
   return {
     has: (id: string) => ids.has(id),
     toggle: (id: string) => {
       const next = new Set(ids);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      writeFolds(next);
+      writeOpen(next);
     },
   };
 }

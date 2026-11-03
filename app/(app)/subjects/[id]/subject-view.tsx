@@ -194,6 +194,7 @@ export function SubjectView() {
               notes={notes}
               chapters={subject.chapters}
               selectedId={shown?.id ?? null}
+              revealId={noteParam}
               hrefFor={(noteId) => href({ note: noteId })}
               onCreated={(noteId) => {
                 setJustCreated(noteId);
